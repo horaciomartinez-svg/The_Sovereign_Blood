@@ -537,14 +537,17 @@ se mantienen/pulen fallbacks); nada de mecánicas fuera del GDD.
 | Sistemas: audio mínimo + robustez loop/save/perf/balance | AG-2 | `audio_manager` autoload + tonos generados (click, campana de fin de año, espada N3); victoria/derrota §4.5 robustas; save/load en 3 puntos; IA <2 s/turno; mapa <8 ms; balance 1337/era I | ⏳ |
 | Datos: auditoría de eventos 1337 y balance | AG-1 | Peste Negra 1348 y todo `events_1337.json` disparan sin estado inválido; revisión de balance económico 1337 (sin tocar 1402/1453) | ⏳ |
 | QA MVP-1337 | AG-4 | tests C1-C10, informe `docs/qa/fase3_mvp_report.md`, capturas, veredicto APROBADO | ⏳ |
-| Gobernanza/cierre | AG-0 | D-066, STATUS, tag `fase-3.3`, push y aviso para verificación Kimi | ⏳ |
+| **Banda sonora MVP (D-067)** | AG-5/AG-1/AG-2/AG-3 | 6 pistas OGG PD/libres en `assets/audio/music/` (menú, mapa, N2, N3, fin de año, cierre); `data/audio_tracks.json`; buses Master/Music/SFX; crossfade 1,5-2 s; opciones persistentes; `docs/audio_licenses.md`; QA C11 | ⏳ |
+| Gobernanza/cierre | AG-0 | D-066/D-067/D-068, STATUS, tag `fase-3.3`, push y aviso para verificación Kimi | ⏳ |
 
-**Criterios de aceptación (C1-C10):** loop completo 1337 sin crash; 4 condiciones §4.5 alcanzables y
+**Criterios de aceptación (C1-C11):** loop completo 1337 sin crash; 4 condiciones §4.5 alcanzables y
 testeadas; N1/N2/N3 desde partida real con animación sin regresión; save/load exacto en 3 puntos; 10 años
 × 8 facciones headless sin errores; `run_all` verde, `validate_data` 0, editor 0 warnings; IA <2 s/turno y
 mapa <8 ms/frame; UX con 0 botones muertos, PG visible, audio mínimo y capturas §9; 1402/1453 congelados y
-«EN PAUSA»; sin solicitudes de arte externo y fallbacks operativos.
+«EN PAUSA»; sin solicitudes de arte externo y fallbacks operativos; **C11 música:** 5-6 pistas PD/libres en
+mapa y batallas, crossfade/loop limpio, opciones de volumen persistentes, `docs/audio_licenses.md` completo
+y sin material con copyright.
 
-**Cierre previsto:** `docs/qa/fase3_mvp_report.md` APROBADO en los 10 criterios → commits por agente +
+**Cierre previsto:** `docs/qa/fase3_mvp_report.md` APROBADO en los 11 criterios → commits por agente +
 `[AG-0]`, tag anotado **`fase-3.3`**, push a main y aviso al usuario para la verificación de Kimi contra
 GDD v1.8.1 + esta directiva.
