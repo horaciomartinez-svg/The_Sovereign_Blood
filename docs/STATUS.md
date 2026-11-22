@@ -2,10 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
-| **Fase anterior** | **Fase 1 — CERRADA** (`fase-1`); QA APROBADO 6/6 |
-| **Siguiente fase** | Fase 3 — Contenido y remaster (pendiente de luz verde del usuario) |
-| **GDD** | **v1.5** — `GDD_The_Sovereign's_Blood.md` (§3.2 REA ampliado, §10.2 retratos finales, §10.3 sprites) |
+| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; PRIORIDAD 1: integración de sprites de Kimi (§10.3) |
+| **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
+| **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3`) |
+| **GDD** | **v1.6** — `GDD_The_Sovereign's_Blood.md` (§10.3 contrato de sprites de Kimi; hereda v1.5) |
+| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites: assets, `sprite_sheet`, lógica N2/N3, render, QA) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
@@ -365,3 +366,30 @@ Harness F2 repetido → determinista.
 **Cierre:** commits `[AG-1]`/`[AG-2]`/`[AG-3]`/`[AG-4]`/`[AG-REA]` y cierre `[AG-0]`, push a
 `origin/main` y tag anotado **`fase-2`**. Fase 3 (escenarios 1402/1453, sprites §10.3 con AG-5, arte final)
 queda planificada en §11 y pendiente de luz verde del usuario.
+
+---
+
+## 15. Fase 3 — Contenido y remaster (EN CURSO; PRIORIDAD 1: sprites)
+
+**Luz verde:** 2026-11-22. **GDD:** v1.6. **Contrato de la prioridad 1:** `docs/architecture_contracts_fase3.md`.
+**Paquete recibido:** `Sprites_Unidades_TSB.zip` (Kimi): 6 unidades núcleo × 3 cuadros de marcha + 3 proyectiles + README.
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| Assets de sprites núcleo | AG-5 | `assets/art/sprites/units/` (18 PNG 64×64/64×80), fuentes `src/`, proyectiles | ⏳ |
+| Datos + lógica de batalla | AG-2 | `sprite_sheet` en `units.json` + schema; animación/mirroring/proyectiles en N2/N3 | ⏳ |
+| Render N2/N3 | AG-3 | sprites, marcha 6 fps, espejo oeste, capa de proyectiles balísticos; capturas 64 px | ⏳ |
+| QA de sprites | AG-4 | harness fase 3, carga headless, Crécy N1/N2/N3, capturas y legibilidad | ⏳ |
+| Escenarios 1402/1453 | AG-1 | datos + eventos (Ankara, locura de Carlos VI, Constantinopla, Dos Rosas) + evolución tecnológica | ⏸ tras prioridad 1 |
+| Retratos nuevos / animaciones completas / 11 unidades | AG-5 | hoja de estilo Kimi; petición de generación a Kimi si el equipo no tiene arte IA | ⏸ tras prioridad 1 |
+| Tiles tácticos, relieve, música CC | AG-5/AG-3 | assets e integración | ⏸ fin de fase |
+| QA final Fase 3 | AG-4 | 3 escenarios completos, victoria/derrota §4.5, partida automatizada 10 años, sprites/retratos | ⏸ |
+
+**Criterio de aceptación de la PRIORIDAD 1 (GDD §10.3 v1.6):** 6 unidades núcleo con `sprite_sheet`
+válido y carga en CI headless; silueta reconocible del arma a 64 px (milicia, ballesteros, arqueros);
+marcha 6 fps con espejo al oeste; proyectiles virote/flecha/piedra en capa separada con trayectoria
+balística; fallback heráldico en las 11 restantes; capturas en `docs/screenshots/`; no regresión.
+
+**Decisiones:** D-039 (GDD v1.6), D-040 (reparto AG-5/AG-2/AG-3/AG-4), D-041 (fuentes `src/` +
+`.gdignore`), D-042 (orientación/ciclo/proyectiles), D-043 (pipeline de las 11 restantes y cuadros de
+combate vía Kimi).
