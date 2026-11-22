@@ -5,8 +5,8 @@
 | **Entregable** | `data/sources.md` (GDD §7.8 / §4.1) |
 | **Autor** | AG-1 (Historian / Data) |
 | **Fecha** | 2026-11-21 |
-| **Alcance** | Escenario 1 — «Dos Coronas», año 1337 (GDD §4.2), Fase 0 |
-| **Datasets cubiertos** | `factions.json`, `regions.json`, `characters.json`, `units.json`, `events_1337.json`, `scenarios/scenario_1337.json`, `schema/*.schema.json` |
+| **Alcance** | Escenario 1 — «Dos Coronas», año 1337 (GDD §4.2), Fase 0; módulo Mapa §10.1 (`map_borders.json`, 3 años) y campo `portrait` §10.2 (Fase 2) |
+| **Datasets cubiertos** | `factions.json`, `regions.json`, `characters.json`, `units.json`, `events_1337.json`, `scenarios/scenario_1337.json`, `map_borders.json`, `schema/*.schema.json` |
 
 ## 1. Regla de oro y método
 
@@ -286,4 +286,97 @@ _El informe REA no determinó relaciones familiares, matrimonios ni pretensiones
 
 ---
 
-*Generado por AG-1 para la Fase 0 del proyecto. Cualquier corrección de dato debe mantener la URL de fuente o marcar `"estimate": true`; las reglas de validación están en `tools/validate_data.gd` (D-004/D-009) y los criterios en GDD §12-§13.*
+## 9. Fronteras del mapa (Fase 2 — GDD §10.1, contrato §1, D-024/D-025/D-028)
+
+`data/map_borders.json` contiene **3 años (1337, 1402, 1453) × 47 regiones** de `regions.json`:
+`region_id`, `owner` del año, `ring` (anillo abierto de puntos normalizados [0..1], 4 decimales),
+`center` y `estimate: true`. La misma geometría se reutiliza en los tres años; solo cambia `owner`
+(ahorra tamaño y garantiza que las tres vistas encajen). Todas las entradas llevan
+`"estimate": true` (fronteras aproximadas de diseño, no cartografía catastral; regla §7.8).
+
+### 9.1 Método de generación (reproducible)
+
+| Paso | Detalle |
+|---|---|
+| Lienzo | `canvas` 4096×3072 (4:3), origen arriba-izquierda, `projection: equirectangular_stylized`. Proyección lineal lon ∈ [−8°, 52°], lat ∈ [24°, 62°] sobre [0..1]. |
+| Tierra | Natural Earth 1:50m *land* (dominio público) intersectado con una ventana estilizada propia que limita el mundo jugable (Europa occidental/central, Iberia, Italia, Balcanes, Anatolia, Levante y costa de Libia/Egipto); rasterizado a 2048×1536. Las islas sin región asociada se descartan (quedan mar). |
+| Centros | Coordenadas geográficas reales de la ciudad/capital de cada región (`center` final). `map_layout.json` (deprecado, D-024) se consultó solo como referencia de anclaje; la geometría **no** deriva de él. |
+| Asignación | Voronoi por **distancia geodésica sobre la tierra** (BFS multi-fuente) restringido a la componente terrestre de cada centro: celdas contiguas y sin reclamar tierra al otro lado del mar. 47 celdas no vacías. |
+| Contornos | Trazado por aristas de píxel (región a la izquierda), anillo exterior mayor; islotes sueltos sin center se descartan. |
+| Simplificación | Douglas-Peucker circular con tolerancia **ε = 0.0006** en coordenadas normalizadas (≈2,5 px a 4096 de ancho), aplicada a cada anillo; se conservan 3–400 puntos; redondeo final a 4 decimales. |
+| Resultado | 132.962 bytes (≤147.456), 141 entradas (3×47), puntos/región: mín. 11, media 52,55, máx. 183 (objetivo medio ≤55; límite duro 400). |
+
+### 9.2 Fuentes de fronteras (abiertas y citables)
+
+| Año | Fuente | Licencia | Uso |
+|---|---|---|---|
+| 1337 | [Wikimedia Commons — File:Europe 1337.jpg](https://commons.wikimedia.org/wiki/File:Europe_1337.jpg) (autor: Petolaszlo; «Political map of Europe in 1337») | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0), verificada vía API Commons el 2026-11-21 | Referencia política del año exacto. |
+| 1402 | [Wikimedia Commons — File:Europa 1400.jpg](https://commons.wikimedia.org/wiki/File:Europa_1400.jpg) (H. Kiepert, *Historischer Schulatlas*, 1879; «Europa im Jahre 1400») | **Dominio público**, verificada vía API Commons el 2026-11-21 | No existe mapa anual libre exacto de 1402 en Commons; se usa 1400 (2 años antes) como referencia. |
+| 1453 | [Wikimedia Commons — File:Europe 1444.jpg](https://commons.wikimedia.org/wiki/File:Europe_1444.jpg) (autor: Petolaszlo; «Political map of Europe in 1444») | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0), verificada vía API Commons el 2026-11-21 | No existe mapa anual libre exacto de 1453 en Commons; se usa 1444 (9 años antes) como referencia; la caída de Constantinopla (mayo 1453) se documenta en `owner` 1453. |
+| Referencia general | William R. Shepherd, *Historical Atlas* (1923-26), dominio público — [Internet Archive](https://archive.org/details/HistoricalAtlasWilliamR.Shepherd) | Dominio público | Atlas histórico de referencia (D-028) para contraste de fronteras aproximadas; no se versiona ninguna imagen. |
+| Costa base | [Natural Earth 1:50m Physical Vectors — land](https://www.naturalearthdata.com/downloads/50m-physical-vectors/) | Dominio público | Silueta costera (solo datos vectoriales de dominio público; sin assets de terceros en el repo). |
+
+Los mapas de Wikimedia se usan **solo como referencia visual**: no se copia ni se versiona ninguna
+imagen ni sus polígonos; los `ring` son una aproximación vectorial original y simplificada. Se
+atribuye la autoría CC BY-SA de las dos obras usadas (Petolaszlo) aunque no se redistribuyan.
+
+### 9.3 Propietarios por año y entidades sin facción
+
+- **1337**: `owner` idéntico a `regions.json` (`year_data["1337"].owner`); 14 facciones de
+  `factions.json`, reparto 4/6/7/2/3/3/3/2/2/3/2/5/2/3 (Inglaterra 4, Francia 6, HRE 7, Bohemia 2,
+  Hungría 3, Castilla 3, Aragón 3, Polonia 2, Escocia 2, Papado 3, Granada 2, Mamelucos 5,
+  Horda de Oro 2, Bizancio 3).
+- **1402** (GDD §4.3): se reutilizan ids de `factions.json` donde aplica y se añaden ids de entidad
+  histórica no presentes en 1337 (permitidos por contrato §1 y pintados como neutrales por AG-3):
+  `brittany` (Bretaña, ducado independiente), `burgundy` (Borgoña/Flandes, Felipe el Temerario),
+  `naples` (Nápoles, Ladislao), `milan` (Lombardía, Visconti), `florence` (Toscana, Florencia),
+  `tamerlane` (Damasco, esfera timúrida tras la campaña de Siria de 1400-01; aproximación),
+  `ottoman` (Anatolia occidental, Interregno otomano). `hre` cubre las tierras imperiales y
+  `hungary` las húngaras; `papacy` cubre Aviñón y Roma (se documenta la simplificación del Cisma).
+- **1453** (GDD §4.4): `brittany`, `burgundy`, `milan` (Sforza), `florence` (Médici), `venice`
+  (Croacia/Dalmacia veneciana; aproximación), `genoa` (Crimea/Caffa genovesa; aproximación),
+  `ottoman` (Tesalónica y Anatolia occidental); `aragon` incluye Nápoles (Alfonso V);
+  `byzantium` conserva Constantinopla al inicio del escenario (la caída se produce en mayo de 1453);
+  `mamluks` incluye Damasco y Jerusalén; `golden_horde` conserva Sarai.
+- Ningún `owner` se inventa sin referencia: cada año está contrastado con el mapa de su fila en
+  §9.2 y la tabla GDD §4.3/§4.4; los desvíos (Tamerlán en Damasco, Venecia en Croacia, Génova en
+  Crimea, Nápoles en 1402) están marcados como aproximación de diseño.
+
+### 9.4 Limitaciones y comprobaciones
+
+- **47/47/47** entradas; ids únicos e idénticos a `regions.json`; coords en [0..1]; anillo abierto;
+  área > 0; sin autointersecciones; `center` dentro de su polígono en 47/47 (Málaga y Constantinopla
+  se reajustaron al píxel de tierra más cercano antes de generar).
+- **Adyacencias** (`regions.json`, 65 pares): 5 pares son marítimos y por diseño no comparten
+  frontera terrestre (`aquitania–inglaterra_sur`, `inglaterra_sur–normandia`, `barcelona–sicilia`,
+  `barqa–sicilia`, `napoles–sicilia`); 53/60 pares terrestres comparten borde en la geometría;
+  los 7 restantes son **abstracciones del grafo** separadas por una región intermedia o por mar
+  (`austria–lombardia`, `lombardia–renania`, `cracovia–praga`, `croacia–transilvania`,
+  `croacia–tesalonica` [cuasi-contiguas], `granada–sevilla`, `constantinopla–crimea`).
+  Además hay 30 pares geométricamente vecinos que no están en `adjacency` (la teselación del mapa
+  es continua; la adyacencia de juego sigue siendo la de `regions.json`). Se documenta como
+  limitación conocida de una aproximación estilizada.
+- **Cobertura**: la unión rasterizada de los 47 polígonos conserva el 100,5 % de la tierra asignada
+  (solapamientos mínimos por simplificación independiente de anillos compartidos, ≤ ε); no hay
+  huecos internos grandes.
+- **Aproximaciones históricas**: mapas de referencia 1400 (para 1402) y 1444 (para 1453); las
+  fronteras políticas son jugables, no catastrales. El mapa no incluye Escandinavia, Irlanda,
+  Magreb occidental, Arabia ni Cáucaso como tierra (quedan fuera del mundo jugable).
+
+## 10. Retratos de soberanos (Fase 2 — GDD §10.2, D-027)
+
+- `data/schema/characters.schema.json` añade la propiedad **opcional** `"portrait"` (`string` con id
+  de asset snake_case, o `null`). No se añaden valores a `characters.json`: en Fase 2 todos los
+  personajes usan el **fallback heráldico** de `portrait_frame.gd` (escudo generativo de la casa +
+  silueta genérica), nunca un hueco vacío.
+- Los assets finales (`assets/art/portraits/<portrait_id>.png`, 256×256) son de Fase 3 (AG-5); este
+  repositorio no contiene binarios de retrato todavía.
+- Patrón de id previsto: `^[a-z][a-z0-9_]*$` (p. ej. `edward_iii_plantagenet`), reutilizando el id
+  del personaje si el retrato es único.
+
+---
+
+*Generado por AG-1. Fase 0: datasets del Escenario 1. Fase 2: `map_borders.json` (§9) y campo
+`portrait` (§10). Cualquier corrección de dato debe mantener la URL de fuente o marcar
+`"estimate": true`; las reglas de validación están en `tools/validate_data.gd` (D-004/D-009) y los
+criterios en GDD §12-§13.*
