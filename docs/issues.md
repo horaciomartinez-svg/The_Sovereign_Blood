@@ -1357,3 +1357,48 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 **task-51 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3.2 — verificación final animación v1.8.1 (task-51).*
+
+---
+
+## 21. Fase 3.3 — MVP-1337: plan y baseline QA (task-55, 2026-11-23)
+
+**Directiva:** D-066 (congelar 1402/1453, foco en MVP con 1337). HEAD **`6b4e26b`** (D-066 + STATUS; AG-1/AG-2/AG-3 del tramo en curso). Plan: **`docs/qa/fase3_mvp_plan.md`**. Harness: **`tests/qa_acceptance_mvp_1337.gd`** (C1-C10; compila, SKIP justificado, exit 0 solo con 10/10).
+
+### 21.1 Baseline C1-C10 — **8 PASS / 0 FAIL / 2 SKIP** (salida 1 «PENDIENTE», no rechazo)
+
+| # | Estado | Evidencia |
+|---|---|---|
+| C1 | **PASS** | menú/selección instancian; 8/8 facciones arrancan + 4 trimestres; England llega a 1399 con `game_over` y motivo «Supervivencia hasta el año final (1399)» |
+| C2 | **PASS** | 5 motivos: prestigio, conquista ≥70%, supervivencia, pérdida de todas las regiones, dinastía extinta |
+| C3 | **PASS** | N1/N2/N3 con informe/outcome; animación v1.8.1 (`attack_4=333,3 ms`); baseline anim 6/6 |
+| C4 | **SKIP** | turno intermedio y fin de año con hash exacto; **batalla pendiente sin API de serialización** (AG-2 en curso) |
+| C5 | **PASS** | 10 años × 8 facciones; 8/8 sin errores, estado serializable cada año |
+| C6 | **PASS** | 29-30 tests, 18 escenas, harness y `audio_manager`; `run_all` **1469/0/1**, validate **11/7/11.641 comprobaciones, 0**, editor/headless 0 |
+| C7 | **PASS** | IA=16 ms (<2000); mapa=0,020 ms/frame (<8, CPU headless; GPU no medible) |
+| C8 | **SKIP** | faltan capturas MVP 1920×1080 (AG-3) y guarda headless de audio (AG-2); ver R-MVP-13 |
+| C9 | **PASS** | `scenario_select` con `PAUSED_LABEL = "EN PAUSA — disponible en versión completa"`, flag/disabled y datos 1402/1453 congelados |
+| C10 | **PASS** | 14 retratos 1337 con PNG; 42 gobernantes nuevos con fallback; petición externa congelada (D-066) |
+
+### 21.2 Batería externa de baseline
+
+| Comando | Resultado |
+|---|---|
+| F1 / F2 | **6/6 PASS** / **6/6 PASS** (exit 0) |
+| Sprites F3 / tiles / final Fase 3 / animación | **6/6** / **7/7** / **7/7** / **6/6** PASS |
+| `run_all.gd` | **1469 pasados, 0 fallidos, 1 omitido**; `CI: OK` |
+| `validate_data.gd` | **11 datasets / 7 schemas, 11.641 comprobaciones, 0 errores/WARN** |
+| `--editor --quit` / `--headless --quit` | 0 ERROR/WARNING |
+
+### 21.3 Observaciones y riesgos de baseline
+
+- **R-MVP-13 (audio headless):** el `AudioManager` nuevo emite `ERROR: Playback can only happen when a node is inside the scene tree` al avanzar años en headless (152 líneas en el harness MVP; 179 en `run_all`). Los harness pasan porque no lo tratan como FAIL, pero **task-56 debe exigir 0 ERROR**. C8 ya requiere guarda `is_inside_tree`/headless.
+- **C4:** el save de batalla pendiente no existe aún; AG-2 debe exponerlo para el 3.º punto.
+- **C8:** faltan capturas MVP y no hay prueba de botones muertos/PG en UI (AG-3 en curso); pendiente de auditoría visual.
+- **C9 ya cumplido en baseline** (AG-3 adelantó la pausa); verificar que no se toquen datos 1402/1453.
+- **Evidencia AG-1 (task-54) para el informe final:** `data/sources.md` §12 — 18/18 eventos 1337 válidos (10 `year_reached` + 8 `war`; Peste Negra 1348 `population_modifier -0.35`/`stability -10`, aplicada una vez, población/workers/recruit pool e ingreso bruto ~-35 %); `[SUITE] events` 12/12; balance 40 trimestres: tesoros 28,9-168,5k (×5-×14), ingreso/q 612-3.935 vs mantenimiento 13-30, apoyo en montaña Austria/Transilvania/Croacia cae a 0 y revueltas 4-5 años (recomendación a AG-2); 8 gobernantes/capitales correctos, Polonia elige a la esposa como heredera (fallback; recomendación futura). Sin cambios en datos 1337.
+- **Riesgos:** R-MVP-01..13 en `docs/qa/fase3_mvp_plan.md`.
+- **Añadido para task-56 (auditoría AG-1):** V1 inflación 10 años, V2 apoyo en montaña, V3 efecto dinástico de la Peste Negra, V4 guerra anglo-francesa/eventos `war` 1340-1367, V5 heredero válido de Polonia; se integrarán en C2/C5 con umbrales coordinados con AG-2 (R-MVP-14..18). No bloquean el baseline.
+
+**task-55 COMPLETADA** (baseline/plan; verificación final = task-56, bloqueada por AG-1/AG-2/AG-3). Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3.3 — plan y baseline MVP-1337 (task-55).*
