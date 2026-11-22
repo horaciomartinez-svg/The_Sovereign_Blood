@@ -2,16 +2,17 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 (en curso)** — luz verde 2026-11-21 |
-| **Fase anterior** | **Fase 1 — CERRADA** (`fase-1`); QA APROBADO 6/6 (2026-11-21) |
-| **Siguiente fase** | Fase 3 — Contenido y remaster (pendiente del cierre de Fase 2) |
-| **GDD** | **v1.4** — `GDD_The_Sovereign's_Blood.md` (raíz del repo; novedades: §10.1 mapa, §10.2 retratos) |
+| **Fase actual** | **Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
+| **Fase anterior** | **Fase 1 — CERRADA** (`fase-1`); QA APROBADO 6/6 |
+| **Siguiente fase** | Fase 3 — Contenido y remaster (pendiente de luz verde del usuario) |
+| **GDD** | **v1.5** — `GDD_The_Sovereign's_Blood.md` (§3.2 REA ampliado, §10.2 retratos finales, §10.3 sprites) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
-| **Fecha de cierre Fase 1** | 2026-11-21 |
+| **Fecha de cierre Fase 2** | 2026-11-22 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
-| **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 0 mayores, 3 menores (ver `docs/qa/fase1_report.md`) |
+| **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
+| **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -36,11 +37,22 @@ integrada end-to-end y verificada por QA independiente. **QA Fase 1: APROBADO** 
 captura, Peste Negra 1348, UI headless) con 0 bloqueantes y 3 observaciones menores resueltas/documentadas.
 Suite headless: **548 tests**; `validate_data.gd`: 0 errores. Tag anotado `fase-1`.
 
-**Fase 2 en curso (GDD v1.4):** tres módulos en paralelo — (A) profundidad militar (Nivel 2 táctico,
-Nivel 3 cerrado con cartas, espionaje, extinción dinástica); (B) **Mapa §10.1** (terreno atlas
-4096×3072 + fronteras vectoriales 1337/1402/1453 + capa interactiva + entidades con elisión por zoom;
-`map_layout.json` queda deprecado, D-024); (C) **Retratos §10.2** (5 slots con fallback heráldico +
-test de sucesión). Criterios en §14 y en `docs/architecture_contracts_fase2.md`.
+**Fase 2 (Profundidad militar + Mapa + Retratos) completada (GDD v1.5):** QA independiente **APROBADO (v1.5)** —
+6/6 criterios, 0 bloqueantes:
+- **Militar N2/N3:** `TacticalBattle` (hexes, objetivos, IA, determinismo), `CloseCombat` (5 cartas, +1 orden por
+  Mando), espionaje (6 PG, intel persistente), extinción dinástica (derrota inmediata, reloj congelado) y N3
+  aplicado a campaña (D-033). Crécy resuelto en los 3 niveles; N2 coherente (1200/509 tras B-F2-01).
+- **Mapa §10.1:** 4 capas (terreno 4096×3072 determinista, fronteras 1337/1402/1453 — 47/47, 132.962 B, hit-test
+  141/141, entidades con elisión por zoom, cámara), `map_layout.json` eliminado (D-024); benchmark CPU 0,178 ms
+  de media (<8 ms).
+- **Retratos §10.2 (v1.5):** los 14 retratos finales de Kimi integrados (`assets/art/portraits/<id>.png`,
+  `portrait` res:// en los 14 gobernantes) y renderizados en los 5 slots; sucesión textura→heredero verificada;
+  fallback heráldico intacto para el resto; hoja de contacto final.
+- **REA ampliado §3.2 (v1.5):** `docs/rea/gk2_battle_mechanics.md` (1.998 palabras) + `notes_battle.md`;
+  estructura `SUNIT`/`KPAT`/`GRPDATA` y lecciones §10.3; mecánicas N2/N3 no observadas por ausencia de DOSBox,
+  limitación declarada y aceptada (D-036/D-038).
+- **Tests:** `run_all.gd` **716 asserts**; harness F2 6/6; F1 6/6; `validate_data.gd` 0 errores (5.281 comprobaciones).
+Tag anotado `fase-2`.
 
 ---
 
@@ -150,9 +162,26 @@ Ningún hallazgo bloqueante ni mayor. No se requirieron tests de regresión nuev
 | `722b778` | AG-2 | Sistemas núcleo Fase 1 + 317 tests; validador excluye presentación |
 | `73bff2f` | AG-3 | UI completa Fase 1 (16 escenas) integrada |
 | `7814dda` | AG-4 | Harness de aceptación (6 criterios) + plan QA |
-| cierre Fase 1 | AG-4/AG-0 | QA final (APROBADO), STATUS/decisiones y tag `fase-1` |
+| `29bd635` | AG-0 | GDD v1.4 y contrato de integración Fase 2 (D-024…D-031) |
+| `7746791` | AG-1 | `map_borders.json` (3×47, 132.962 B) + campo `portrait` en schema + fuentes |
+| `064b09a` | AG-2 | Batallas N2/N3, espionaje, extinción + 138 tests |
+| `8451304` | AG-2 | Validador excluye `map_borders` (presentación) |
+| `e748a71` | AG-3 | Mapa atlas 4 capas, retratos 5 slots, escenas N2/N3, D-024 |
+| `f302a3c` | AG-4 | Harness Fase 2 + plan QA |
+| `ef25d98` | AG-0 | Capturas Fase 2, referencia PD Shepherd, D-032/D-033 |
+| `f560a40` | AG-2 | Extinción F2-C2 + `apply_close_combat_outcome` (D-033) |
+| `dbfce73` | AG-3 | N3 aplica a campaña + capturas |
+| `5c3aa93` | AG-0 | Addendum contrato D-033 + `.gitignore` |
+| `bfe1b4e` | AG-0 | GDD v1.5 (REA ampliado, retratos finales, sprites §10.3) |
+| `66b85b3` | AG-0 | 14 retratos finales integrados + D-034…D-037 |
+| `a4ce356` | AG-1 | `portrait` en los 14 gobernantes |
+| `871d3e4` | AG-2 | B-F2-01: bajas N2 con unidades destruidas + regresión |
+| `f1e1bd1` | AG-3 | Retratos finales renderizados en 5 slots + capturas |
+| `2d283ff` | AG-REA | Informe REA ampliado de batallas + anexo de método |
+| `731ce6c` | AG-4 | QA Fase 2 v1.5 APROBADA + cierre REA |
+| cierre Fase 2 | AG-0 | STATUS/decisiones D-032…D-038, tag `fase-2` y push |
 
-**Tags de fase:** `fase-0` y `fase-1` (anotados) en los commits de cierre, tras push a `origin/main`.
+**Tags de fase:** `fase-0`, `fase-1` y `fase-2` (anotados) en los commits de cierre, tras push a `origin/main`.
 Historia lineal, sin force-push (GDD §3.2).
 
 ---
@@ -162,12 +191,12 @@ Historia lineal, sin force-push (GDD §3.2).
 | Agente | Rol | Estado | Definición |
 |---|---|---|---|
 | AG-0 | Coordinator (chat principal) | ✅ activo | `C:\Proyectos\TSB\agents\AG-0.md` |
-| AG-REA | Reverse Engineer (alcance §3) | ✅ Fase 0; no se reactiva salvo petición | `agents\AG-REA.md` |
-| AG-1 | Historian/Data | ✅ Fase 0; vuelve en Fase 3 (escenarios 2-3) | `agents\AG-1.md` |
-| AG-2 | Systems Dev | ✅ Fases 0-1; Fase 2 (Niveles 2-3) | `agents\AG-2.md` |
-| AG-3 | UI Dev | ✅ Fase 1 completada; Fase 2 (táctico/combate) | `agents\AG-3.md` |
-| AG-4 | QA | ✅ Fases 0-1 aprobadas; continúa por fase | `agents\AG-4.md` |
-| AG-5 | Art Pipeline | ⏸ no activado (Fase 3) | pendiente de crear MD al activar |
+| AG-REA | Reverse Engineer (alcance §3 + §3.2) | ✅ Fases 0 y 2 (informe de batallas) | `agents\AG-REA.md` |
+| AG-1 | Historian/Data | ✅ Fases 0 y 2 (fronteras/retratos); Fase 3 (escenarios 2-3) | `agents\AG-1.md` |
+| AG-2 | Systems Dev | ✅ Fases 0-2 (N1/N2/N3, espionaje, extinción) | `agents\AG-2.md` |
+| AG-3 | UI Dev | ✅ Fases 1-2 (UI §9, mapa §10.1, retratos §10.2) | `agents\AG-3.md` |
+| AG-4 | QA | ✅ Fases 0-2 aprobadas | `agents\AG-4.md` |
+| AG-5 | Art Pipeline | ⏸ no activado (Fase 3: sprites §10.3, retratos restantes, música) | pendiente de crear MD al activar |
 
 ---
 
@@ -180,44 +209,58 @@ D-010 capital dual Praga · D-011 nomenclatura de casas · D-012 anexo técnico 
 GitHub Actions diferido · D-014 registro de QA por fase · D-015 audio_manager (OBS-K1) · D-016 contrato
 Fase 1 · D-017 `map_layout` presentación · D-018 exclusión de presentación en el validador · D-019
 `allocate` absoluto · D-020 educación automática en MVP · D-021 capturas versionadas · D-022 la fachada
-de UI expone referencias vivas de solo lectura (auditado) · D-023 tooling dev en `scripts/ui/dev`.
+de UI expone referencias vivas de solo lectura (auditado) · D-023 tooling dev en `scripts/ui/dev` ·
+**D-024 deprecación de `map_layout.json` (ejecutada)** · D-025 contrato Fase 2 · D-026 terreno por código ·
+D-027 retratos Fase 2 (fallback) · D-028 referencia comparativa del mapa · D-029 batallas N2/N3 ·
+D-030 espionaje · D-031 extinción dinástica · D-032 `map_borders` dato de presentación · D-033 Nivel 3
+aplica a campaña · **D-034 GDD v1.5** · **D-035 retratos finales integrados** · **D-036 REA ampliado de
+batallas** · **D-037 sprites §10.3 en Fase 3** · **D-038 limitación DOSBox documentada (REA)**.
 
 ---
 
 ## 10. Bloqueos y riesgos
 
-- **Bloqueos:** ninguno. Fase 2 pendiente de luz verde del usuario.
+- **Bloqueos:** ninguno. Fases 0-2 cerradas; Fase 3 pendiente de luz verde del usuario.
+- Riesgo residual (bajo): el REA ampliado **no pudo observar** las mecánicas N2/N3 (DOSBox no instalado).
+  Limitación documentada y aceptada (D-036/D-038); el usuario puede aportar capturas para completar §2 en
+  una reactivación de AG-REA. Las lecciones de diseño §10.3 sí están entregadas.
 - Riesgo residual (bajo): `scripts/ui/dev` contiene tooling (smoke/probe/screenshots); no se carga desde
   escenas (M-F1-03, D-023).
-- Riesgo residual (bajo): `tsb_game.gd` expone referencias vivas del estado; auditoría QA: 0 escrituras,
-  el contrato prohíbe mutar (M-F1-02, D-022; copias defensivas en Fase 2).
-- Riesgo residual (bajo): educación de menores automática en MVP (D-020); asignación explícita de tutor
-  para Fase 2 si se exige.
+- Riesgo residual (bajo): `tsb_game.gd` devuelve copias defensivas (`duplicate(true)`) desde Fase 2; la
+  auditoría de QA confirma 0 mutaciones desde UI (D-022).
+- Riesgo residual (bajo): el criterio de render del mapa es CPU lógica/redibujado en headless (no GPU);
+  media 0,178 ms, pico aislado 8,58 ms al cambiar de vista (documentado en QA).
+- Sprites de unidades §10.3 (64×64, proyectiles, hojas de animación) planificados para **Fase 3** con AG-5
+  (D-037); no son criterio de Fase 2.
 - Sin acceso a la carpeta GK2 por parte de AG-1/AG-2/AG-3/AG-4 (regla §3.1.2 respetada).
 
 ---
 
-## 11. Próximos pasos — Fase 2 (Profundidad militar, GDD §12)
+## 11. Próximos pasos — Fase 3 (Contenido y remaster, GDD §12 v1.5)
 
-1. **AG-2:** `battle_manager.launch_tactical` (Nivel 2, mapa hex local) y combate Nivel 3 (órdenes/cartas:
-   Carga, Disparo, Formación, Finta, Retirada); acción de espionaje en diplomacia; fin de partida por
-   extinción dinástica completa (ya hay base en `DynastySystem`/`TurnManager`).
-2. **AG-3:** escenas `battle/tactical_map.tscn` y `battle/close_combat.tscn` (hexes, cartas de orden),
-   pulido del panel de región (sin desbordes a 1920×1080) y refs defensivas en `tsb_game.gd` (M-F1-02).
-3. **AG-4:** QA de Fase 2: Crécy jugable en los 3 niveles con resultados coherentes; pérdida de líder
-   sin herederos termina la partida correctamente.
-4. **AG-1:** sin trabajo previsto salvo ampliación de datos si AG-2 lo pide.
-5. **Pendiente del usuario:** luz verde para iniciar Fase 2. Tag `fase-2` al cumplir §12.
+1. **AG-1:** datasets de los escenarios 1402 y 1453 (facciones, personajes, regiones/owners, eventos:
+   Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas) + fuentes.
+2. **AG-2:** activación por año de escenario, evolución tecnológica (eras I-III), balance, partida
+   automatizada de 10 años (QA §13).
+3. **AG-3:** escenario select con 1402/1453, UI de evolución tecnológica, pulidos de mapa/retratos.
+4. **AG-5 (nuevo):** sprites de unidades §10.3 (hojas de animación 64×64/64×80, proyectiles visibles,
+   `units.json.sprite_sheet`), retratos de herederos/escenarios 1402-1453, música CC, tiles; hoja de
+   estilo derivada de §10.2/§10.3 y del REA ampliado.
+5. **AG-4:** QA de Fase 3 (3 escenarios completos, victoria/derrota §4.5, 10 años sin errores, sprites y
+   retratos finales sin huecos).
+6. **Pendiente del usuario:** luz verde para iniciar Fase 3. Tag `fase-3` al cumplir §12.
 
 ---
 
 ## 12. Verificación de Kimi (protocolo §3.2)
 
 - Fase 0: entregables y criterios §12 verificados — **APROBADO CON OBSERVACIONES** (OBS-K1 → D-015).
-- Fase 1: entregables, tests headless y contratos verificados; UI auditada estáticamente (0 mutaciones
-  de estado); capturas 1920×1080 en `docs/screenshots/`.
+- Fase 1: QA independiente **APROBADO** 6/6; UI auditada estáticamente (0 mutaciones); capturas 1920×1080.
+- Fase 2: QA independiente **APROBADO (v1.5)** 6/6 + REA §3.2 verificado; mapa, retratos finales, N2/N3,
+  espionaje y extinción; capturas 1920×1080 en `docs/screenshots/`.
 - ¿Cumplimiento legal (sin material Koei/terceros)? → datos 100% originales con fuentes abiertas;
-  informe REA limitado a estructura, sin nombres/textos del juego ni análisis de `.EXE` (§3).
+  informes REA limitados a estructura, sin nombres/textos del juego, sin análisis de `.EXE`, sin copia de
+  píxeles/paletas/assets (§3, §3.2).
 - Resultado esperado: **APROBADO / APROBADO CON OBSERVACIONES / RECHAZADO**; hallazgos se corrigen
   antes de continuar (§3.2.5).
 
@@ -267,26 +310,58 @@ de UI expone referencias vivas de solo lectura (auditado) · D-023 tooling dev e
 
 ---
 
-## 14. Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 (EN CURSO)
+## 14. Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 (CERRADA, tag `fase-2`)
 
-**Luz verde:** 2026-11-21. **GDD:** v1.4 (§10.1 mapa, §10.2 retratos, §12 Fase 2). **Contrato:**
-`docs/architecture_contracts_fase2.md`.
+**Estado:** cerrada el 2026-11-22. **QA independiente APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2
++ informe REA §3.2 verificado, **0 bloqueantes, 0 mayores** (ver `docs/qa/fase2_report.md`).
+**GDD:** v1.5. **Contrato:** `docs/architecture_contracts_fase2.md`.
 
-| Módulo | Owner | Entregable | Estado |
-|---|---|---|---|
-| A · Militar N2/N3 + espionaje + extinción | AG-2 | `TacticalBattle`, `CloseCombat` (cartas), `launch_tactical`, acción `espia`, derrota por dinastía extinta | ⏳ |
-| B1 · Fronteras por año | AG-1 | `data/map_borders.json` (3 años × 47 regiones, ≤400 pts/región, ≤150 KB) + `sources.md` | ⏳ |
-| B2 · Mapa 4 capas + cámara | AG-3 | `world_map.tscn` (terreno 4096×3072, fronteras, hover/click 3 vistas, entidades, zoom/pan) | ⏳ |
-| C · Retratos §10.2 | AG-3 | `portrait_frame.gd` + 5 slots con fallback heráldico + sincronía con sucesión | ⏳ |
-| QA Fase 2 | AG-4 | harness §10.1/§10.2 + Crécy 3 niveles + extinción + no regresión | ⏳ |
+**Entregado:**
+- **Militar N2/N3:** `TacticalBattle` (hex axial con terreno/objetivos, unidades desde Army, IA rival,
+  determinismo); `CloseCombat` (cartas carga/disparo/formación/finta/retirada, +1 orden al mayor Mando);
+  espionaje (acción `espia`, 6 PG, intel persistente); extinción dinástica (derrota inmediata, reloj
+  congelado); Nivel 3 aplicado a la campaña (D-033, idempotente).
+- **Mapa §10.1:** terreno 4096×3072 generado por código (`tools/generate_map_terrain.py`, determinista),
+  fronteras vectoriales 1337/1402/1453 (`data/map_borders.json`), capa interactiva hover/click, entidades
+  (banderas, ejércitos, nombres con elisión en 3 zoom, etiquetas de mar), cámara 2D zoom/pan;
+  `map_layout.json` eliminado (D-024) y `map_borders` excluido del validador como presentación (D-032).
+- **Retratos §10.2 (v1.5):** 14 retratos finales de Kimi (256×256) en `assets/art/portraits/<id>.png`,
+  campo `portrait` res:// en los 14 gobernantes, renderizados en los **5 slots** (mapa, árbol, diplomacia,
+  batalla, corte); fallback heráldico para el resto; sucesión textura→heredero verificada; hoja de
+  contacto final en `docs/screenshots/portraits_contact_sheet_final.png`.
+- **REA ampliado §3.2 (v1.5):** `docs/rea/gk2_battle_mechanics.md` (1.998 palabras) + `notes_battle.md`:
+  estructura `SUNIT.DAT` (96×512 B), `KPAT.DAT` (máscaras/patrones), `GRPDATA.DAT` (raster/tiles) y
+  8 lecciones de diseño para §10.3. Mecánicas N2/N3 **no observadas** por ausencia de DOSBox: limitación
+  declarada, sin inventar, con protocolo de capturas para el usuario (D-036/D-038).
+- **Tests:** `run_all.gd` **716 asserts** (+168 desde Fase 1); harness F2 6/6; harness F1 6/6;
+  `validate_data.gd` **5.281 comprobaciones, 0 errores**; 38 capturas (clave 1920×1080).
 
-**Criterios de aceptación (§12 + §10.1 + §10.2):**
-1. Crécy (1346) jugable en los 3 niveles con resultados coherentes.
-2. Pérdida de líder sin herederos termina la partida correctamente.
-3. 47/47 polígonos por año (1337/1402/1453), 0 regiones huérfanas, IDs válidos, ≤150 KB.
-4. Hover/click correctos en las 3 vistas de año; render del mapa <8 ms CPU/frame (benchmark CI).
-5. Captura comparativa del mapa en `docs/screenshots/` (ver D-028 para referencia GK2).
-6. Retratos: 5 slots con fallback 100 % funcional (nunca vacío) + cambio de retrato tras sucesión verificado por test.
-7. No regresión: `run_all.gd` (548+), `validate_data.gd` 0 errores, save/load, Peste Negra, determinismo, UI sin mutaciones.
+**Evidencia de aceptación (QA independiente):**
 
-**Cierre:** commits por módulo con este STATUS; push; tag `fase-2` al verificar 1-7; revisión de Kimi.
+| Criterio | Resultado |
+|---|---|
+| Crécy (1346) en los 3 niveles, coherente | PASS — N1 Inglaterra 703/724 (3 asaltos); N2 Francia **1200/509** (5 rondas); N3 Inglaterra 773/641; deterministas; N3→campaña idempotente |
+| Pérdida de líder sin herederos → fin de partida | PASS — `extinct=true`, `dynasty_extinct`, `game_over(false,"dinastía extinta")`, reloj congelado (sin turnos fantasma) |
+| 47/47 polígonos × 3 años, sin huérfanas, ≤150 KB | PASS — 132.962 B; 7.410 puntos; ids válidos; 1337 owners coherentes; `center` dentro del anillo |
+| Hover/click 3 vistas + render <8 ms CPU | PASS — hit-test QA 141/141 y 141/141 con la implementación real; benchmark 120 frames: **media 0,178 ms** (<8), pico aislado 8,58 ms al cambiar vista (documentado) |
+| Captura comparativa del mapa | PASS — `map_comparison.png` 1920×1080 (TSB vs Shepherd PD, D-028); M-F2-01 cerrada |
+| Retratos 5 slots + fallback + sucesión | PASS — 14/14 PNG 256×256; **5/5 slots con textura**; fallback heráldico en heredero (nunca vacío); sucesión textura→heredero sin recargar |
+| REA §3.2 | PASS — informe + anexo; legalidad verificada (sin `.EXE`, sin copia de píxeles/paletas, sin texto); limitación de observación aceptada |
+| No regresión Fase 1 | PASS — F1 6/6, save/load, Peste Negra 1348, determinismo, UI 0 mutaciones, 18/18 escenas |
+
+**Comandos de cierre (todos exit 0):** `qa_acceptance_fase2.gd` (6/6), `qa_acceptance.gd` (6/6, F1),
+`run_all.gd` (716/0/1), `validate_data.gd` (0 errores), `--editor --quit`, `--headless --quit`.
+Harness F2 repetido → determinista.
+
+**Observaciones y resolución:**
+| ID | Hallazgo | Resolución |
+|---|---|---|
+| B-F2-01 | N2 no contabilizaba bajas de unidades destruidas (0/509) | **Corregido** por AG-2: `_start_men_by_side` por bando + regresión (+7 asserts); N2 1200/509 |
+| M-F2-01 | Comparativa/retrato no 1920×1080 | Reexportadas a 1920×1080; QA confirma 4/4 capturas de retrato |
+| M-F2-02 | Artefacto del harness al fallar C1 | Resuelto al cerrar B-F2-01 |
+| M-F2-03 | Bucle de fast-forward del harness F1 | Corregido en harness de QA (sin tocar producción) |
+| REA-obs | DOSBox no disponible; mecánicas N2/N3 no observadas | Declarado en el informe; protocolo de capturas; aceptado como no bloqueante (D-038) |
+
+**Cierre:** commits `[AG-1]`/`[AG-2]`/`[AG-3]`/`[AG-4]`/`[AG-REA]` y cierre `[AG-0]`, push a
+`origin/main` y tag anotado **`fase-2`**. Fase 3 (escenarios 1402/1453, sprites §10.3 con AG-5, arte final)
+queda planificada en §11 y pendiente de luz verde del usuario.

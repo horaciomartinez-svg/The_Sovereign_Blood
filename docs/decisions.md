@@ -124,6 +124,7 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** GDD v1.3 §10.1 sustituye el tablero hexagonal placeholder (`map_layout.json`, D-017) por un mapa atlas con fronteras vectoriales por año.
 **Decisión:** `map_layout.json` queda **deprecado** al completar el módulo Mapa: la UI deja de consumirlo en `world_map.tscn`; las posiciones pasan a `data/map_borders.json` (`center`) y el terreno a `assets/art/map/terrain_base.png`. Se elimina del repo en el commit de cierre del módulo, junto con su exclusión en el validador (D-018), que puede retirarse entonces.
 **Consecuencia:** una sola fuente de geometría (map_borders) y sin datos de presentación duplicados; la decisión se marca como ejecutada en `docs/STATUS.md` al cerrar Fase 2.
+**Estado (2026-11-22): EJECUTADA.** `data/map_layout.json` eliminado en `[AG-3]` (`e748a71`); la UI usa `map_borders.json`; QA F2 confirma 0 referencias de consumo y captura de las 3 vistas de año.
 
 ## D-025 · Contrato de integración de Fase 2 (2026-11-21)
 **Contexto:** AG-1 (fronteras), AG-2 (batallas N2/N3, espionaje, extinción) y AG-3 (mapa, retratos) trabajan en paralelo sobre las nuevas especificaciones §10.1/§10.2.
@@ -189,3 +190,8 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** §10.3 exige sprites 64×64/64×80 con hojas de animación, proyectiles visibles y campo opcional `units.json.sprite_sheet`; AG-5 se activa en Fase 3.
 **Decisión:** en Fase 2 solo se entrega el REA de apoyo (D-036); la producción de sprites, la animación con proyectiles y el campo `sprite_sheet` en `units.json` se implementan en Fase 3 con AG-5 según la hoja de estilo derivada de §10.2/§10.3. No se añade aún el campo para no alterar datos sin assets.
 **Consecuencia:** alcance de Fase 2 cerrado sin scope creep; Fase 3 arranca con la especificación y el informe REA listos.
+
+## D-038 · REA ampliado sin observación DOSBox: limitación aceptada (2026-11-22)
+**Contexto:** GDD v1.5 §3.2 autoriza observar batallas N2/N3 en DOSBox; el entorno no tiene DOSBox instalado (verificado en PATH, `C:\Tools`, Program Files ×2, scoop/choco, Downloads y workspace) y la observación interactiva no es viable en una sesión de agente sin emulador.
+**Decisión:** el entregable `docs/rea/gk2_battle_mechanics.md` declara aspecto por aspecto (**no inventa**) qué mecánicas no se pudieron observar, documenta el método estructural usado (`SUNIT.DAT` 96×512 B, `KPAT.DAT` máscaras/patrones, `GRPDATA.DAT` raster/tiles, sin paleta embebida) y entrega las lecciones de diseño §10.3; incluye un protocolo de 6 bloques de capturas para que el usuario complete §2 en una reactivación. QA de Fase 2 lo verifica como PASS con la limitación aceptada como no bloqueante.
+**Consecuencia:** el requisito de informe REA ampliado se cumple con rigor y trazabilidad; la observación real queda como aportación opcional del usuario.
