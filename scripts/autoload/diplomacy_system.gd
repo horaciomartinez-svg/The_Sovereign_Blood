@@ -16,8 +16,9 @@ signal alliance_changed(faction_a: String, faction_b: String, allied: bool)
 const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
 const EventResolverScript = preload("res://scripts/utils/event_resolver.gd")
+const SeededRNGScript = preload("res://scripts/utils/rng.gd")
 
-## Coste en PG por acción diplomática (GDD §5.4).
+## Coste en PG por acción diplomática (GDD §5.4). `espia` = espionaje Fase 2.
 const ACTION_PG_COSTS: Dictionary = {
 	"alliance": 8,
 	"marriage": 10,
@@ -26,6 +27,7 @@ const ACTION_PG_COSTS: Dictionary = {
 	"offer_tribute": 3,
 	"declare_war": 0,
 	"propose_peace": 4,
+	"espia": 6,
 }
 
 
@@ -80,6 +82,8 @@ func propose(actor: String, target: String, action: Dictionary) -> Dictionary:
 			_propose_demand_tribute(actor, target, result)
 		"offer_tribute":
 			_propose_offer_tribute(actor, target, result)
+		"espia":
+			_propose_espionage(actor, target, result)
 		_:
 			result["reason"] = "unknown_action"
 			return result
@@ -383,6 +387,117 @@ func _propose_offer_tribute(actor: String, target: String, result: Dictionary) -
 	result["ok"] = true
 	result["accepted"] = true
 	result["reason"] = "accepted"
+
+
+## Espionaje (Fase 2, D-030): 6 PG; éxito por Astucia del actor y relación.
+## En éxito guarda el informe en state.factions[actor].intel[target] (serializable).
+func _propose_espionage(actor: String, target: String, result: Dictionary) -> void:
+	var st: Dictionary = GameState.state
+	var faction_actor: Dictionary = GameState.get_faction_state(actor)
+	if faction_actor.is_empty():
+		result["reason"] = "unknown_faction"
+		return
+	var intrigue: int = _best_intrigue(actor)
+	var relation: int = get_relation(actor, target)
+	var chance: float = clampf(
+		Constants.ESPIONAGE_BASE_CHANCE
+		+ float(intrigue) / Constants.ESPIONAGE_INTRIGUE_DIVISOR
+		+ float(relation) / Constants.ESPIONAGE_RELATION_DIVISOR,
+		Constants.ESPIONAGE_MIN_CHANCE, Constants.ESPIONAGE_MAX_CHANCE)
+	if GameState.rng == null:
+		GameState.rng = SeededRNGScript.new(GameState.rng_seed)
+	var success: bool = GameState.rng.next_float() < chance
+	result["ok"] = true
+	result["chance"] = snappedf(chance, 0.001)
+	var status_text: String = "descubierto"
+	if success:
+		var intel: Dictionary = _build_intel(actor, target)
+		var intel_map: Dictionary = SafeDict.as_dict(faction_actor.get("intel", null))
+		intel_map[target] = intel
+		faction_actor["intel"] = intel_map
+		result["accepted"] = true
+		result["reason"] = "success"
+		result["intel"] = intel
+		status_text = "éxito"
+		EventBus.emit_signal("ui_notification",
+			"El espía de %s informa sobre %s." % [actor, target], 1)
+	else:
+		result["accepted"] = false
+		result["reason"] = "failed"
+		result["intel"] = {}
+		set_relation(actor, target, relation - 5)
+		EventBus.emit_signal("ui_notification",
+			"Un espía de %s fue descubierto en %s." % [actor, target], 2)
+	var entry: Dictionary = {
+		"year": SafeDict.as_int(st.get("year"), 0),
+		"quarter": SafeDict.as_int(st.get("quarter"), 0),
+		"event_id": "espionaje_%s_%s" % [actor, target],
+		"text": "Espionaje de %s sobre %s: %s" % [actor, target, status_text],
+	}
+	var event_log: Array = SafeDict.as_array(st.get("event_log", null))
+	event_log.append(entry)
+	st["event_log"] = event_log
+
+
+## Mejor Astucia disponible en la facción (gobernante o cortesano).
+func _best_intrigue(faction_id: String) -> int:
+	var st: Dictionary = GameState.state
+	var characters: Dictionary = SafeDict.as_dict(st.get("characters", null))
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	var ruler_id: String = SafeDict.as_string(faction.get("ruler_id"), "")
+	var ruler: Dictionary = SafeDict.as_dict(characters.get(ruler_id, null))
+	var best: int = 0
+	if not ruler.is_empty() and SafeDict.as_bool(ruler.get("alive"), false):
+		best = SafeDict.as_int(SafeDict.as_dict(ruler.get("stats", null)).get("intrigue"), 0)
+	for character_id in SafeDict.sorted_keys(characters):
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if SafeDict.as_string(character.get("faction"), "") != faction_id:
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		best = maxi(best, SafeDict.as_int(SafeDict.as_dict(character.get("stats", null)).get("intrigue"), 0))
+	return best
+
+
+## Informe de espionaje serializable (ejércitos, tesoro, regente, guerras).
+func _build_intel(actor: String, target: String) -> Dictionary:
+	var st: Dictionary = GameState.state
+	var faction_target: Dictionary = GameState.get_faction_state(target)
+	var armies_intel: Array = []
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	for army_id in SafeDict.sorted_keys(armies):
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != target:
+			continue
+		armies_intel.append({
+			"id": army_id,
+			"region_id": SafeDict.as_string(army.get("region_id"), ""),
+			"men": _army_men_value(army),
+			"units": SafeDict.as_array(army.get("units", null)).size(),
+			"leader_id": SafeDict.as_string(army.get("leader_id"), ""),
+		})
+	return {
+		"target": target,
+		"armies": armies_intel,
+		"army_count": armies_intel.size(),
+		"treasury": SafeDict.as_int(faction_target.get("gold"), 0),
+		"regent_id": SafeDict.as_string(faction_target.get("regent_id"), ""),
+		"at_war": SafeDict.as_array(faction_target.get("at_war", null)).duplicate(),
+		"ruler_id": SafeDict.as_string(faction_target.get("ruler_id"), ""),
+		"heir_id": SafeDict.as_string(faction_target.get("heir_id"), ""),
+		"prestige": SafeDict.as_int(faction_target.get("prestige"), 0),
+		"year": SafeDict.as_int(st.get("year"), 0),
+		"quarter": SafeDict.as_int(st.get("quarter"), 0),
+		"source": "espia",
+	}
+
+
+func _army_men_value(army: Dictionary) -> int:
+	var total: int = 0
+	for unit_value in SafeDict.as_array(army.get("units", null)):
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		total += SafeDict.as_int(unit.get("size"), 0)
+	return total
 
 
 func _marriage_candidate(faction_id: String) -> String:

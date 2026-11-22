@@ -259,6 +259,108 @@ func get_army_slots(region_id: String) -> int:
 	return _army_slots(region)
 
 
+## Modelo Army de un ejército del estado (para BattleManager Nivel 2/3, D-029).
+func get_army_model(army_id: String) -> ARMY_SCRIPT:
+	return _to_army_model(GameState.get_army_state(army_id))
+
+
+## Modelo RegionState de una región del estado (para BattleManager Nivel 2/3).
+func get_region_model(region_id: String) -> REGION_SCRIPT:
+	return _to_region_model(region_id, GameState.get_region_state(region_id))
+
+
+## Aplica el informe de una batalla Nivel 2/3 (D-029): bajas por unidades,
+## captura de región, botín y líder caído. Emite battle_resolved una vez.
+func apply_battle_outcome(report: Dictionary) -> bool:
+	var st: Dictionary = GameState.state
+	if st.is_empty() or report.is_empty():
+		return false
+	var attacker_id: String = SafeDict.as_string(report.get("attacker_army_id"), "")
+	var defender_id: String = SafeDict.as_string(report.get("defender_army_id"), "")
+	var snapshot: Dictionary = SafeDict.as_dict(report.get("army_snapshot", null))
+	if not snapshot.is_empty():
+		_apply_army_snapshot(attacker_id, SafeDict.as_array(snapshot.get("attacker", null)))
+		_apply_army_snapshot(defender_id, SafeDict.as_array(snapshot.get("defender", null)))
+	var region_id: String = SafeDict.as_string(report.get("region_id"), "")
+	var attacker_faction: String = SafeDict.as_string(report.get("attacker_faction"), "")
+	var defender_faction: String = SafeDict.as_string(report.get("defender_faction"), "")
+	if SafeDict.as_bool(report.get("region_captured"), false) and region_id != "" and attacker_faction != "":
+		var loot: int = SafeDict.as_int(report.get("loot_gold"), 0)
+		if loot > 0:
+			var defender_state: Dictionary = GameState.get_faction_state(defender_faction)
+			var attacker_state: Dictionary = GameState.get_faction_state(attacker_faction)
+			var transferred: int = mini(SafeDict.as_int(defender_state.get("gold"), 0), loot)
+			if transferred > 0:
+				defender_state["gold"] = SafeDict.as_int(defender_state.get("gold"), 0) - transferred
+				attacker_state["gold"] = SafeDict.as_int(attacker_state.get("gold"), 0) + transferred
+			report["loot_gold"] = transferred
+		_occupy_region(region_id, attacker_faction)
+	# Líder caído/cautivo (solo si el informe lo trae; Nivel 1 lo aplica aparte).
+	var leader_id: String = SafeDict.as_string(report.get("leader_id"), "")
+	var leader_lost: bool = SafeDict.as_bool(report.get("leader_killed"), false) \
+		or SafeDict.as_bool(report.get("leader_captured"), false)
+	if leader_lost and leader_id != "":
+		var character: Dictionary = GameState.get_character_state(leader_id)
+		if not character.is_empty() and SafeDict.as_bool(character.get("alive"), false):
+			character["alive"] = false
+			character["died"] = SafeDict.as_int(st.get("year"), 1337)
+			EventBus.emit_signal("character_died", leader_id, "batalla")
+			var leader_faction: String = SafeDict.as_string(character.get("faction"), "")
+			if leader_faction != "":
+				DynastySystem.check_ruling_line(leader_faction)
+	var reports: Array = SafeDict.as_array(st.get("battle_reports", null))
+	reports.append(report.duplicate(true))
+	while reports.size() > Constants.MAX_BATTLE_REPORTS:
+		reports.pop_front()
+	st["battle_reports"] = reports
+	emit_signal("armies_changed", region_id)
+	EventBus.emit_signal("battle_resolved", report.duplicate(true))
+	return true
+
+
+## Aplica un snapshot de unidades (id de origen → efectivos/moral/veteranía).
+func _apply_army_snapshot(army_id: String, units_snapshot: Array) -> void:
+	var st: Dictionary = GameState.state
+	var army: Dictionary = GameState.get_army_state(army_id)
+	if army.is_empty():
+		return
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	var current_units: Array = SafeDict.as_array(army.get("units", null))
+	var updated: Array = []
+	for unit_value in current_units:
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		var source_id: String = SafeDict.as_string(unit.get("id"), "")
+		var found: bool = false
+		var destroyed: bool = false
+		for snapshot_value in units_snapshot:
+			var snapshot_unit: Dictionary = SafeDict.as_dict(snapshot_value)
+			var snapshot_source: String = SafeDict.as_string(snapshot_unit.get("source_unit_id"),
+				SafeDict.as_string(snapshot_unit.get("id"), ""))
+			if snapshot_source != source_id:
+				continue
+			found = true
+			var new_size: int = SafeDict.as_int(snapshot_unit.get("size"), SafeDict.as_int(unit.get("size"), 0))
+			if new_size <= 0:
+				destroyed = true
+				break
+			unit["size"] = new_size
+			unit["morale"] = snappedf(SafeDict.as_float(snapshot_unit.get("morale"),
+				SafeDict.as_float(unit.get("morale"), 1.0)), 0.001)
+			unit["experience"] = SafeDict.as_int(snapshot_unit.get("experience"),
+				SafeDict.as_int(unit.get("experience"), 0))
+			break
+		if destroyed:
+			continue
+		updated.append(unit)
+	if updated.is_empty():
+		var faction_id: String = SafeDict.as_string(army.get("faction_id"), "")
+		armies.erase(army_id)
+		emit_signal("army_destroyed", army_id, faction_id)
+		EventBus.emit_signal("army_destroyed", army_id, faction_id)
+	else:
+		army["units"] = updated
+
+
 # ---------------------------------------------------------------------------
 # Batalla delegada
 # ---------------------------------------------------------------------------
@@ -323,6 +425,9 @@ func _resolve_battle(attacker_id: String, defender_id: String, region_id: String
 			EventBus.emit_signal("character_died", losing_leader,
 				"capturado" if SafeDict.as_bool(report_dict.get("leader_captured"), false) else "batalla")
 			report_dict["leader_id"] = losing_leader
+			# Fase 2 (D-031): muerte del gobernante → sucesión o extinción.
+			var loser_faction: String = defender_faction if attacker_won else attacker_faction
+			DynastySystem.check_ruling_line(loser_faction)
 	var reports: Array = SafeDict.as_array(st.get("battle_reports", null))
 	reports.append(report_dict)
 	while reports.size() > Constants.MAX_BATTLE_REPORTS:

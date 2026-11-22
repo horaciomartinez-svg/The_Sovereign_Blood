@@ -257,6 +257,8 @@ func end_game(victory: bool, reason: String) -> void:
 	if state.is_empty():
 		return
 	state["game_over"] = true
+	state["game_over_victory"] = victory
+	state["game_over_reason"] = reason
 	is_running = false
 	emit_signal("game_over", current_faction_id, victory, reason)
 	EventBus.emit_signal("game_over", current_faction_id, victory, reason)
@@ -324,6 +326,7 @@ func _build_factions(scenario: Dictionary, start_year: int) -> void:
 		var definition: Dictionary = DataLoader.get_faction(faction_id)
 		var ruler_id: String = _find_role_character(characters_state, faction_id, "ruler", start_year)
 		var heir_id: String = _find_heir(characters_state, faction_id, ruler_id, start_year)
+		var ruler_character: Dictionary = SafeDict.as_dict(characters_state.get(ruler_id, null))
 		factions_state[faction_id] = {
 			"gold": SafeDict.as_int(treasuries.get(faction_id), 500),
 			"prestige": 50,
@@ -333,12 +336,16 @@ func _build_factions(scenario: Dictionary, start_year: int) -> void:
 			"is_player": faction_id == current_faction_id,
 			"ruler_id": ruler_id,
 			"heir_id": heir_id,
+			# Casa dinástica gobernante (Fase 2, D-031): base de la extinción.
+			"house": SafeDict.as_string(ruler_character.get("house"), ""),
 			"relations": {},
 			"allies": [],
 			"at_war": [],
 			"trade_pacts": [],
 			"casus_belli": {},
 			"techs": [],
+			# Informes de espionaje por facción espiada (D-030, serializable).
+			"intel": {},
 			"eliminated": false,
 			"regent_id": "",
 			"regency_until": 0,

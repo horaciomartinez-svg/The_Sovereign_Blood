@@ -140,6 +140,54 @@ const TERRAIN_DEFENSE: Dictionary = {
 const LOOT_GOLD_PER_WEALTH: int = 5
 const MAX_BATTLE_REPORTS: int = 10
 
+# --- Batalla Nivel 2 — mapa táctico (§6.2) ---
+const TACTICAL_RADIUS: int = 4
+const TACTICAL_RADIUS_CITY: int = 5
+const TACTICAL_MAX_ROUNDS: int = 8
+const TACTICAL_DEFAULT_MOVES: int = 2
+const TACTICAL_MAX_MOVES: int = 3
+const TACTICAL_RANGED_RANGE: int = 2
+const TACTICAL_RANGED_PENALTY: float = 0.7
+const TACTICAL_MOVE_COST: Dictionary = {
+	"plains": 1,
+	"forest": 2,
+	"hills": 2,
+	"river": 2,
+	"city": 1,
+}
+const TACTICAL_DEFENSE_TERRAIN: Dictionary = {
+	"plains": 1.0,
+	"forest": 1.15,
+	"hills": 1.2,
+	"river": 1.25,
+	"city": 1.4,
+}
+const TACTICAL_OBJECTIVE_CITY_VALUE: int = 3
+const TACTICAL_OBJECTIVE_BRIDGE_VALUE: int = 2
+const TACTICAL_OBJECTIVE_REAR_VALUE: int = 2
+
+# --- Batalla Nivel 3 — combate cerrado (§6.3) ---
+const CLOSE_COMBAT_CARDS: Array[String] = ["carga", "disparo", "formacion", "finta", "retirada"]
+const CLOSE_COMBAT_HAND_BASE: int = 2
+const CLOSE_COMBAT_HAND_BONUS: int = 1
+const CLOSE_COMBAT_MAX_ROUNDS: int = 6
+const CLOSE_COMBAT_CHARGE_VS_INFANTRY: float = 1.4
+const CLOSE_COMBAT_CHARGE_VS_FORMATION: float = 0.6
+const CLOSE_COMBAT_FORMATION_DAMAGE_REDUCTION: float = 0.5
+const CLOSE_COMBAT_FAINT_DAMAGE_REDUCTION: float = 0.3
+const CLOSE_COMBAT_RETREAT_LOSS_REDUCTION: float = 0.5
+const CLOSE_COMBAT_SHOT_PRE_DAMAGE: float = 0.35
+const CLOSE_COMBAT_RETREAT_THRESHOLD: float = 0.4
+const CLOSE_COMBAT_MORALE_BREAK: float = 0.2
+
+# --- Espionaje (§5.4, D-030) ---
+const ESPIONAGE_PG_COST: int = 6
+const ESPIONAGE_BASE_CHANCE: float = 0.35
+const ESPIONAGE_INTRIGUE_DIVISOR: float = 200.0
+const ESPIONAGE_RELATION_DIVISOR: float = 400.0
+const ESPIONAGE_MIN_CHANCE: float = 0.15
+const ESPIONAGE_MAX_CHANCE: float = 0.9
+
 # --- IA (§5.6) ---
 const AI_ORDER_MIN: int = 2
 const AI_ORDER_MAX: int = 4

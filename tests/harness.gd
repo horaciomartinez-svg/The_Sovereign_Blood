@@ -342,6 +342,64 @@ func army_slots(region_id: String) -> int:
 	return SafeDict.as_int(mil.call("get_army_slots", region_id), 0)
 
 
+# --- Batallas Nivel 2/3 (Fase 2) -----------------------------------------
+
+## Modelos Army/RegionState que consume BattleManager.launch_tactical().
+func get_army_model(army_id: String) -> Variant:
+	return mil.call("get_army_model", army_id)
+
+
+func get_region_model(region_id: String) -> Variant:
+	return mil.call("get_region_model", region_id)
+
+
+func launch_tactical(attacker_model: Variant, defender_model: Variant, region_model: Variant) -> Node:
+	var value: Variant = battle.call("launch_tactical", attacker_model, defender_model, region_model)
+	if value is Node:
+		return value
+	return null
+
+
+func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -> Node:
+	var value: Variant = battle.call("launch_close_combat", attacker_unit, defender_unit)
+	if value is Node:
+		return value
+	return null
+
+
+func apply_battle_outcome(report: Dictionary) -> bool:
+	return SafeDict.as_bool(mil.call("apply_battle_outcome", report), false)
+
+
+func battle_reports() -> Array:
+	return SafeDict.as_array(state().get("battle_reports", null))
+
+
+# --- Fase 2: espionaje / reloj / fin de partida --------------------------
+
+func intel(faction_id: String, target_id: String) -> Dictionary:
+	var faction_state: Dictionary = faction(faction_id)
+	var intel_map: Dictionary = SafeDict.as_dict(faction_state.get("intel", null))
+	return SafeDict.as_dict(intel_map.get(target_id, null))
+
+
+func set_year(year_value: int) -> void:
+	var st: Dictionary = state()
+	if st.is_empty():
+		return
+	st["year"] = year_value
+	gs.call("sync_clock_from_state")
+	tm.call("sync_clock_from_state")
+
+
+func is_game_over() -> bool:
+	return SafeDict.as_bool(state().get("game_over"), false)
+
+
+func game_over_reason() -> String:
+	return SafeDict.as_string(state().get("game_over_reason"), "")
+
+
 # --- IA ------------------------------------------------------------------
 
 func run_all_ai() -> void:

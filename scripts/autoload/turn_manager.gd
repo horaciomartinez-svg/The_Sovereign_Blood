@@ -36,7 +36,7 @@ var phase: String = "idle"
 ## Inicia el turno de la facción indicada (emite turn_started + pg_changed).
 func begin_turn(faction_id: String) -> void:
 	var st: Dictionary = GameState.state
-	if st.is_empty() or faction_id == "":
+	if st.is_empty() or faction_id == "" or SafeDict.as_bool(st.get("game_over"), false):
 		return
 	sync_clock_from_state()
 	current_faction_id = faction_id
@@ -68,6 +68,12 @@ func end_turn() -> void:
 	AIManager.run_all_ai()
 
 	MilitarySystem.resolve_pending_battles()
+	# Fase 2 (D-031): la pérdida de la dinastía termina la partida de inmediato.
+	_check_game_over()
+	if SafeDict.as_bool(st.get("game_over"), false):
+		phase = "idle"
+		emit_signal("phase_changed", phase)
+		return
 	advance_quarter()
 
 
@@ -121,7 +127,7 @@ func calculate_pg(faction_id: String) -> int:
 ## Avanza un trimestre (o el año si era el cuarto).
 func advance_quarter() -> void:
 	var st: Dictionary = GameState.state
-	if st.is_empty():
+	if st.is_empty() or SafeDict.as_bool(st.get("game_over"), false):
 		return
 	var quarter: int = SafeDict.as_int(st.get("quarter"), 1)
 	if quarter >= QUARTERS_PER_YEAR:
@@ -143,7 +149,7 @@ func advance_quarter() -> void:
 ## Avanza el año: cosecha, dinastía, eventos, autoguardado y nuevo trimestre.
 func advance_year() -> void:
 	var st: Dictionary = GameState.state
-	if st.is_empty():
+	if st.is_empty() or SafeDict.as_bool(st.get("game_over"), false):
 		return
 	var new_year: int = SafeDict.as_int(st.get("year"), 1337) + 1
 	st["year"] = new_year
@@ -288,8 +294,15 @@ func _check_game_over() -> void:
 	var faction: Dictionary = GameState.get_faction_state(player)
 	if faction.is_empty():
 		return
+	# Primero comprobamos la línea sucesoria (puede extinguir la dinastía, D-031).
+	DynastySystem.check_ruling_line(player)
+	if SafeDict.as_bool(st.get("game_over"), false):
+		return
+	faction = GameState.get_faction_state(player)
+	if faction.is_empty():
+		return
 	if SafeDict.as_bool(faction.get("eliminated"), false):
-		GameState.end_game(false, "La dinastía del jugador se ha extinguido")
+		GameState.end_game(false, "dinastía extinta")
 		return
 	var owned_regions: int = 0
 	var regions: Dictionary = SafeDict.as_dict(st.get("regions", null))

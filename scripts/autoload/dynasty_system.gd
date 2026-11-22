@@ -237,8 +237,17 @@ func resolve_succession(faction_id: String) -> Dictionary:
 		return result
 	var characters: Dictionary = SafeDict.as_dict(st.get("characters", null))
 	var current_year: int = SafeDict.as_int(st.get("year"), 1337)
+	var faction_house: String = SafeDict.as_string(faction.get("house"), "")
 	var heir_id: String = _choose_heir(faction_id, characters, current_year)
 	if heir_id == "":
+		# Fase 2 (D-031): extinción solo si no queda ningún miembro vivo de la casa.
+		if faction_house != "" and _house_members_alive(characters, faction_house).is_empty():
+			var extinction_events: Array[Dictionary] = []
+			_extinguish(faction_id, extinction_events)
+			result["extinct"] = true
+			_log_event("extincion_casa_%s_%d" % [faction_id, current_year],
+				"La casa %s se extingue: %s queda sin gobernante ni parientes." % [faction_house, faction_id])
+			return result
 		faction["ruler_id"] = ""
 		faction["heir_id"] = ""
 		faction["regent_id"] = ""
@@ -253,6 +262,17 @@ func resolve_succession(faction_id: String) -> Dictionary:
 		return result
 	var heir: Dictionary = SafeDict.as_dict(characters.get(heir_id, null))
 	var heir_age: int = current_year - SafeDict.as_int(heir.get("born"), current_year)
+	# Adopción dinástica: un pariente de la casa en otra facción hereda el trono.
+	var heir_faction: String = SafeDict.as_string(heir.get("faction"), "")
+	if heir_faction != "" and heir_faction != faction_id:
+		var old_faction: Dictionary = GameState.get_faction_state(heir_faction)
+		if not old_faction.is_empty():
+			if SafeDict.as_string(old_faction.get("heir_id"), "") == heir_id:
+				old_faction["heir_id"] = ""
+			if SafeDict.as_string(old_faction.get("ruler_id"), "") == heir_id:
+				old_faction["ruler_id"] = ""
+		heir["faction"] = faction_id
+	faction["house"] = SafeDict.as_string(heir.get("house"), faction_house)
 	faction["ruler_id"] = heir_id
 	faction["interregnum_until"] = 0
 	heir["role"] = "ruler"
@@ -315,6 +335,38 @@ func get_relation_between(faction_a: String, faction_b: String) -> int:
 # ---------------------------------------------------------------------------
 # Interno
 # ---------------------------------------------------------------------------
+
+## Comprueba que la facción tenga gobernante vivo; si no, resuelve la sucesión.
+## Lo usa MilitarySystem tras la muerte de un líder en batalla (Fase 2, D-031).
+func check_ruling_line(faction_id: String) -> Dictionary:
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if faction.is_empty():
+		return {"ok": false, "reason": "unknown_faction"}
+	if SafeDict.as_bool(faction.get("eliminated"), false):
+		return {"ok": false, "reason": "eliminated"}
+	var ruler_id: String = SafeDict.as_string(faction.get("ruler_id"), "")
+	if ruler_id == "" and SafeDict.as_int(faction.get("interregnum_until"), 0) > 0:
+		return {"ok": false, "heir_id": "", "reason": "interregnum"}
+	if ruler_id != "":
+		var ruler: Dictionary = GameState.get_character_state(ruler_id)
+		if SafeDict.as_bool(ruler.get("alive"), false):
+			return {"ok": true, "heir_id": ruler_id, "reason": "ruler_alive"}
+	return resolve_succession(faction_id)
+
+
+## Miembros vivos de una casa dinástica (en cualquier facción). D-031.
+func _house_members_alive(characters: Dictionary, house: String) -> Array[String]:
+	var result: Array[String] = []
+	if house == "":
+		return result
+	for character_id in SafeDict.sorted_keys(characters):
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		if SafeDict.as_string(character.get("house"), "") == house:
+			result.append(character_id)
+	return result
+
 
 func _is_royal(role: String) -> bool:
 	return role == "ruler" or role == "heir" or role == "claimant" or role == "relative"
@@ -466,7 +518,29 @@ func _choose_heir(faction_id: String, characters: Dictionary, year: int, exclude
 		if SafeDict.as_int(character.get("born"), 9999) < best_relative_born:
 			best_relative_born = SafeDict.as_int(character.get("born"), 9999)
 			best_relative = character_id
-	return best_relative
+	if best_relative != "":
+		return best_relative
+	# Fase 2 (D-031): miembro vivo de la casa gobernante en otra facción.
+	var faction_house: String = SafeDict.as_string(faction.get("house"), "")
+	if faction_house != "":
+		var best_house: String = ""
+		var best_house_born: int = 9999
+		for character_id in SafeDict.sorted_keys(characters):
+			if character_id == exclude_id:
+				continue
+			var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+			if SafeDict.as_string(character.get("house"), "") != faction_house:
+				continue
+			if not SafeDict.as_bool(character.get("alive"), false):
+				continue
+			if SafeDict.as_int(character.get("born"), 9999) > year:
+				continue
+			if SafeDict.as_int(character.get("born"), 9999) < best_house_born:
+				best_house_born = SafeDict.as_int(character.get("born"), 9999)
+				best_house = character_id
+		if best_house != "":
+			return best_house
+	return ""
 
 
 func _choose_regent(faction_id: String, characters: Dictionary, year: int, exclude_id: String) -> String:
@@ -505,7 +579,15 @@ func _advance_interregna(factions: Dictionary, characters: Dictionary, year: int
 				"Termina el interregno en %s." % faction_id))
 			continue
 		if year >= interregnum_until:
-			_extinguish(faction_id, events)
+			# Fase 2 (D-031): extinción solo si la casa no tiene miembros vivos.
+			var faction_house: String = SafeDict.as_string(faction.get("house"), "")
+			var house_alive: bool = faction_house != "" and not _house_members_alive(characters, faction_house).is_empty()
+			if house_alive:
+				faction["interregnum_until"] = year + Constants.INTERREGNUM_YEARS
+				events.append(_log_event("interregno_prorrogado_%s_%d" % [faction_id, year],
+					"El interregno de %s se prolonga: quedan parientes de la casa %s." % [faction_id, faction_house]))
+			else:
+				_extinguish(faction_id, events)
 		else:
 			EventBus.emit_signal("ui_notification",
 				"%s sigue en interregno hasta %d." % [faction_id, interregnum_until], 1)

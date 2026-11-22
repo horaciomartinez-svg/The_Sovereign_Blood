@@ -38,14 +38,22 @@ signal peace_made(faction_a: String, faction_b: String)
 signal alliance_changed(faction_a: String, faction_b: String, allied: bool)
 signal relation_changed(faction_a: String, faction_b: String, value: int)
 
-# --- Militar y batalla (military_system.gd / battle_manager.gd) ---
+# --- Militar (military_system.gd) ---
 signal army_created(army_id: String, faction_id: String, region_id: String)
 signal army_moved(army_id: String, from_region: String, to_region: String)
 signal army_destroyed(army_id: String, faction_id: String)
 signal recruitment_completed(faction_id: String, region_id: String, unit_id: String)
+
+# --- Batalla (battle_manager.gd) ---
 signal battle_started(attacker: String, defender: String, region_id: String)
 signal battle_resolved(report: Dictionary)
 signal region_captured(region_id: String, faction_id: String)
+
+# --- Batallas Nivel 2/3 (Fase 2, contrato §4) ---
+signal tactical_battle_started(attacker_faction: String, defender_faction: String, region_id: String)
+signal tactical_battle_finished(winner_faction: String, region_id: String)
+signal close_combat_started(attacker_faction: String, defender_faction: String)
+signal close_combat_finished(winner_faction: String)
 
 # --- Eventos de partida, guardado y UI ---
 signal game_event_triggered(event_id: String, payload: Dictionary)

@@ -39,7 +39,16 @@ func _check_power(runner: TestRunnerScript, h: HarnessScript) -> void:
 	var power_high: float = float(h.battle.call("estimate_power", defender, high_support, false))
 	runner.check("más apoyo popular → más moral y poder", power_high > power_low,
 		"%.2f vs %.2f" % [power_high, power_low])
-	runner.check("la fase táctica (Nivel 2) sigue en stub", h.battle.call("launch_tactical", attacker, defender, plains) == null)
+	# Fase 2: el Nivel 2 ya está implementado (ver tests/test_tactical_battle.gd).
+	var tactical: Variant = h.battle.call("launch_tactical", attacker, defender, plains)
+	runner.check("la fase táctica (Nivel 2) devuelve un nodo configurado", tactical != null)
+	if tactical is Node:
+		var tactical_node: Node = tactical
+		runner.check("el nodo táctico no se añade al árbol por sí mismo", not tactical_node.is_inside_tree())
+		var tactical_state: Variant = tactical_node.call("get_state")
+		runner.check("el nodo táctico devuelve estado", tactical_state is Dictionary
+			and (tactical_state as Dictionary).has("hexes") and (tactical_state as Dictionary).has("units"))
+		tactical_node.free()
 
 
 func _check_delegated(runner: TestRunnerScript, h: HarnessScript) -> void:

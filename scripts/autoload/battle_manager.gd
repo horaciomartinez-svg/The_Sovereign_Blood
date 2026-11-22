@@ -27,6 +27,8 @@ const RETREAT_THRESHOLD: float = 0.25
 const ARMY_SCRIPT = preload("res://scripts/model/army.gd")
 const REGION_SCRIPT = preload("res://scripts/model/region_state.gd")
 const REPORT_SCRIPT = preload("res://scripts/model/battle_report.gd")
+const TACTICAL_SCRIPT = preload("res://scripts/battle/tactical_battle.gd")
+const CLOSE_COMBAT_SCRIPT = preload("res://scripts/battle/close_combat.gd")
 
 
 ## Poder estimado de un ejército (fórmula GDD §6.1).
@@ -145,12 +147,31 @@ func resolve_delegated(
 	return report
 
 
-## Nivel 2 — mapa táctico de ejércitos (Fase 2; devuelve null en Fase 1).
-func launch_tactical(
-		_attacker_army: ARMY_SCRIPT,
-		_defender_army: ARMY_SCRIPT,
-		_region: REGION_SCRIPT) -> Node:
-	return null
+## Nivel 2 — mapa táctico de ejércitos (Fase 2, contrato §4). Devuelve el nodo
+## `TacticalBattle` YA CONFIGURADO (el llamador lo añade al árbol).
+func launch_tactical(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, region: REGION_SCRIPT) -> Node:
+	if attacker_army == null or defender_army == null:
+		return null
+	var tactical: TACTICAL_SCRIPT = TACTICAL_SCRIPT.new()
+	tactical.setup(attacker_army, defender_army, region, "attacker")
+	var battle_region: String = attacker_army.region_id
+	if region != null:
+		battle_region = region.id
+	emit_signal("battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
+	EventBus.emit_signal("tactical_battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
+	return tactical
+
+
+## Nivel 3 — combate cerrado unidad contra unidad (Fase 2, contrato §4).
+func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -> Node:
+	if attacker_unit.is_empty() or defender_unit.is_empty():
+		return null
+	var duel: CLOSE_COMBAT_SCRIPT = CLOSE_COMBAT_SCRIPT.new()
+	duel.setup(attacker_unit, defender_unit)
+	var attacker_faction: String = SafeDict.as_string(attacker_unit.get("faction"), "")
+	var defender_faction: String = SafeDict.as_string(defender_unit.get("faction"), "")
+	EventBus.emit_signal("close_combat_started", attacker_faction, defender_faction)
+	return duel
 
 
 # ---------------------------------------------------------------------------

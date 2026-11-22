@@ -114,28 +114,49 @@ func _check_succession_regency(runner: TestRunnerScript, h: HarnessScript) -> vo
 
 
 func _check_crisis_and_extinction(runner: TestRunnerScript, h: HarnessScript) -> void:
-	# Crisis: gobernante muerto y sin herederos vivos.
+	# Crisis con parientes vivos pero sin heredero elegible: Granada 1337
+	# (Muhammad V nace en 1338: pariente vivo pero aún no elegible). D-031.
+	h.new_game("england", 1337)
+	_kill(h, "yusuf_i_nazari")
+	h.faction("granada")["heir_id"] = ""
+	var crisis: Dictionary = h.resolve_succession("granada")
+	runner.check("crisis sucesoria con parientes vivos (no extinción)",
+		bool(crisis.get("crisis")) and not bool(crisis.get("extinct")), str(crisis))
+	runner.check("interregno programado (2 años)",
+		int(h.faction("granada")["interregnum_until"]) == h.year() + 2,
+		str(h.faction("granada")["interregnum_until"]))
+	runner.check_eq("sin gobernante durante la crisis", "", str(h.faction("granada")["ruler_id"]))
+	# Al nacer el heredero (1338) la sucesión se resuelve sola.
+	h.advance_year()
+	runner.check("el interregno se resuelve cuando el heredero nace",
+		str(h.faction("granada")["ruler_id"]) == "muhammad_v_nazari", str(h.faction("granada")["ruler_id"]))
+	runner.check("la casa nazarí no se extingue", not SafeDict.as_bool(h.faction("granada").get("eliminated"), false))
+	# Extinción del JUGADOR: muere el gobernante y no queda ningún miembro vivo
+	# de su casa (ni heredero ni parientes). D-031 / GDD §5.3.
 	h.new_game("england", 1337)
 	_kill_faction_members(h, "england")
+	_kill_house_members_outside(h, "england", "plantagenet")
 	h.faction("england")["heir_id"] = ""
-	var crisis: Dictionary = h.resolve_succession("england")
-	runner.check("crisis sucesoria detectada", bool(crisis.get("crisis")), str(crisis))
-	runner.check("interregno programado (2 años)", int(h.faction("england")["interregnum_until"]) == h.year() + 2,
-		str(h.faction("england")["interregnum_until"]))
-	runner.check_eq("sin gobernante durante la crisis", "", str(h.faction("england")["ruler_id"]))
-	# Extinción: interregno vencido sin candidatos.
+	var extinction: Dictionary = h.resolve_succession("england")
+	runner.check("extinción de la casa del jugador detectada", bool(extinction.get("extinct")), str(extinction))
+	runner.check("facción del jugador eliminada", SafeDict.as_bool(h.faction("england").get("eliminated"), false))
+	h.tm.call("_check_game_over")
+	runner.check("derrota inmediata del jugador", SafeDict.as_bool(h.state().get("game_over"), false))
+	runner.check_eq("motivo de derrota", "dinastía extinta", SafeDict.as_string(h.state().get("game_over_reason"), ""))
+	var quarter_before: int = h.quarter()
+	h.end_turn()
+	runner.check_eq("sin turnos fantasma tras la extinción", quarter_before, h.quarter())
+	# Extinción de una IA: el jugador sigue jugando sin crash.
 	h.new_game("england", 1337)
-	var target_faction: String = "byzantium"
-	_kill_faction_members(h, target_faction)
-	h.faction(target_faction)["ruler_id"] = ""
-	h.faction(target_faction)["heir_id"] = ""
-	h.faction(target_faction)["interregnum_until"] = h.year()
-	var armies_before: int = _faction_armies(h, target_faction)
-	h.dyn.call("advance_year")
-	runner.check("dinastía extinta marcada", SafeDict.as_bool(h.faction(target_faction).get("eliminated"), false))
-	runner.check_eq("ejércitos eliminados", 0, _faction_armies(h, target_faction))
-	runner.check("regiones no quedan con el dueño extinto", _no_regions_of(h, target_faction))
-	runner.check("había ejércitos antes de la extinción", armies_before > 0)
+	_kill_faction_members(h, "byzantium")
+	_kill_house_members_outside(h, "byzantium", "paleologo")
+	h.faction("byzantium")["heir_id"] = ""
+	h.faction("byzantium")["ruler_id"] = ""
+	var ai_extinction: Dictionary = h.resolve_succession("byzantium")
+	runner.check("extinción de una IA detectada", bool(ai_extinction.get("extinct")), str(ai_extinction))
+	runner.check("IA eliminada", SafeDict.as_bool(h.faction("byzantium").get("eliminated"), false))
+	runner.check("la partida del jugador continúa", not SafeDict.as_bool(h.state().get("game_over"), false))
+	runner.check("regiones de la IA extinguida reasignadas", _no_regions_of(h, "byzantium"))
 
 
 func _check_family_tree(runner: TestRunnerScript, h: HarnessScript) -> void:
@@ -179,6 +200,18 @@ func _kill_faction_members(h: HarnessScript, faction_id: String) -> void:
 		if SafeDict.as_string(character.get("faction"), "") == faction_id:
 			character["alive"] = false
 			character["died"] = h.year()
+
+
+## Mata a los miembros vivos de una casa que están en OTRA facción (D-031).
+func _kill_house_members_outside(h: HarnessScript, faction_id: String, house: String) -> void:
+	for character_id in h.characters().keys():
+		var character: Dictionary = h.character(str(character_id))
+		if SafeDict.as_string(character.get("faction"), "") == faction_id:
+			continue
+		if SafeDict.as_string(character.get("house"), "") != house:
+			continue
+		character["alive"] = false
+		character["died"] = h.year()
 
 
 func _faction_armies(h: HarnessScript, faction_id: String) -> int:
