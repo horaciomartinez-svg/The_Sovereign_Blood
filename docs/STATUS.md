@@ -608,3 +608,26 @@ y sin material con copyright.
 - **QA/estabilidad:** `run_all` **1968/0/2**, `validate_data` **14 datasets/10 schemas, 11.927 comprobaciones, 0 WARN**, editor/headless 0, F1/F2/F3/MVP/anim/tiles verdes; `ui_smoke` 55 scripts/21 escenas; 12 capturas 1920×1080; `git diff fase-3.3..HEAD` en datos 1402/1453 = 0 archivos.
 - **Observaciones no bloqueantes:** revisión visual de capturas sin click-through GUI completo; simulación headless no sustituye partida manual; addendum REA en notes para respetar ≤2 páginas; 1402/1453 y Paquete A siguen congelados por el usuario.
 - **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-4`**. Se avisa al usuario para la verificación de Kimi contra GDD v1.9.1 + directiva; después se decidirá Fase 5 (reanudar 1402/1453, Paquete A y ampliación).
+
+---
+
+## 20. REA completa de GK2 — material local, NO versionado (D-077/D-078)
+
+- **Autorización:** D-077 (usuario) permite a **AG-REA** análisis completo en solo lectura de
+  `C:\Proyectos\TSB\genghis-khan-ii-clan-of-the-grey-wolf` con REA-MCP/Ghidra y hex, temporalmente y sin
+  cambiar el alcance de los demás agentes.
+- **Informe:** `REA_GK2_report.md` (4.230 palabras / 29.577 B; 8 módulos, evidencia por offset/función,
+  Mermaid, tabla comparativa GK2↔TSB) vive **solo en local**:
+  `C:\Proyectos\TSB\docs\rea\REA_GK2_report.md` (fuera de la carpeta git). Las rutas
+  `REA_GK2_report.md` y `docs/rea/REA_GK2_report.md` dentro del repo están en `.gitignore` y **nunca** se
+  commitean ni publican (el repo es público; material interno de estudio).
+- **Verificación de no publicación:** `git status` no muestra el informe como tracked/untracked; `git
+  check-ignore` confirma ambas rutas; no hay copia en la raíz ni en `docs/rea` del repo.
+- **Cobertura Fase 4:** D-078 da por **cubierto** el preliminar `gk2_economy_military_family.md`: los
+  módulos 3-6 del informe completo son la entrada de diseño de Fase 4 (mercancías/comercio, dinastía,
+  diplomacia/espionaje, militar/batallas); AG-4 audita la cobertura. No se duplica documentación y no
+  entra contenido en producción.
+- **Integridad:** GK2 solo lectura (hashes re-verificados); TSB sin cambios de producción por AG-REA; los
+  artefactos temporales de descompilación se eliminaron.
+- **Uso previsto:** referencia de diseño para una eventual Fase 5; cualquier integración requiere decisión
+  de AG-0 y no copia literal de código/datos/arte/texto.

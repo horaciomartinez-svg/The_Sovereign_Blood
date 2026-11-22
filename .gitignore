@@ -39,4 +39,7 @@ exports/
 *.exe
 !assets/**/*.exe
 docs/references/*.import
+# REA completa de GK2: material interno de estudio, NO publicar ni versionar (D-078)
+REA_GK2_report.md
+docs/rea/REA_GK2_report.md
 

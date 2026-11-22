@@ -130,3 +130,10 @@ por tier (infantería < arqueros < caballería ligera < pesada < artillería), c
 
 **Remisión:** el detalle completo (UX ampliada y checklist de 12 criterios C13/C14) está en
 `docs/rea/notes_economy.md` §10. Este informe mantiene el resumen y cumple el límite de 2 páginas.
+
+---
+
+> **Nota (D-078, 2026-11-23):** este documento es el **entregable preliminar** de REA para Fase 4. Queda
+> **cubierto** por el informe completo `REA_GK2_report.md` (material local no versionado, fuera del repo):
+> sus módulos 3-6 son la entrada de diseño de Fase 4. No se amplía esta copia para no duplicar
+> documentación; el informe completo no se publica por ser material interno de estudio.
