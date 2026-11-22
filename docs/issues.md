@@ -1215,3 +1215,57 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 **Siguiente paso:** cuando AG-1/AG-2/AG-3 cierren, **task-43** re-ejecutará el harness final (debe 7/7 PASS exit 0), la batería completa, revisará capturas y emitirá el veredicto final **«QA Fase 3 final: APROBADO/RECHAZADO»** en `docs/qa/fase3_report.md` + `docs/issues.md`, con la dependencia externa de retratos/animaciones documentada (D-062). Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 final — baseline 3 escenarios (task-42).*
+
+---
+
+## 18. Fase 3 — Verificación final (task-43, 2026-11-22)
+
+**Contexto:** cierre de Fase 3 con los 3 escenarios integrados (AG-1 datos 1402/1453, AG-2 motor/tech/victoria, AG-3 UI, AG-5 petición de assets externos). HEAD verificado **`765e5fb`**. Informe completo: **`docs/qa/fase3_report.md`**.
+
+> **Veredicto: QA Fase 3: APROBADO CON OBSERVACIONES** — **7/7 criterios PASS**, 0 FAIL/SKIP. Observaciones no bloqueantes: arte externo de Kimi pendiente (69 retratos + 184 animaciones, D-062) con fallback auditado sin huecos.
+
+### 18.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3_final.gd` (×2) | **0 / 0** | **7/7 PASS**; 3 escenarios 1337→1399/1402→1460/1453→1480 |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** (save hash `8482c5503ef38f81`, 157.499 B) |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** (harness actualizado, ver 18.3) |
+| 4 | `--script tests/qa_acceptance_fase3.gd` (sprites) | **0** | **6/6 PASS** |
+| 5 | `--script tests/qa_acceptance_tiles.gd` (tiles) | **0** | **7/7 PASS** |
+| 6 | `--script tests/run_all.gd` | **0** | **1250 / 0 / 1**; `CI: OK` |
+| 7 | `--script tools/validate_data.gd` | **0** | **11 datasets / 7 schemas, 11.069 comprobaciones, 0 errores/WARN** |
+| 8 | `--editor --quit` | **0** | 6 `[DONE]`, 0 ERROR/WARNING |
+| 9 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+| 10 | save/load 1402 (sonda) | **OK** | hash `34efa412f2de66e8` idéntico |
+
+### 18.2 Evidencia de los criterios
+
+- **C1:** 248 trimestres (1337→1399), 232 (1402→1460), 108 (1453→1480); `game_over=true` en los 3, sin crash.
+- **C2:** hashes deterministas `947b790d1d56` (1337), `f7c7fbb99bdd` (1402), `23906401cd23` (1453), idénticos en 2 ejecuciones.
+- **C3:** prestigio (`Prestigio Real sostenido durante 10 años`), conquista (`≥70%`), supervivencia (`año final 1399`), derrota por pérdida total (`perdido todas sus regiones`) y por dinastía eliminada (`dinastía extinta`); reloj congelado tras `game_over`.
+- **C4:** 8 playable efectivas/escenario; `year_data` 1402/1453 con owners válidos; eventos en `[start_year,end_year]`; 17 unidades con eras I/II/III; validate 11/7 0 WARN.
+- **C5:** 14/14 gobernantes 1337 con textura 256×256; gobernantes nuevos 1402/1453 con fallback id no vacío (p. ej. `henry_iv_england`); 5/5 slots.
+- **C6:** sprites 17/17, tiles 12/12, 18 escenas, 28 tests, F1/F2/F3/tiles verdes, 0 scripts sin compilar.
+- **C7:** `selection_3_scenarios.png`, `game_1402.png`, `game_1453.png` 1920×1080; `era_hud.png` adicional. Revisión visual: selección 3 tarjetas/8 casas/objetivos; 1402 Bayezid I Era III fallback; 1453 Mehmed II Era III fallback; año/era visibles.
+- **Gobernantes (D-058):** 1402 England = `henry_iv_england`, Ottoman = `bayezid_i_ottoman`; 1453 England = `henry_vi_england`, Ottoman = `mehmed_ii_ottoman`, Byzantium = `constantine_xi_byzantium`. Correctos (no Eduardo III).
+
+### 18.3 Adaptación de harness históricos (sin tocar producción)
+
+- **F2-C2:** mata toda la línea de la facción, incluidos nacimientos futuros (`died=year`), porque D-058 los considera línea viva; ahora `extinct=true`, `dynasty_extinct`, derrota y reloj congelado → PASS.
+- **F2-C4:** valida **14 retratos de 1337** y fallback en los **42 gobernantes nuevos** sin PNG (antes contaba 14/56 gobernantes globales) → PASS.
+- **F1-C1:** el estado inicial de 1337 tiene 14 facciones (dataset global 23 por las 9 nuevas de 1402/1453); el check usa las facciones del escenario → PASS.
+- F1 y F2 vuelven a **6/6**.
+
+### 18.4 Observaciones, riesgos y estado de tags
+
+- **D-062 (arte externo):** `docs/art/requests/kimi_phase3_assets.md` solicita **69 retratos 256×256** (42 gobernantes + 27 herederos/regentes/claimants) y **184 PNG de animación**; pendientes de Kimi. El fallback heráldico + marcha actual cubren sin huecos; **no bloqueante**.
+- **1337 `playable_factions` implícito:** no declara el array; las 8 jugables se derivan de flags globales. Efecto usuario correcto; limpieza futura sugerida.
+- **C3 extinción:** prueba la rama eliminada; la extinción real de casa está cubierta por F2-C2.
+- **REA §3.2:** limitación de observación interactiva ya documentada/aceptada.
+- **Riesgos residuales:** arte externo (observación), 1337 playable implícito (menor), simulación 10 años no repite los 58/27 años completos (C1 los cubre).
+- **Tags:** `fase-0`, `fase-1`, `fase-2` existen; **`fase-3` pendiente** de que AG-0 actualice STATUS y haga push.
+
+**task-43 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 — verificación final (task-43).*

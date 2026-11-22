@@ -109,9 +109,14 @@ func _read_json(res_path: String) -> Variant:
 
 func _expected_counts() -> Dictionary:
 	var result := {"factions": 14, "regions": 47}
-	var factions_root: Variant = _read_json("res://data/factions.json")
-	if factions_root is Dictionary and (factions_root as Dictionary).get("factions") is Array:
-		result["factions"] = ((factions_root as Dictionary).get("factions") as Array).size()
+	# Fase 3: factions.json incluye 23 facciones (9 nuevas para 1402/1453), pero el
+	# escenario 1337 mantiene sus 14 facciones históricas. El estado inicial del
+	# escenario debe coincidir con SU lista de facciones, no con el dataset global.
+	var scenario_root: Variant = _read_json("res://data/scenarios/%s.json" % SCENARIO_ID)
+	if scenario_root is Dictionary and (scenario_root as Dictionary).get("factions") is Array:
+		var scenario_factions := ((scenario_root as Dictionary).get("factions") as Array).size()
+		if scenario_factions > 0:
+			result["factions"] = scenario_factions
 	var regions_root: Variant = _read_json("res://data/regions.json")
 	if regions_root is Dictionary and (regions_root as Dictionary).get("regions") is Array:
 		result["regions"] = ((regions_root as Dictionary).get("regions") as Array).size()

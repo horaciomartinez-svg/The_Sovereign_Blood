@@ -15,7 +15,20 @@ const SCENARIOS: Array[Dictionary] = [
 const PLAYER_FACTION := "england"
 const SEED := 1337
 const CAPTURE_FILES: Array[String] = [
-	"scenario_select_1402_1453.png", "scenario_1402_inicio.png", "scenario_1453_inicio.png",
+	"selection_3_scenarios.png", "game_1402.png", "game_1453.png",
+]
+const ORIGINAL_1337_RULERS: Array[String] = [
+	"edward_iii_plantagenet", "philippe_vi_de_valois", "ludwig_iv_wittelsbach", "jan_lucembursky",
+	"karoly_robert_anjou", "alfonso_xi_borgona", "pere_iv_d_arago", "kazimierz_iii_piast",
+	"david_ii_bruce", "benedict_xii", "yusuf_i_nazari", "an_nasir_muhammad", "oz_beg",
+	"andronikos_iii_palaiologos",
+]
+const PORTRAIT_SLOT_FILES: Array[String] = [
+	"res://scripts/ui/map/world_map.gd",
+	"res://scripts/ui/family/family_tree.gd",
+	"res://scripts/ui/diplomacy/diplomacy_screen.gd",
+	"res://scripts/ui/battle/battle_report.gd",
+	"res://scripts/ui/ui/court_overview.gd",
 ]
 
 var _results: Array[Dictionary] = []
@@ -186,24 +199,109 @@ func _criterion_3_victory() -> void:
 		_skip(id, name, "faltan escenarios: %s; AG-2 en curso" % ", ".join(missing), started)
 		return
 	var gs := _autoload("GameState")
-	if gs == null or not gs.has_method("to_dict"):
-		_skip(id, name, "GameState sin API de estado/victoria; AG-2 en curso", started)
+	var tm := _autoload("TurnManager")
+	if gs == null or tm == null or not tm.has_method("_check_game_over"):
+		_skip(id, name, "GameState/TurnManager sin API de cierre; AG-2 en curso", started)
 		return
-	var details: Array[String] = []
-	for scenario in SCENARIOS:
-		var scenario_id := str(scenario["id"])
-		var scenario_data := _read_scenario(scenario_id)
-		var victory_value: Variant = scenario_data.get("victory", null)
-		if not (victory_value is Dictionary):
-			_skip(id, name, "%s sin bloque victory; AG-1/AG-2 en curso" % scenario_id, started)
-			return
-		var victory := victory_value as Dictionary
-		if not (victory.has("prestige") or victory.has("control_pct")):
-			_skip(id, name, "%s victory sin prestige/control_pct" % scenario_id, started)
-			return
-		details.append("%s victory=%s" % [scenario_id, JSON.stringify(victory)])
-	# La comprobación dinámica de motivos se completa en task-43 con las APIs de AG-2.
-	_skip(id, name, "victory blocks presentes (%s), pero faltan APIs de motivo/cierre de AG-2 para probar dinámicamente" % "; ".join(details), started)
+	var errors: Array[String] = []
+	var reasons: Array[String] = []
+	# 1) Victoria por Prestigio Real sostenido.
+	var prestige := _prepare_scenario("scenario_1402", "ottoman")
+	if not bool(prestige.get("ok", false)):
+		_skip(id, name, "no se pudo preparar scenario_1402: " + str(prestige.get("detail", "")), started)
+		return
+	var prestige_state: Dictionary = prestige.get("state", {})
+	var ottoman: Dictionary = gs.call("get_faction_state", "ottoman")
+	ottoman["prestige"] = 500
+	ottoman["prestige_since_year"] = int(prestige_state.get("year", 1402)) - 10
+	tm.call("_check_game_over")
+	var prestige_reason := _game_over_reason(gs)
+	if not prestige_reason.contains("Prestigio"):
+		errors.append("prestigio no cerró partida (reason='%s')" % prestige_reason)
+	else:
+		reasons.append("prestigio='" + prestige_reason + "'")
+	# Sin turnos fantasma tras el cierre.
+	var year_before := int((gs.get("state") as Dictionary).get("year", 0))
+	var quarter_before := int((gs.get("state") as Dictionary).get("quarter", 0))
+	tm.call("advance_quarter")
+	var year_after := int((gs.get("state") as Dictionary).get("year", 0))
+	var quarter_after := int((gs.get("state") as Dictionary).get("quarter", 0))
+	if year_after != year_before or quarter_after != quarter_before:
+		errors.append("turnos fantasma tras game_over (%d·T%d→%d·T%d)" % [year_before, quarter_before, year_after, quarter_after])
+	# 2) Victoria por conquista ≥70%.
+	var conquest := _prepare_scenario("scenario_1402", "ottoman")
+	var conquest_state: Dictionary = conquest.get("state", {})
+	var regions_value: Variant = conquest_state.get("regions", {})
+	if regions_value is Dictionary:
+		for region_id in (regions_value as Dictionary).keys():
+			var region: Variant = (regions_value as Dictionary)[region_id]
+			if region is Dictionary:
+				(region as Dictionary)["owner"] = "ottoman"
+	tm.call("_check_game_over")
+	var conquest_reason := _game_over_reason(gs)
+	if not conquest_reason.contains("Conquista"):
+		errors.append("conquista no cerró partida (reason='%s')" % conquest_reason)
+	else:
+		reasons.append("conquista='" + conquest_reason + "'")
+	# 3) Victoria por supervivencia al end_year.
+	var survival := _prepare_scenario("scenario_1337", "england")
+	var survival_state: Dictionary = survival.get("state", {})
+	survival_state["year"] = 1399
+	tm.call("_check_game_over")
+	var survival_reason := _game_over_reason(gs)
+	if not survival_reason.contains("Supervivencia"):
+		errors.append("supervivencia no cerró partida (reason='%s')" % survival_reason)
+	else:
+		reasons.append("supervivencia='" + survival_reason + "'")
+	# 4) Derrota por pérdida de la última región.
+	var loss := _prepare_scenario("scenario_1402", "ottoman")
+	var loss_state: Dictionary = loss.get("state", {})
+	var loss_regions: Variant = loss_state.get("regions", {})
+	if loss_regions is Dictionary:
+		for region_id in (loss_regions as Dictionary).keys():
+			var region: Variant = (loss_regions as Dictionary)[region_id]
+			if region is Dictionary:
+				(region as Dictionary)["owner"] = "france"
+	tm.call("_check_game_over")
+	var loss_reason := _game_over_reason(gs)
+	if not loss_reason.contains("perdido todas"):
+		errors.append("pérdida total no cerró derrota (reason='%s')" % loss_reason)
+	else:
+		reasons.append("derrota-pérdida='" + loss_reason + "'")
+	# 5) Derrota por dinastía extinta/eliminada (la extinción real se cubre en F2-C2).
+	var extinct := _prepare_scenario("scenario_1402", "ottoman")
+	var extinct_state: Dictionary = extinct.get("state", {})
+	var extinct_faction: Dictionary = gs.call("get_faction_state", "ottoman")
+	extinct_faction["eliminated"] = true
+	tm.call("_check_game_over")
+	var extinct_reason := _game_over_reason(gs)
+	if not extinct_reason.contains("extinta"):
+		errors.append("dinastía eliminada no cerró derrota (reason='%s')" % extinct_reason)
+	else:
+		reasons.append("derrota-extinción='" + extinct_reason + "'")
+	if not errors.is_empty():
+		_fail(id, name, "; ".join(errors), started)
+		return
+	_pass(id, name, "motivos verificados: " + "; ".join(reasons) + "; reloj congelado tras cierre", started)
+
+
+func _prepare_scenario(scenario_id: String, faction_id: String) -> Dictionary:
+	var gs := _autoload("GameState")
+	if gs == null:
+		return {"ok": false, "detail": "GameState no montado"}
+	gs.call("reset")
+	gs.call("new_game", scenario_id, faction_id, SEED)
+	var state: Variant = gs.get("state")
+	if not (state is Dictionary) or (state as Dictionary).is_empty():
+		return {"ok": false, "detail": "estado vacío"}
+	return {"ok": true, "state": state}
+
+
+func _game_over_reason(gs: Node) -> String:
+	var state: Variant = gs.get("state")
+	if state is Dictionary:
+		return str((state as Dictionary).get("game_over_reason", ""))
+	return ""
 
 
 # ---------------------------------------------------------------------------
@@ -221,26 +319,124 @@ func _criterion_4_data() -> void:
 	var factions_root: Variant = _read_json("res://data/factions.json")
 	var factions := _faction_ids(factions_root)
 	var errors: Array[String] = []
+	var details: Array[String] = []
+	var regions_root: Variant = _read_json("res://data/regions.json")
+	var regions: Dictionary = {}
+	if regions_root is Dictionary:
+		var regions_value: Variant = (regions_root as Dictionary).get("regions", null)
+		if regions_value is Array:
+			for region_value in (regions_value as Array):
+				if region_value is Dictionary:
+					regions[str((region_value as Dictionary).get("id", ""))] = region_value
 	for scenario in SCENARIOS:
 		var scenario_id := str(scenario["id"])
 		var data := _read_scenario(scenario_id)
-		var playable: Variant = data.get("playable_factions", [])
-		if not (playable is Array) or (playable as Array).size() != 8:
-			errors.append("%s playable != 8" % scenario_id)
-		else:
-			for faction_value in (playable as Array):
-				if not factions.has(str(faction_value)):
-					errors.append("%s facción playable inexistente %s" % [scenario_id, str(faction_value)])
+		var start_year := int(data.get("start_year", 0))
+		var end_year := int(data.get("end_year", 0))
+		if end_year <= start_year:
+			errors.append("%s end_year <= start_year" % scenario_id)
+		var playable := _effective_playable(data, factions)
+		if playable.size() != 8:
+			errors.append("%s playable efectivas=%d/8 (%s)" % [scenario_id, playable.size(), ", ".join(playable)])
+		for faction_id in playable:
+			if not factions.has(faction_id):
+				errors.append("%s facción playable inexistente %s" % [scenario_id, faction_id])
 		var events_script := str(data.get("events_script", ""))
 		var events_path := events_script if events_script.begins_with("res://") else "res://data/%s" % events_script
 		if events_script == "" or not FileAccess.file_exists(events_path):
 			errors.append("%s events_script ausente" % scenario_id)
-		if int(data.get("end_year", 0)) <= int(data.get("start_year", 0)):
-			errors.append("%s end_year <= start_year" % scenario_id)
+		else:
+			var events_root: Variant = _read_json(events_path)
+			var event_years := _event_years(events_root)
+			if event_years.is_empty():
+				errors.append("%s events sin años legibles" % scenario_id)
+			for event_year in event_years:
+				if event_year < start_year or event_year > end_year:
+					errors.append("%s evento fuera de rango: %d" % [scenario_id, event_year])
+		if scenario_id != "scenario_1337":
+			var owners_ok := 0
+			var owners_bad := 0
+			for region_id in regions.keys():
+				var region: Dictionary = regions[region_id]
+				var year_data: Variant = region.get("year_data", null)
+				if year_data is Dictionary and (year_data as Dictionary).has(str(start_year)):
+					var owner := str(((year_data as Dictionary)[str(start_year)] as Dictionary).get("owner", "")) if ((year_data as Dictionary)[str(start_year)] is Dictionary) else ""
+					if factions.has(owner):
+						owners_ok += 1
+					else:
+						owners_bad += 1
+			if owners_ok < 40 or owners_bad > 0:
+				errors.append("%s owners %d válidos/%d inválidos (year_data %d)" % [scenario_id, owners_ok, owners_bad, start_year])
+		details.append("%s playable=%d events=%d" % [scenario_id, playable.size(), end_year])
+	# Tech por era: 17 unidades con era I/II/III coherente.
+	var units_root: Variant = _read_json("res://data/units.json")
+	var tech_ok := false
+	if units_root is Dictionary:
+		var units_value: Variant = (units_root as Dictionary).get("units", null)
+		if units_value is Array and (units_value as Array).size() == 17:
+			tech_ok = true
+			for unit_value in (units_value as Array):
+				if not (unit_value is Dictionary):
+					tech_ok = false
+					break
+				var era_value: Variant = (unit_value as Dictionary).get("era", null)
+				if not (era_value is Array) or (era_value as Array).is_empty():
+					tech_ok = false
+					break
+				for era_part in (era_value as Array):
+					if int(era_part) < 1 or int(era_part) > 3:
+						tech_ok = false
+						break
+	if not tech_ok:
+		errors.append("units.json sin eras I/II/III válidas en 17 unidades")
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors.slice(0, 8)), started)
 		return
-	_pass(id, name, "3 escenarios con 8 playable, events_script presente y end_year coherente; validate_data externo 0 errores", started)
+	_pass(id, name, "; ".join(details) + "; owners/year_data y tech I/II/III OK; validate_data externo 0 errores", started)
+
+
+func _effective_playable(scenario: Dictionary, factions: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var playable: Variant = scenario.get("playable_factions", null)
+	if playable is Array and not (playable as Array).is_empty():
+		for value in (playable as Array):
+			out.append(str(value))
+		return out
+	var listed: Variant = scenario.get("factions", [])
+	if listed is Array:
+		for value in (listed as Array):
+			var faction_id := str(value)
+			if factions.has(faction_id) and _faction_is_playable(faction_id):
+				out.append(faction_id)
+	return out
+
+
+func _faction_is_playable(faction_id: String) -> bool:
+	var root: Variant = _read_json("res://data/factions.json")
+	if root is Dictionary:
+		var values: Variant = (root as Dictionary).get("factions", null)
+		if values is Array:
+			for value in (values as Array):
+				if value is Dictionary and str((value as Dictionary).get("id", "")) == faction_id:
+					return bool((value as Dictionary).get("playable", false))
+	return false
+
+
+func _event_years(events_root: Variant) -> Array[int]:
+	var years: Array[int] = []
+	if not (events_root is Dictionary):
+		return years
+	var events_value: Variant = (events_root as Dictionary).get("events", null)
+	if not (events_value is Array):
+		return years
+	for event_value in (events_value as Array):
+		if not (event_value is Dictionary):
+			continue
+		var event := event_value as Dictionary
+		var year_value: Variant = event.get("year", event.get("start_year", null))
+		if year_value != null:
+			years.append(int(year_value))
+	return years
 
 
 # ---------------------------------------------------------------------------
@@ -250,33 +446,89 @@ func _criterion_4_data() -> void:
 func _criterion_5_portraits() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3F-C5"
-	var name := "Retratos 5 slots: textura 1337 y fallback nunca hueco para nuevos"
+	var name := "Retratos 5 slots: 14 de 1337 con textura y nuevos 1402/1453 con fallback heráldico"
 	var missing := _missing_scenarios()
 	if not missing.is_empty():
 		_skip(id, name, "faltan escenarios/retratos nuevos: %s; AG-1/AG-3/AG-5 en curso" % ", ".join(missing), started)
 		return
+	var characters := _characters_map()
+	var errors: Array[String] = []
+	var textured_data := 0
+	for ruler_id in ORIGINAL_1337_RULERS:
+		var character: Dictionary = characters.get(ruler_id, {})
+		var portrait := str(character.get("portrait", "")).strip_edges()
+		if portrait == "" or not FileAccess.file_exists(portrait):
+			errors.append("1337 %s sin PNG" % ruler_id)
+			continue
+		var dims := _png_dimensions(portrait)
+		if dims != Vector2i(256, 256):
+			errors.append("1337 %s PNG %dx%d" % [ruler_id, dims.x, dims.y])
+			continue
+		textured_data += 1
+	var new_ruler_id := "henry_iv_england"
+	var new_character: Dictionary = characters.get(new_ruler_id, {})
+	if new_character.is_empty():
+		new_ruler_id = "bayezid_i_ottoman"
+		new_character = characters.get(new_ruler_id, {})
+	if new_character.is_empty():
+		errors.append("sin gobernante nuevo 1402/1453 para probar fallback")
+	elif str(new_character.get("portrait", "")).strip_edges() != "":
+		# Si Kimi entrega el retrato, también es válido (preferimos textura); solo falla si no carga.
+		if not FileAccess.file_exists(str(new_character.get("portrait", ""))):
+			errors.append("nuevo %s portrait inválido" % new_ruler_id)
+	# Widget: 14 texturas de 1337 y fallback del gobernante nuevo.
 	var portrait_script: Variant = load("res://scripts/ui/widgets/portrait_frame.gd")
 	if not (portrait_script is GDScript):
-		_skip(id, name, "portrait_frame.gd no disponible", started)
+		errors.append("portrait_frame.gd ausente")
+	else:
+		var widget: Variant = (portrait_script as GDScript).new()
+		if not (widget is Node):
+			errors.append("portrait_frame.gd no instanciable")
+		else:
+			var node := widget as Node
+			root.add_child(node)
+			var textured_widget := 0
+			for ruler_id in ORIGINAL_1337_RULERS:
+				node.call("setup", ruler_id)
+				if not bool(node.call("is_fallback")):
+					textured_widget += 1
+			node.call("setup", new_ruler_id)
+			var new_portrait := str(new_character.get("portrait", "")).strip_edges()
+			var new_is_fallback := bool(node.call("is_fallback"))
+			var fallback_ok := str(node.call("get_portrait_character_id")) == new_ruler_id and new_ruler_id != ""
+			if new_portrait == "":
+				fallback_ok = fallback_ok and new_is_fallback
+			else:
+				fallback_ok = fallback_ok and not new_is_fallback
+			node.free()
+			if textured_widget != 14:
+				errors.append("widget texturiza %d/14" % textured_widget)
+			if not fallback_ok:
+				errors.append("widget fallback nuevo no conserva id")
+	# 5 slots: referencias del widget presentes.
+	var slots_found := 0
+	for slot_file in PORTRAIT_SLOT_FILES:
+		var text := FileAccess.get_file_as_string(slot_file)
+		if text.contains("PortraitFrame") or text.contains("portrait_frame") or text.contains("portrait"):
+			slots_found += 1
+	if slots_found < 5:
+		errors.append("slots con retrato=%d/5" % slots_found)
+	if not errors.is_empty():
+		_fail(id, name, ", ".join(errors.slice(0, 8)), started)
 		return
-	var widget: Variant = (portrait_script as GDScript).new()
-	if not (widget is Node):
-		_skip(id, name, "portrait_frame.gd no instanciable", started)
-		return
-	var node := widget as Node
-	root.add_child(node)
-	var textured := 0
-	for ruler_id in ["edward_iii_plantagenet", "philippe_vi_de_valois"]:
-		node.call("setup", ruler_id)
-		if not bool(node.call("is_fallback")):
-			textured += 1
-	node.call("setup", "qa_synthetic_no_portrait")
-	var fallback_ok := bool(node.call("is_fallback")) and str(node.call("get_portrait_character_id")) != ""
-	node.free()
-	if textured < 2 or not fallback_ok:
-		_skip(id, name, "texturas 1337=%d/2 fallback=%s; revisar retratos/AG-3 en task-43" % [textured, str(fallback_ok)], started)
-		return
-	_pass(id, name, "textura 1337=2/2; fallback sintético id no vacío; revisión de los 5 slots en task-43", started)
+	_pass(id, name, "14/14 gobernantes 1337 con PNG 256x256 y textura; nuevo %s con fallback id no vacío; 5/5 slots" % new_ruler_id, started)
+
+
+func _characters_map() -> Dictionary:
+	var out: Dictionary = {}
+	var root: Variant = _read_json("res://data/characters.json")
+	if root is Dictionary:
+		var characters_value: Variant = (root as Dictionary).get("characters", null)
+		if characters_value is Array:
+			for character_value in (characters_value as Array):
+				if character_value is Dictionary:
+					out[str((character_value as Dictionary).get("id", ""))] = character_value
+	return out
 
 
 # ---------------------------------------------------------------------------

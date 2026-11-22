@@ -50,6 +50,14 @@ const AUTOLOADS: Array[String] = [
 	"EventBus", "DataLoader", "GameState", "TurnManager", "EconomySystem",
 	"DynastySystem", "DiplomacySystem", "MilitarySystem", "BattleManager", "AIManager",
 ]
+## Los 14 gobernantes del escenario 1337 con retrato final (v1.5). Los gobernantes
+## añadidos en Fase 3 (1402/1453) usan fallback heráldico y no forman parte de esta lista.
+const ORIGINAL_1337_RULERS: Array[String] = [
+	"edward_iii_plantagenet", "philippe_vi_de_valois", "ludwig_iv_wittelsbach", "jan_lucembursky",
+	"karoly_robert_anjou", "alfonso_xi_borgona", "pere_iv_d_arago", "kazimierz_iii_piast",
+	"david_ii_bruce", "benedict_xii", "yusuf_i_nazari", "an_nasir_muhammad", "oz_beg",
+	"andronikos_iii_palaiologos",
+]
 
 var results: Array[Dictionary] = []
 var _game_over_events: Array[Dictionary] = []
@@ -821,23 +829,23 @@ func _criterion_2_extinction() -> void:
 		return
 	var ruler_house := str((ruler as Dictionary).get("house", ""))
 	var year: int = int(state.get("year", 1337))
-	# Fuerza la extinción: mata al gobernante, a su heredero y a todos los vivos de su casa.
+	# Fuerza la extinción: mata a todos los vivos de la facción jugable (gobernante,
+	# herederos, casa y cualquier pariente con opción sucesoria). D-058 filtra vivos
+	# por año; con la facción sin vivos no puede quedar línea sucesoria.
 	var killed := 0
 	for character_id in (characters as Dictionary).keys():
 		var character: Variant = (characters as Dictionary)[character_id]
 		if not (character is Dictionary):
 			continue
 		var c := character as Dictionary
-		if not bool(c.get("alive", false)):
-			continue
 		if str(c.get("faction", "")) != PLAYER_FACTION:
 			continue
-		var same_house := str(c.get("house", "")) == ruler_house
-		var is_heir := str(c.get("role", "")) == "heir" or str(faction_data.get("heir_id", "")) == str(character_id)
-		if same_house or is_heir or str(character_id) == ruler_id:
-			c["alive"] = false
-			c["died"] = year
-			killed += 1
+		# Incluye vivos actuales y nacimientos futuros (D-058): `died=year` los saca
+		# también de la línea sucesoria futura, de modo que no quede ninguna rama viva.
+		c["alive"] = false
+		c["died"] = year
+		killed += 1
+	faction_data["heir_id"] = ""
 	var result: Variant = dyn.call("resolve_succession", PLAYER_FACTION)
 	var succession_dict: Dictionary = result if result is Dictionary else {}
 	if tm.has_method("advance_quarter"):
@@ -1299,40 +1307,50 @@ func _portrait_data_check() -> Dictionary:
 	var fallback_id := ""
 	var used: Dictionary = {}
 	var issues: Array[String] = []
+	var new_rulers := 0
+	for ruler_id in ORIGINAL_1337_RULERS:
+		var character: Dictionary = characters.get(ruler_id, {})
+		if character.is_empty():
+			issues.append("falta gobernante 1337 %s" % ruler_id)
+			continue
+		ruler_ids.append(ruler_id)
+		var portrait := str(character.get("portrait", "")).strip_edges()
+		if portrait == "":
+			issues.append("%s sin portrait" % ruler_id)
+		elif not portrait.begins_with("res://"):
+			issues.append("%s portrait no-res://" % ruler_id)
+		elif not FileAccess.file_exists(portrait):
+			issues.append("%s archivo ausente" % ruler_id)
+		else:
+			var dims := _png_dimensions(portrait)
+			if dims != Vector2i(256, 256):
+				issues.append("%s PNG %dx%d" % [ruler_id, dims.x, dims.y])
+		used[portrait] = true
 	for character_id in characters.keys():
 		var character: Dictionary = characters[character_id]
-		var portrait := str(character.get("portrait", "")).strip_edges()
-		var role := str(character.get("role", ""))
-		if role == "ruler":
-			ruler_ids.append(str(character_id))
-			if portrait == "":
-				issues.append("%s sin portrait" % str(character_id))
-			elif not portrait.begins_with("res://"):
-				issues.append("%s portrait no-res://" % str(character_id))
-			elif not FileAccess.file_exists(portrait):
-				issues.append("%s archivo ausente" % str(character_id))
-			else:
-				var dims := _png_dimensions(portrait)
-				if dims != Vector2i(256, 256):
-					issues.append("%s PNG %dx%d" % [str(character_id), dims.x, dims.y])
-			used[portrait] = true
-		elif role == "heir" and fallback_id == "" and portrait == "":
+		if str(character.get("role", "")) != "ruler":
+			continue
+		if ORIGINAL_1337_RULERS.has(str(character_id)):
+			continue
+		new_rulers += 1
+		if fallback_id == "" and str(character.get("portrait", "")).strip_edges() == "":
 			fallback_id = str(character_id)
 	if fallback_id == "":
 		for character_id in characters.keys():
 			var character: Dictionary = characters[character_id]
-			if str(character.get("role", "")) != "ruler" and str(character.get("portrait", "")).strip_edges() == "":
+			if not ORIGINAL_1337_RULERS.has(str(character_id)) and str(character.get("portrait", "")).strip_edges() == "":
 				fallback_id = str(character_id)
 				break
-	if ruler_ids.size() != 14:
-		issues.append("ruler con portrait: %d/14" % ruler_ids.size())
-	if used.size() != 14:
-		issues.append("retratos únicos: %d/14" % used.size())
+	if ruler_ids.size() != ORIGINAL_1337_RULERS.size():
+		issues.append("gobernantes 1337 con ficha: %d/%d" % [ruler_ids.size(), ORIGINAL_1337_RULERS.size()])
+	if used.size() != ORIGINAL_1337_RULERS.size():
+		issues.append("retratos únicos 1337: %d/%d" % [used.size(), ORIGINAL_1337_RULERS.size()])
 	if fallback_id == "":
-		issues.append("sin personaje para probar fallback")
+		issues.append("sin personaje nuevo para probar fallback")
 	ruler_ids.sort()
-	var detail := "rulers=%d/14 con portrait; PNG 256x256=%d/14; únicos=%d/14; fallback=%s; incidencias=%s" % [
-		ruler_ids.size(), ruler_ids.size() - issues.size(), used.size(), fallback_id,
+	var detail := "gobernantes 1337 con retrato=%d/%d; PNG 256x256=%d/%d; únicos=%d; gobernantes nuevos=%d con fallback (%s); incidencias=%s" % [
+		ruler_ids.size(), ORIGINAL_1337_RULERS.size(), ruler_ids.size() - issues.size(), ORIGINAL_1337_RULERS.size(),
+		used.size(), new_rulers, fallback_id,
 		"ninguna" if issues.is_empty() else ", ".join(issues.slice(0, 5)),
 	]
 	return {
