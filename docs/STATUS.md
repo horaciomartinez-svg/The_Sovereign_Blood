@@ -2,10 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 1 — MVP jugable CERRADA** (`fase-1`); QA APROBADO 6/6 (2026-11-21) |
-| **Fase anterior** | **Fase 0 — CERRADA** (`fase-0`); verificación Kimi: APROBADO CON OBSERVACIONES (OBS-K1 → D-015) |
-| **Siguiente fase** | Fase 2 — Profundidad militar (pendiente de luz verde del usuario) |
-| **GDD** | v1.2 — `GDD_The_Sovereign's_Blood.md` (raíz del repo) |
+| **Fase actual** | **Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 (en curso)** — luz verde 2026-11-21 |
+| **Fase anterior** | **Fase 1 — CERRADA** (`fase-1`); QA APROBADO 6/6 (2026-11-21) |
+| **Siguiente fase** | Fase 3 — Contenido y remaster (pendiente del cierre de Fase 2) |
+| **GDD** | **v1.4** — `GDD_The_Sovereign's_Blood.md` (raíz del repo; novedades: §10.1 mapa, §10.2 retratos) |
+| **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
 | **Fecha de cierre Fase 1** | 2026-11-21 |
@@ -34,6 +35,12 @@ integrada end-to-end y verificada por QA independiente. **QA Fase 1: APROBADO** 
 (Inglaterra 1337 jugable, IA de 13 rivales en **17 ms**, save/load exacto con hash, batalla delegada con
 captura, Peste Negra 1348, UI headless) con 0 bloqueantes y 3 observaciones menores resueltas/documentadas.
 Suite headless: **548 tests**; `validate_data.gd`: 0 errores. Tag anotado `fase-1`.
+
+**Fase 2 en curso (GDD v1.4):** tres módulos en paralelo — (A) profundidad militar (Nivel 2 táctico,
+Nivel 3 cerrado con cartas, espionaje, extinción dinástica); (B) **Mapa §10.1** (terreno atlas
+4096×3072 + fronteras vectoriales 1337/1402/1453 + capa interactiva + entidades con elisión por zoom;
+`map_layout.json` queda deprecado, D-024); (C) **Retratos §10.2** (5 slots con fallback heráldico +
+test de sucesión). Criterios en §14 y en `docs/architecture_contracts_fase2.md`.
 
 ---
 
@@ -257,3 +264,29 @@ de UI expone referencias vivas de solo lectura (auditado) · D-023 tooling dev e
 
 **Cierre:** commits `[AG-2]`/`[AG-3]`/`[AG-4]` y cierre `[AG-0]`, push a `origin/main`, tag anotado
 `fase-1`. Listo para revisión de Kimi del repo remoto.
+
+---
+
+## 14. Fase 2 — Profundidad militar + Mapa §10.1 + Retratos §10.2 (EN CURSO)
+
+**Luz verde:** 2026-11-21. **GDD:** v1.4 (§10.1 mapa, §10.2 retratos, §12 Fase 2). **Contrato:**
+`docs/architecture_contracts_fase2.md`.
+
+| Módulo | Owner | Entregable | Estado |
+|---|---|---|---|
+| A · Militar N2/N3 + espionaje + extinción | AG-2 | `TacticalBattle`, `CloseCombat` (cartas), `launch_tactical`, acción `espia`, derrota por dinastía extinta | ⏳ |
+| B1 · Fronteras por año | AG-1 | `data/map_borders.json` (3 años × 47 regiones, ≤400 pts/región, ≤150 KB) + `sources.md` | ⏳ |
+| B2 · Mapa 4 capas + cámara | AG-3 | `world_map.tscn` (terreno 4096×3072, fronteras, hover/click 3 vistas, entidades, zoom/pan) | ⏳ |
+| C · Retratos §10.2 | AG-3 | `portrait_frame.gd` + 5 slots con fallback heráldico + sincronía con sucesión | ⏳ |
+| QA Fase 2 | AG-4 | harness §10.1/§10.2 + Crécy 3 niveles + extinción + no regresión | ⏳ |
+
+**Criterios de aceptación (§12 + §10.1 + §10.2):**
+1. Crécy (1346) jugable en los 3 niveles con resultados coherentes.
+2. Pérdida de líder sin herederos termina la partida correctamente.
+3. 47/47 polígonos por año (1337/1402/1453), 0 regiones huérfanas, IDs válidos, ≤150 KB.
+4. Hover/click correctos en las 3 vistas de año; render del mapa <8 ms CPU/frame (benchmark CI).
+5. Captura comparativa del mapa en `docs/screenshots/` (ver D-028 para referencia GK2).
+6. Retratos: 5 slots con fallback 100 % funcional (nunca vacío) + cambio de retrato tras sucesión verificado por test.
+7. No regresión: `run_all.gd` (548+), `validate_data.gd` 0 errores, save/load, Peste Negra, determinismo, UI sin mutaciones.
+
+**Cierre:** commits por módulo con este STATUS; push; tag `fase-2` al verificar 1-7; revisión de Kimi.

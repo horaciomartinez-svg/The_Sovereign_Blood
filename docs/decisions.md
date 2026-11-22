@@ -119,3 +119,43 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** AG-3 dejó en `scripts/ui/dev/` las herramientas `ui_smoke.gd`, `integration_probe.gd`, `ui_screenshots.gd` y `gen_map_layout.ps1`, no referenciadas por ninguna escena.
 **Decisión:** se mantienen versionadas como tooling de desarrollo/QA (útiles para regresión visual y smoke), documentadas como no cargadas por el juego. Su migración a `tools/dev/` queda como mejora opcional de Fase 2, sin impacto funcional.
 **Consecuencia:** trazabilidad de cómo se generaron capturas y layout; el binario del juego no las incluye salvo export selectivo (queda anotado para el pipeline de export).
+
+## D-024 · Deprecación de `data/map_layout.json` (módulo Mapa §10.1) (2026-11-21)
+**Contexto:** GDD v1.3 §10.1 sustituye el tablero hexagonal placeholder (`map_layout.json`, D-017) por un mapa atlas con fronteras vectoriales por año.
+**Decisión:** `map_layout.json` queda **deprecado** al completar el módulo Mapa: la UI deja de consumirlo en `world_map.tscn`; las posiciones pasan a `data/map_borders.json` (`center`) y el terreno a `assets/art/map/terrain_base.png`. Se elimina del repo en el commit de cierre del módulo, junto con su exclusión en el validador (D-018), que puede retirarse entonces.
+**Consecuencia:** una sola fuente de geometría (map_borders) y sin datos de presentación duplicados; la decisión se marca como ejecutada en `docs/STATUS.md` al cerrar Fase 2.
+
+## D-025 · Contrato de integración de Fase 2 (2026-11-21)
+**Contexto:** AG-1 (fronteras), AG-2 (batallas N2/N3, espionaje, extinción) y AG-3 (mapa, retratos) trabajan en paralelo sobre las nuevas especificaciones §10.1/§10.2.
+**Decisión:** `docs/architecture_contracts_fase2.md` v1.0 es vinculante para Fase 2: formato de `map_borders.json`, arquitectura de 4 capas del mapa, API `TacticalBattle`/`CloseCombat`, contrato de retratos y slots, semántica de espionaje/extinción y scopes por agente. Los agentes no lo editan; cambios vía AG-0.
+**Consecuencia:** integración paralela con un único punto de verdad; los desvíos los detecta QA.
+
+## D-026 · Terreno base del mapa generado por código (2026-11-21)
+**Contexto:** §10.1 exige textura 4096×3072 estilo pergamino/acuarela de época, prohibido satélite/fantasía; no se versionan assets raster de terceros.
+**Decisión:** AG-3 genera `assets/art/map/terrain_base.png` (4096×3072) de forma **determinista** con `tools/generate_map_terrain.gd` a partir de los polígonos de `map_borders.json` (tierra) y ruido procedural (relieve, ríos, bosques) + estilos de pergamino; se versiona una sola vez. La generación es reproducible y revisable (script en repo).
+**Consecuencia:** arte propio, sin dependencias externas ni licencias dudosas; estilo consistente con §10; Fase 3 puede repintar el terreno sin cambiar el código de capas.
+
+## D-027 · Retratos de soberanos en Fase 2 (2026-11-21)
+**Contexto:** §10.2 exige 5 slots de retrato con fallback automático; los retratos ilustrados finales son de AG-5 en Fase 3.
+**Decisión:** en Fase 2 el campo opcional `portrait` de `characters.json` queda vacío/ausente; AG-3 implementa `portrait_frame.gd` con fallback **heráldica generativa de la casa + silueta genérica por sexo/edad**, usado en los 5 slots (mapa, árbol, diplomacia, batalla, corte). El marco dorado y el fondo pergamino se generan por código. Nunca se muestra un hueco.
+**Consecuencia:** requisito §10.2 funcional sin assets finales; AG-5 solo sustituirá PNGs en Fase 3.
+
+## D-028 · Referencia comparativa del mapa (2026-11-21)
+**Contexto:** §10.1 pide una captura comparativa lado a lado con el mapa de GK2; esa captura no existe en el workspace y la carpeta GK2 es de solo lectura y solo AG-REA. El material de Koei no puede versionarse en el repo (§1.2/§3).
+**Decisión:** el repo incluirá `docs/screenshots/map_comparison.png` comparando nuestro mapa con el **atlas histórico de dominio público de William R. Shepherd (1923-26)** como referencia de calidad y de fronteras; se solicita al usuario una captura del mapa de GK2 para la comparativa directa (se incorporará si la aporta, sin versionar material de Koei). La limitación se documenta en `docs/qa/` y `docs/STATUS.md`.
+**Consecuencia:** criterio §10.1 cubierto con una referencia visual legítima; la comparación directa con GK2 queda como aportación del usuario.
+
+## D-029 · Batallas Nivel 2 y 3 — API (2026-11-21)
+**Contexto:** §6.2/§6.3 y §8.2 (`launch_tactical` devuelve `Node`); se necesita una API concreta para que AG-3 pinte y AG-2 resuelva sin acoplar UI y lógica.
+**Decisión:** `BattleManager.launch_tactical` devuelve un nodo `TacticalBattle` (lógica de batalla, no UI) con API de solo consulta + órdenes; el Nivel 3 se resuelve con `CloseCombat` y cartas de orden (`carga`, `disparo`, `formacion`, `finta`, `retirada`); el comandante con mayor Mando obtiene +1 orden por ronda. Toda tirada usa `GameState.rng` (determinismo). El `apply_outcome()` aplica bajas/captura vía `MilitarySystem`.
+**Consecuencia:** la UI solo renderiza y envía órdenes; los tests de Crécy pueden ejecutarse headless sin escenas.
+
+## D-030 · Espionaje (2026-11-21)
+**Contexto:** §5.4 lista "Enviar espía" (Fase 2, 6 PG) y §12 Fase 2 exige espionaje.
+**Decisión:** se implementa como acción `espia` de `DiplomacySystem.propose`, coste 6 PG, con éxito dependiente de Astucia/relación; el resultado (`armies`, `treasury`, `regent_id`, `at_war`) queda en `state.factions[actor].intel[target]` (serializable y mostrable en diplomacia). Determinista con `GameState.rng`.
+**Consecuencia:** información persistente en la partida y testeable; sin UI nueva obligatoria salvo mostrar el informe.
+
+## D-031 · Extinción dinástica como fin de partida (2026-11-21)
+**Contexto:** §12 Fase 2 exige que la pérdida de líder sin herederos termine la partida; §5.3 describe crisis/interregno y extinción.
+**Decisión:** si muere el gobernante y no queda ningún miembro vivo de su casa (sin heredero ni parientes), `DynastySystem` emite `dynasty_extinct` y `TurnManager` declara derrota inmediata (jugador: `game_over(false, "dinastía extinta")`; IA: eliminación). Si hay parientes sin heredero directo, se mantiene la crisis/interregno existente.
+**Consecuencia:** condición de derrota §4.5 implementada y testeable; sin turnos fantasma tras la extinción.
