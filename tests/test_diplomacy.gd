@@ -75,6 +75,7 @@ func _check_alliance(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check("alianza duplicada rechazada", not bool(again.get("ok")))
 	# Relación pésima → rechazo.
 	h.new_game("england", 1337)
+	_force_peace(h, "england", "france")
 	h.set_relation("england", "france", -100)
 	h.faction("england")["pg"] = 60
 	var rejected: Dictionary = h.propose("england", "france", {"type": "alliance"})
@@ -84,6 +85,7 @@ func _check_alliance(runner: TestRunnerScript, h: HarnessScript) -> void:
 
 func _check_trade_pact(runner: TestRunnerScript, h: HarnessScript) -> void:
 	h.new_game("england", 1337)
+	_force_peace(h, "england", "france")
 	h.set_relation("england", "france", 0)
 	h.faction("england")["pg"] = 60
 	var commerce_before: float = SafeDict.as_float(h.region_output("region_londres").get("commerce"), 0.0)
@@ -95,6 +97,17 @@ func _check_trade_pact(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check("el pacto aumenta el comercio (+25%)", commerce_after > commerce_before,
 		"%.2f → %.2f" % [commerce_before, commerce_after])
 	runner.check_eq("coste del pacto cobrado", 54, int(h.faction("england")["pg"]))
+
+
+func _force_peace(h: HarnessScript, faction_a: String, faction_b: String) -> void:
+	var a: Dictionary = h.faction(faction_a)
+	var b: Dictionary = h.faction(faction_b)
+	var a_wars: Array = SafeDict.as_array(a.get("at_war", null))
+	var b_wars: Array = SafeDict.as_array(b.get("at_war", null))
+	a_wars.erase(faction_b)
+	b_wars.erase(faction_a)
+	a["at_war"] = a_wars
+	b["at_war"] = b_wars
 
 
 func _check_tribute(runner: TestRunnerScript, h: HarnessScript) -> void:

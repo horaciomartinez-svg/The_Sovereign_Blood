@@ -162,6 +162,8 @@ func advance_year() -> void:
 	emit_signal("year_advanced", new_year)
 	emit_signal("phase_changed", phase)
 	EventBus.emit_signal("year_advanced", new_year)
+	# D-015/D-066: campana de fin de año (audio generado, sin assets).
+	AudioManager.play_year_bell()
 
 	for faction_id in _faction_ids():
 		EconomySystem.resolve_harvest(faction_id)
@@ -299,6 +301,13 @@ func on_dynasty_extinct(faction_id: String) -> void:
 	phase = "idle"
 	emit_signal("phase_changed", phase)
 	EventBus.emit_signal("turn_phase_changed", phase)
+
+
+## API pública (UI/tests, D-066): evalúa las condiciones §4.5 y devuelve el
+## resumen de fin de partida sin exponer el detalle interno.
+func check_game_over() -> Dictionary:
+	_check_game_over()
+	return GameState.get_game_over_info()
 
 
 func _check_game_over() -> void:

@@ -50,6 +50,10 @@ func _collect_moves(faction_id: String, weights: Dictionary, candidates: Array[D
 			var owner: String = SafeDict.as_string(target.get("owner"), "")
 			if owner == faction_id:
 				continue
+			# D-067: la IA no invade regiones de facciones con las que no está en
+			# guerra (debe declararla antes); evita conquistas sorpresa imposibles.
+			if owner != "" and not DiplomacySystem.are_at_war(faction_id, owner):
+				continue
 			var defense: int = _defense_men(owner, to_region)
 			var terrain: String = SafeDict.as_string(target.get("terrain"), "plains")
 			var cost_pg: int = Constants.MOVE_PG_COST \

@@ -46,7 +46,10 @@ func recalculate(faction_id: String) -> void:
 			_maybe_revolt(region_id, region, faction)
 	var upkeep: int = _army_upkeep(faction_id)
 	var gold_before: int = SafeDict.as_int(faction.get("gold"), 0)
-	var net: int = int(roundf(gross_income)) - upkeep
+	var overhead: int = 0
+	if gold_before > Constants.TREASURY_SOFT_CAP:
+		overhead = int(ceilf(float(gold_before - Constants.TREASURY_SOFT_CAP) * Constants.TREASURY_OVERHEAD_RATE))
+	var net: int = int(roundf(gross_income)) - upkeep - overhead
 	var gold_after: int = gold_before + net
 	if gold_after < 0:
 		gold_after = 0
@@ -216,6 +219,9 @@ func _update_support(region_id: String, region: Dictionary, faction: Dictionary,
 	var at_war: Array = SafeDict.as_array(faction.get("at_war", null))
 	if not at_war.is_empty():
 		delta -= 1
+	if SafeDict.as_string(region.get("terrain"), "") == "mountain":
+		# D-067: las economías de montaña no deben entrar en espiral de revueltas.
+		delta += Constants.SUPPORT_MOUNTAIN_BONUS
 	var workers: Dictionary = SafeDict.as_dict(region.get("workers", null))
 	var workers_total: int = _workers_total(workers)
 	var recruits: int = SafeDict.as_int(workers.get("recruits"), 0)

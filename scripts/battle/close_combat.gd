@@ -243,9 +243,9 @@ func auto_resolve() -> Dictionary:
 
 func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 	var rng: SeededRNGScript = _rng()
-	# D-064: ambos duelistas reproducen su ataque una vez al resolver la ronda.
-	# La reacción (hit/dead) se PROGRAMA en `attack_2` (impacto), no se aplica de
-	# inmediato: así el render ve attack_1 → attack_2 → hit/death.
+	# D-015/D-066: golpe/espada al resolver una ronda N3 (audio generado).
+	AudioManager.play_sword()
+	# D-065: ambos duelistas reproducen su ataque una vez al resolver la ronda.
 	attacker["anim_state"] = "attack"
 	attacker["anim_started_ms"] = _animation_ms
 	attacker["anim_reaction_state"] = ""

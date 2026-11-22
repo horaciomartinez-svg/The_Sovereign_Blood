@@ -314,6 +314,7 @@ func apply_battle_outcome(report: Dictionary) -> bool:
 	while reports.size() > Constants.MAX_BATTLE_REPORTS:
 		reports.pop_front()
 	st["battle_reports"] = reports
+	GameState.clear_pending_battle()
 	emit_signal("armies_changed", region_id)
 	EventBus.emit_signal("battle_resolved", report.duplicate(true))
 	return true
@@ -434,6 +435,7 @@ func _resolve_battle(attacker_id: String, defender_id: String, region_id: String
 	while reports.size() > Constants.MAX_BATTLE_REPORTS:
 		reports.pop_front()
 	st["battle_reports"] = reports
+	GameState.clear_pending_battle()
 	emit_signal("armies_changed", region_id)
 	EventBus.emit_signal("battle_resolved", report_dict)
 

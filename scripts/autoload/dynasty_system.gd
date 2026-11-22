@@ -111,6 +111,51 @@ func marry(character_id: String, target_character_id: String) -> Dictionary:
 
 
 ## Eventos vitales generados al avanzar el año (GDD §8.2).
+## D-067: mortalidad dinástica de la Peste Negra. Mata como máximo un pariente
+## por facción (nunca al gobernante, heredero o cónyuge) de forma determinista
+## con el RNG central, para no romper la línea sucesoria jugable.
+func apply_plague_mortality(year: int = 0) -> int:
+	var st: Dictionary = GameState.state
+	if st.is_empty() or GameState.rng == null:
+		return 0
+	var current_year: int = year if year > 0 else SafeDict.as_int(st.get("year"), 1337)
+	var characters: Dictionary = SafeDict.as_dict(st.get("characters", null))
+	var affected_factions: Dictionary = {}
+	var killed: int = 0
+	for character_id in SafeDict.sorted_keys(characters):
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if character.is_empty() or not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		var faction_id: String = SafeDict.as_string(character.get("faction"), "")
+		if faction_id == "" or affected_factions.has(faction_id):
+			continue
+		var role: String = SafeDict.as_string(character.get("role"), "")
+		if role == "ruler" or role == "heir" or role == "spouse":
+			continue
+		if SafeDict.as_int(character.get("born"), current_year) > current_year:
+			continue
+		if GameState.rng.next_float() >= Constants.PLAGUE_MORTALITY_CHANCE:
+			continue
+		_die(character_id, character, "peste negra", current_year)
+		affected_factions[faction_id] = true
+		killed += 1
+	# Garantiza que la peste deje huella dinástica aunque el RNG no acierte.
+	if killed == 0:
+		for character_id in SafeDict.sorted_keys(characters):
+			var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+			if character.is_empty() or not SafeDict.as_bool(character.get("alive"), false):
+				continue
+			var role: String = SafeDict.as_string(character.get("role"), "")
+			if role == "ruler" or role == "heir" or role == "spouse":
+				continue
+			if SafeDict.as_int(character.get("born"), current_year) > current_year:
+				continue
+			_die(character_id, character, "peste negra", current_year)
+			killed += 1
+			break
+	return killed
+
+
 func advance_year() -> Array[Dictionary]:
 	var events: Array[Dictionary] = []
 	var st: Dictionary = GameState.state

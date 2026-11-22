@@ -88,12 +88,17 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		"event_log": [],
 		"fired_events": [],
 		"battle_reports": [],
+		# D-066: batalla en curso (N2/N3) serializable para guardar/cargar.
+		"pending_battle": {},
 	}
 	_build_characters(start_year)
 	_build_factions(scenario, start_year)
 	_build_regions(scenario)
 	_build_armies(scenario)
 	_apply_initial_regency(start_year)
+	# D-067: la Guerra de los Cien Años empieza declarada (el evento 1337 la
+	# contextualiza); así los eventos `trigger: war` pueden dispararse.
+	_ensure_initial_wars(p_scenario_id, start_year)
 	rng_seed = rng.get_seed()
 	# Eventos del año de inicio (1337: casus belli y tensión anglo-francesa).
 	EventResolverScript.new().resolve_year(start_year)
@@ -245,8 +250,28 @@ func get_era_index() -> int:
 	return TechScript.era_index(SafeDict.as_int(state.get("year"), year))
 
 
+## D-067: guerras históricas iniciales por escenario (solo 1337 en MVP).
+func _ensure_initial_wars(p_scenario_id: String, start_year: int) -> void:
+	if p_scenario_id != "scenario_1337" or start_year != 1337:
+		return
+	var factions: Dictionary = SafeDict.as_dict(state.get("factions", null))
+	if not factions.has("england") or not factions.has("france"):
+		return
+	var england: Dictionary = SafeDict.as_dict(factions.get("england", null))
+	var france: Dictionary = SafeDict.as_dict(factions.get("france", null))
+	var eng_wars: Array = SafeDict.as_array(england.get("at_war", null))
+	var fra_wars: Array = SafeDict.as_array(france.get("at_war", null))
+	if not eng_wars.has("france"):
+		eng_wars.append("france")
+	if not fra_wars.has("england"):
+		fra_wars.append("england")
+	england["at_war"] = eng_wars
+	france["at_war"] = fra_wars
+
+
 ## Facciones jugables del escenario actual (contrato fase3 §3): lista declarada
-## por el escenario (`playable_factions`) con fallback a `factions`.
+## por el escenario (`playable_factions`) o, si no existe, las facciones del
+## escenario marcadas `playable:true` en `factions.json` (D-066: 8 en 1337).
 func get_playable_factions(p_scenario_id: String = "") -> Array[String]:
 	var sid: String = p_scenario_id if p_scenario_id != "" else scenario_id
 	var scenario: Dictionary = DataLoader.get_scenario(sid)
@@ -255,8 +280,15 @@ func get_playable_factions(p_scenario_id: String = "") -> Array[String]:
 		result.append(str(faction_value))
 	if not result.is_empty():
 		return result
+	var declared: Array[String] = []
 	for faction_value in SafeDict.as_array(scenario.get("factions", null)):
-		result.append(str(faction_value))
+		declared.append(str(faction_value))
+	for faction_id in declared:
+		var definition: Dictionary = DataLoader.get_faction(faction_id)
+		if definition.is_empty() or SafeDict.as_bool(definition.get("playable"), false):
+			result.append(faction_id)
+	if result.is_empty():
+		return declared
 	return result
 
 
@@ -300,6 +332,44 @@ func end_game(victory: bool, reason: String) -> void:
 	is_running = false
 	emit_signal("game_over", current_faction_id, victory, reason)
 	EventBus.emit_signal("game_over", current_faction_id, victory, reason)
+
+
+## Resumen de fin de partida para la pantalla de fin (AG-3) y tests.
+func get_game_over_info() -> Dictionary:
+	if state.is_empty():
+		return {"over": false, "victory": false, "reason": ""}
+	return {
+		"over": SafeDict.as_bool(state.get("game_over"), false),
+		"victory": SafeDict.as_bool(state.get("game_over_victory"), false),
+		"reason": SafeDict.as_string(state.get("game_over_reason"), ""),
+		"faction_id": SafeDict.as_string(state.get("player_faction"), ""),
+		"year": SafeDict.as_int(state.get("year"), 0),
+		"quarter": SafeDict.as_int(state.get("quarter"), 0),
+	}
+
+
+## Registra la batalla N2/N3 en curso dentro del snapshot (D-066).
+## `context` es JSON puro; debe incluir al menos `level` y `region_id`/`faction`.
+func set_pending_battle(context: Dictionary) -> void:
+	if state.is_empty():
+		return
+	state["pending_battle"] = context.duplicate(true)
+
+
+func get_pending_battle() -> Dictionary:
+	if state.is_empty():
+		return {}
+	return SafeDict.as_dict(state.get("pending_battle", null)).duplicate(true)
+
+
+func has_pending_battle() -> bool:
+	return not get_pending_battle().is_empty()
+
+
+func clear_pending_battle() -> void:
+	if state.is_empty():
+		return
+	state["pending_battle"] = {}
 
 
 ## Snapshot del RNG en forma JSON-segura (state como texto: 64 bits exactos).
@@ -620,6 +690,9 @@ func _find_heir(characters_state: Dictionary, faction_id: String, ruler_id: Stri
 		if SafeDict.as_string(character.get("faction"), "") != faction_id:
 			continue
 		if character_id == ruler_id or not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		# D-067: un cónyuge no es heredero de la casa (Polonia/Aldona).
+		if SafeDict.as_string(character.get("role"), "") == "spouse":
 			continue
 		if SafeDict.as_int(character.get("born"), 0) <= start_year \
 				and SafeDict.as_int(character.get("born"), 0) > best_relative_born:

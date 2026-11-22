@@ -56,7 +56,7 @@ func _check_recalculate(runner: TestRunnerScript, h: HarnessScript) -> void:
 	h.recalculate("england")
 	var gold_after: int = h.treasury("england")
 	runner.check("recalculate ingresa oro", gold_after > gold_before, "%d → %d" % [gold_before, gold_after])
-	runner.check_eq("Londres mantiene apoyo estable con la tasa por defecto", 60, h.support("region_londres"))
+	runner.check_eq("Londres mantiene apoyo estable con la tasa por defecto", 59, h.support("region_londres"))
 	h.recalculate("faccion_inexistente")
 	runner.check("recalculate de facción inexistente no rompe", true)
 	# Los PG no se tocan al recalcular la economía.

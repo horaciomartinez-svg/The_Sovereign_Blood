@@ -26,14 +26,26 @@ const FOOD_NEED_PER_WORKER: float = 0.5
 const TERRAIN_FOOD: Dictionary = {
 	"plains": 1.0,
 	"forest": 0.85,
-	"mountain": 0.6,
+	# D-067 (MVP-1337): montaña 0.70 + bonus de apoyo evita la espiral de
+	# descontento en Austria/Transilvania/Croacia sin falsear el resto de datos.
+	"mountain": 0.7,
 	"coast": 0.9,
 	"city": 0.7,
 }
+## D-067: compensación de apoyo en regiones de montaña (subsistencia tradicional).
+const SUPPORT_MOUNTAIN_BONUS: int = 3
 ## Impuestos = base_wealth × tasa × población / 100 000.
 const TAX_POPULATION_DIVISOR: float = 100000.0
 ## Mantenimiento de ejércitos: oro por trimestre por cada 200 hombres.
-const ARMY_UPKEEP_PER_200_MEN: float = 2.0
+const ARMY_UPKEEP_PER_200_MEN: float = 20.0
+## D-067: gastos de corte progresivos para evitar inflación pasiva trivial.
+## A partir de `TREASURY_SOFT_CAP` el exceso paga `TREASURY_OVERHEAD_RATE` por
+## trimestre (dinero que el jugador debe gastar/reclutar para no acumularlo).
+const TREASURY_SOFT_CAP: int = 8000
+const TREASURY_OVERHEAD_RATE: float = 0.35
+## D-067: mortalidad dinástica de la Peste Negra (una parte de la casa, no el
+## gobernante ni el heredero, para no romper la sucesión jugable).
+const PLAGUE_MORTALITY_CHANCE: float = 0.20
 ## Bonus de comercio si la facción tiene pactos comerciales activos.
 const TRADE_PACT_COMMERCE_BONUS: float = 0.25
 ## Cosecha anual (§5.2, trimestre 1): clima aleatorio sesgado.

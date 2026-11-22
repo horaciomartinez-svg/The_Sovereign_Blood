@@ -111,6 +111,10 @@ func _fire(event: Dictionary, st: Dictionary, year: int) -> Dictionary:
 	for effect_value in effects:
 		var effect: Dictionary = SafeDict.as_dict(effect_value)
 		_apply_effect(effect, st)
+	# D-067: la Peste Negra también golpea a las casas dinásticas (hook acotado:
+	# no mata al gobernante ni al heredero, para no romper la sucesión jugable).
+	if event_id.begins_with("peste_negra"):
+		DynastySystem.apply_plague_mortality(year)
 
 	var fired_events: Array = SafeDict.as_array(st.get("fired_events", null))
 	fired_events.append(event_id)

@@ -157,6 +157,15 @@ func launch_tactical(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, reg
 	var battle_region: String = attacker_army.region_id
 	if region != null:
 		battle_region = region.id
+	# D-066: batalla táctica en curso serializable (guardar/cargar exacto).
+	GameState.set_pending_battle({
+		"level": 2,
+		"attacker_army_id": attacker_army.id,
+		"defender_army_id": defender_army.id,
+		"attacker_faction": attacker_army.faction_id,
+		"defender_faction": defender_army.faction_id,
+		"region_id": battle_region,
+	})
 	emit_signal("battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
 	EventBus.emit_signal("tactical_battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
 	return tactical
@@ -170,6 +179,15 @@ func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -
 	duel.setup(attacker_unit, defender_unit)
 	var attacker_faction: String = SafeDict.as_string(attacker_unit.get("faction"), "")
 	var defender_faction: String = SafeDict.as_string(defender_unit.get("faction"), "")
+	# D-066: duelo N3 en curso serializable.
+	GameState.set_pending_battle({
+		"level": 3,
+		"attacker_unit_id": SafeDict.as_string(attacker_unit.get("id"), ""),
+		"defender_unit_id": SafeDict.as_string(defender_unit.get("id"), ""),
+		"attacker_faction": attacker_faction,
+		"defender_faction": defender_faction,
+		"region_id": SafeDict.as_string(attacker_unit.get("region_id"), ""),
+	})
 	EventBus.emit_signal("close_combat_started", attacker_faction, defender_faction)
 	return duel
 
@@ -235,6 +253,7 @@ func apply_close_combat_outcome(
 	}
 	if not MilitarySystem.apply_battle_outcome(report):
 		return {}
+	GameState.clear_pending_battle()
 	outcome["_applied_report"] = report.duplicate(true)
 	EventBus.emit_signal("close_combat_finished", winner_faction)
 	return report

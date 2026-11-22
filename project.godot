@@ -32,6 +32,7 @@ DiplomacySystem="*res://scripts/autoload/diplomacy_system.gd"
 MilitarySystem="*res://scripts/autoload/military_system.gd"
 BattleManager="*res://scripts/autoload/battle_manager.gd"
 AIManager="*res://scripts/autoload/ai_manager.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
 
 [display]
 

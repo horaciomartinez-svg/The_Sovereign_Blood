@@ -18,6 +18,7 @@ var mil: Node = null
 var battle: Node = null
 var ai: Node = null
 var bus: Node = null
+var audio: Node = null
 var missing: Array[String] = []
 
 
@@ -32,6 +33,7 @@ func _init(root: Node) -> void:
 	battle = _grab(root, "BattleManager")
 	ai = _grab(root, "AIManager")
 	bus = _grab(root, "EventBus")
+	audio = _grab(root, "AudioManager")
 
 
 func _grab(root: Node, autoload_name: String) -> Node:
@@ -439,6 +441,47 @@ func is_game_over() -> bool:
 
 func game_over_reason() -> String:
 	return SafeDict.as_string(state().get("game_over_reason"), "")
+
+
+## Resumen de fin de partida (D-066) para pantalla de fin/tests.
+func game_over_info() -> Dictionary:
+	return SafeDict.as_dict(gs.call("get_game_over_info"))
+
+
+## Evalúa las condiciones §4.5 y devuelve el resumen (API pública TurnManager).
+func check_game_over() -> Dictionary:
+	return SafeDict.as_dict(tm.call("check_game_over"))
+
+
+func playable_factions(scenario_id: String = "") -> Array[String]:
+	var result: Array[String] = []
+	var value: Variant = gs.call("get_playable_factions", scenario_id)
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result
+
+
+# --- Batalla pendiente / audio (D-066) -----------------------------------
+
+func has_pending_battle() -> bool:
+	return SafeDict.as_bool(gs.call("has_pending_battle"), false)
+
+
+func pending_battle() -> Dictionary:
+	return SafeDict.as_dict(gs.call("get_pending_battle"))
+
+
+func clear_pending_battle() -> void:
+	gs.call("clear_pending_battle")
+
+
+func audio_count(tone_name: String) -> int:
+	return SafeDict.as_int(audio.call("get_play_count", tone_name), 0)
+
+
+func reset_audio_counts() -> void:
+	audio.call("reset_counts")
 
 
 # --- IA ------------------------------------------------------------------

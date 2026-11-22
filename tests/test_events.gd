@@ -51,9 +51,12 @@ func _check_black_death(runner: TestRunnerScript, h: HarnessScript) -> void:
 
 func _check_war_events(runner: TestRunnerScript, h: HarnessScript) -> void:
 	h.new_game("england", 1337)
+	# D-067: la guerra anglo-francesa empieza declarada. Para probar el disparo
+	# por declaración se fuerza la paz primero en el estado de prueba.
+	_force_peace(h, "england", "france")
 	while h.year() < 1340:
 		h.advance_year()
-	runner.check("Sluys no dispara sin guerra", not _fired(h, "batalla_sluys_1340"))
+	runner.check("Sluys no dispara si se firmó la paz", not _fired(h, "batalla_sluys_1340"))
 	var prestige_before: int = SafeDict.as_int(h.faction("england").get("prestige"), 0)
 	h.faction("england")["pg"] = 60
 	h.propose("england", "france", {"type": "declare_war"})
@@ -68,6 +71,17 @@ func _check_war_events(runner: TestRunnerScript, h: HarnessScript) -> void:
 	var france_men: int = _faction_men(h, "france")
 	runner.check("Crécy causa bajas al ejército francés (army_loss)", france_men < 3000,
 		"hombres franceses=%d" % france_men)
+
+
+func _force_peace(h: HarnessScript, faction_a: String, faction_b: String) -> void:
+	var a: Dictionary = h.faction(faction_a)
+	var b: Dictionary = h.faction(faction_b)
+	var a_wars: Array = SafeDict.as_array(a.get("at_war", null))
+	var b_wars: Array = SafeDict.as_array(b.get("at_war", null))
+	a_wars.erase(faction_b)
+	b_wars.erase(faction_a)
+	a["at_war"] = a_wars
+	b["at_war"] = b_wars
 
 
 func _check_event_log_shape(runner: TestRunnerScript, h: HarnessScript) -> void:
