@@ -104,6 +104,8 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 	EventResolverScript.new().resolve_year(start_year)
 	emit_signal("game_initialized", p_scenario_id, p_faction_id)
 	TurnManager.begin_turn(p_faction_id)
+	# D-067: la música de mapa arranca al iniciar/cargar la partida (si hay pistas).
+	AudioManager.play_music("map")
 
 
 ## Devuelve el estado a "sin partida".
@@ -330,6 +332,8 @@ func end_game(victory: bool, reason: String) -> void:
 	state["game_over_victory"] = victory
 	state["game_over_reason"] = reason
 	is_running = false
+	# D-067: fanfarria de fin (victoria/derrota).
+	AudioManager.play_music("end")
 	emit_signal("game_over", current_faction_id, victory, reason)
 	EventBus.emit_signal("game_over", current_faction_id, victory, reason)
 

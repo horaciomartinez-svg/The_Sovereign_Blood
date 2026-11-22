@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-sovereigns-blood.local/schemas/audio_tracks.schema.json",
+  "title": "audio_tracks",
+  "description": "D-067 §2.5: contexto de música → pista OGG de dominio público/síntesis, loop y volumen normalizado. Las rutas viven en datos, no en código.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tracks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "tracks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menu",
+        "map",
+        "battle_n2",
+        "battle_n3",
+        "year_end",
+        "end"
+      ],
+      "properties": {
+        "menu": {
+          "$ref": "#/$defs/track"
+        },
+        "map": {
+          "$ref": "#/$defs/track"
+        },
+        "battle_n2": {
+          "$ref": "#/$defs/track"
+        },
+        "battle_n3": {
+          "$ref": "#/$defs/track"
+        },
+        "year_end": {
+          "$ref": "#/$defs/track"
+        },
+        "end": {
+          "$ref": "#/$defs/track"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "track",
+        "path",
+        "loop",
+        "volume_db"
+      ],
+      "properties": {
+        "track": {
+          "type": "string",
+          "pattern": "^res://assets/audio/music/[a-z0-9_]+\\.ogg$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^res://assets/audio/music/[a-z0-9_]+\\.ogg$"
+        },
+        "loop": {
+          "type": "boolean"
+        },
+        "volume_db": {
+          "type": "number",
+          "minimum": -40,
+          "maximum": 6
+        }
+      }
+    }
+  }
+}

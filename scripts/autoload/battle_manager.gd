@@ -166,6 +166,7 @@ func launch_tactical(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, reg
 		"defender_faction": defender_army.faction_id,
 		"region_id": battle_region,
 	})
+	AudioManager.play_music("battle_n2")
 	emit_signal("battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
 	EventBus.emit_signal("tactical_battle_started", attacker_army.faction_id, defender_army.faction_id, battle_region)
 	return tactical
@@ -188,6 +189,7 @@ func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -
 		"defender_faction": defender_faction,
 		"region_id": SafeDict.as_string(attacker_unit.get("region_id"), ""),
 	})
+	AudioManager.play_music("battle_n3")
 	EventBus.emit_signal("close_combat_started", attacker_faction, defender_faction)
 	return duel
 

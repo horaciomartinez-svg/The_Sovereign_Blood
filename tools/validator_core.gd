@@ -653,6 +653,9 @@ func _index_entities() -> void:
 		# battle_tiles no es una lista de entidades: lo valida su regla cruzada.
 		if kind == "battle_tiles":
 			continue
+		# D-067: audio_tracks es un mapa de contextos→pista; sin entidades.
+		if kind == "audio_tracks":
+			continue
 		var root: Variant = _datasets[dataset_path]["data"]
 		var list := _entities_of(root, kind)
 		if list.is_empty():
@@ -685,6 +688,8 @@ func _kind_of(dataset_path: String) -> String:
 	var stem := dataset_path.get_file().get_basename().to_lower()
 	if stem.begins_with("battle_tiles") or stem.begins_with("battle_tile"):
 		return "battle_tiles"
+	if stem.begins_with("audio_tracks") or stem.begins_with("audio_track"):
+		return "audio_tracks"
 	if stem.begins_with("scenario"):
 		return "scenario"
 	if stem.begins_with("event"):

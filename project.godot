@@ -34,6 +34,10 @@ BattleManager="*res://scripts/autoload/battle_manager.gd"
 AIManager="*res://scripts/autoload/ai_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+
 [display]
 
 window/size/viewport_width=1920

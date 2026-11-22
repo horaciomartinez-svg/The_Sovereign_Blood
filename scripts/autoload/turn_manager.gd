@@ -164,6 +164,8 @@ func advance_year() -> void:
 	EventBus.emit_signal("year_advanced", new_year)
 	# D-015/D-066: campana de fin de año (audio generado, sin assets).
 	AudioManager.play_year_bell()
+	# D-067: música de informe de fin de año (AG-3 vuelve a "map" al cerrar).
+	AudioManager.play_music("year_end")
 
 	for faction_id in _faction_ids():
 		EconomySystem.resolve_harvest(faction_id)

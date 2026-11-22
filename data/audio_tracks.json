@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "tracks": {
+    "menu": {
+      "track": "res://assets/audio/music/menu_consort.ogg",
+      "path": "res://assets/audio/music/menu_consort.ogg",
+      "loop": true,
+      "volume_db": 0.0
+    },
+    "map": {
+      "track": "res://assets/audio/music/map_estampie.ogg",
+      "path": "res://assets/audio/music/map_estampie.ogg",
+      "loop": true,
+      "volume_db": 0.0
+    },
+    "battle_n2": {
+      "track": "res://assets/audio/music/battle_n2_march.ogg",
+      "path": "res://assets/audio/music/battle_n2_march.ogg",
+      "loop": true,
+      "volume_db": 0.0
+    },
+    "battle_n3": {
+      "track": "res://assets/audio/music/battle_n3_combat.ogg",
+      "path": "res://assets/audio/music/battle_n3_combat.ogg",
+      "loop": true,
+      "volume_db": 0.0
+    },
+    "year_end": {
+      "track": "res://assets/audio/music/year_end.ogg",
+      "path": "res://assets/audio/music/year_end.ogg",
+      "loop": false,
+      "volume_db": 0.0
+    },
+    "end": {
+      "track": "res://assets/audio/music/end_fanfare.ogg",
+      "path": "res://assets/audio/music/end_fanfare.ogg",
+      "loop": false,
+      "volume_db": 0.0
+    }
+  }
+}
