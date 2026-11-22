@@ -367,9 +367,36 @@ func _check_combat_animation_states(runner: TestRunnerScript, h: HarnessScript) 
 	duel.call("play_order", duel_card)
 	duel.call("enemy_respond")
 	var after_round: Dictionary = SafeDict.as_dict(duel.call("get_state"))
+	var duel_attacker_after: Dictionary = SafeDict.as_dict(after_round.get("attacker", null))
 	var duel_defender: Dictionary = SafeDict.as_dict(after_round.get("defender", null))
-	var duel_defender_state: String = SafeDict.as_string(duel_defender.get("anim_state"), "")
-	runner.check("N3: defensor en hit/dead tras la ronda",
+	runner.check_eq("N3: atacante en attack durante attack_2", "attack",
+		SafeDict.as_string(duel_attacker_after.get("anim_state"), ""))
+	runner.check_eq("N3: defensor en attack hasta attack_2 (reacción programada)", "attack",
+		SafeDict.as_string(duel_defender.get("anim_state"), ""))
+	var pending_reaction: String = SafeDict.as_string(duel_defender.get("anim_reaction_state"), "")
+	runner.check("N3: reacción pendiente hit/dead", pending_reaction == "hit" or pending_reaction == "dead",
+		pending_reaction)
+	runner.check("N3: reaction_at_ms incluye ventana de attack_2 (>111 ms)",
+		SafeDict.as_float(duel_defender.get("anim_reaction_at_ms"), 0.0) > 111.0)
+	runner.check("N3: reaction_delay_ms ≈222,2 (impacto + cuadro)",
+		absf(SafeDict.as_float(duel_defender.get("anim_reaction_delay_ms"), 0.0) - 222.2) < 0.3,
+		str(duel_defender.get("anim_reaction_delay_ms")))
+	# attack_2 debe verse antes de pasar a hit/dead (ventana de ~111 ms).
+	duel.call("tick_animation", 120.0)
+	var during_impact: Dictionary = SafeDict.as_dict(duel.call("get_state"))
+	var duel_defender_impact: Dictionary = SafeDict.as_dict(during_impact.get("defender", null))
+	var duel_defender_state: String = SafeDict.as_string(duel_defender_impact.get("anim_state"), "")
+	runner.check("N3: defensor sigue en attack a 120 ms (attack_2 visible)", duel_defender_state == "attack",
+		duel_defender_state)
+	runner.check("N3: frame actual attack_2 a 120 ms",
+		SafeDict.as_string(duel_defender_impact.get("sprite_frame_path"), "").ends_with("_attack_2.png"),
+		SafeDict.as_string(duel_defender_impact.get("sprite_frame_path"), ""))
+	# Tras la ventana (≈222 ms) entra hit/dead.
+	duel.call("tick_animation", 120.0)
+	var after_impact: Dictionary = SafeDict.as_dict(duel.call("get_state"))
+	var duel_defender_after: Dictionary = SafeDict.as_dict(after_impact.get("defender", null))
+	duel_defender_state = SafeDict.as_string(duel_defender_after.get("anim_state"), "")
+	runner.check("N3: defensor en hit/dead tras la ventana de attack_2",
 		duel_defender_state == "hit" or duel_defender_state == "dead", duel_defender_state)
 	duel.call("tick_animation", 5000.0)
 	var settled: Dictionary = SafeDict.as_dict(duel.call("get_state"))

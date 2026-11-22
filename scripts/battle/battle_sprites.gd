@@ -230,6 +230,19 @@ static func attack_impact_ms(sprite_sheet: Dictionary) -> float:
 	return roundf(float(ATTACK_IMPACT_FRAME_OFFSET) / fps * 1000.0 * 10.0) / 10.0
 
 
+## Duración de un cuadro de ataque (1000/fps_attack): ventana mínima de attack_2.
+static func attack_frame_ms(sprite_sheet: Dictionary) -> float:
+	var fps: float = maxf(1.0, state_fps(sprite_sheet, "attack"))
+	return roundf(1000.0 / fps * 10.0) / 10.0
+
+
+## Retraso visual de la reacción (hit/dead) para que `attack_2` tenga ventana:
+## impacto + un cuadro de ataque (≈222,2 ms con fps_attack=9). El daño lógico NO
+## se retrasa; sólo el cambio de estado visual en el render.
+static func reaction_delay_ms(sprite_sheet: Dictionary) -> float:
+	return roundf((attack_impact_ms(sprite_sheet) + attack_frame_ms(sprite_sheet)) * 10.0) / 10.0
+
+
 ## Duración de un estado una vez (o del ciclo completo si es loop).
 static func state_duration_ms(sprite_sheet: Dictionary, state: String) -> float:
 	var indices: Array[int] = state_frame_indices(sprite_sheet, state)

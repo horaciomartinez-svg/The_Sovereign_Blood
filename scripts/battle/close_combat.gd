@@ -244,10 +244,20 @@ func auto_resolve() -> Dictionary:
 func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 	var rng: SeededRNGScript = _rng()
 	# D-064: ambos duelistas reproducen su ataque una vez al resolver la ronda.
+	# La reacción (hit/dead) se PROGRAMA en `attack_2` (impacto), no se aplica de
+	# inmediato: así el render ve attack_1 → attack_2 → hit/death.
 	attacker["anim_state"] = "attack"
 	attacker["anim_started_ms"] = _animation_ms
+	attacker["anim_reaction_state"] = ""
+	attacker["anim_reaction_at_ms"] = 0.0
 	defender["anim_state"] = "attack"
 	defender["anim_started_ms"] = _animation_ms
+	defender["anim_reaction_state"] = ""
+	defender["anim_reaction_at_ms"] = 0.0
+	var attacker_reaction_delay_ms: float = BATTLE_SPRITES.reaction_delay_ms(
+		SafeDict.as_dict(attacker.get("sprite_sheet", null)))
+	var defender_reaction_delay_ms: float = BATTLE_SPRITES.reaction_delay_ms(
+		SafeDict.as_dict(defender.get("sprite_sheet", null)))
 	var attacker_power: float = _unit_power(attacker)
 	var defender_power: float = _unit_power(defender)
 	var defender_type: String = SafeDict.as_string(defender.get("type"), "infantry")
@@ -323,19 +333,21 @@ func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 		_finish_with("defender")
 	elif attacker_destroyed and defender_destroyed:
 		_finish_with("defender")
-	# D-064: reacción hit o muerte (una vez; death_hold en el render).
+	# D-064: reacción PROGRAMADA en attack_2 (hit/death) para que el ataque se vea.
+	# La reacción visual se retrasa hasta impacto + 1 cuadro de ataque (≈222,2 ms)
+	# para que `attack_2` tenga ventana visible; el daño ya está resuelto arriba.
 	if defender_destroyed:
-		defender["anim_state"] = "dead"
-		defender["anim_started_ms"] = _animation_ms
+		defender["anim_reaction_state"] = "dead"
+		defender["anim_reaction_at_ms"] = _animation_ms + defender_reaction_delay_ms
 	elif defender_losses > 0:
-		defender["anim_state"] = "hit"
-		defender["anim_started_ms"] = _animation_ms
+		defender["anim_reaction_state"] = "hit"
+		defender["anim_reaction_at_ms"] = _animation_ms + defender_reaction_delay_ms
 	if attacker_destroyed:
-		attacker["anim_state"] = "dead"
-		attacker["anim_started_ms"] = _animation_ms
+		attacker["anim_reaction_state"] = "dead"
+		attacker["anim_reaction_at_ms"] = _animation_ms + attacker_reaction_delay_ms
 	elif attacker_losses > 0:
-		attacker["anim_state"] = "hit"
-		attacker["anim_started_ms"] = _animation_ms
+		attacker["anim_reaction_state"] = "hit"
+		attacker["anim_reaction_at_ms"] = _animation_ms + attacker_reaction_delay_ms
 	result["finished"] = finished
 	result["winner"] = winner
 	_log("round", "Ronda %d: carta %s vs %s (bajas %d/%d)" % [round, attacker_card, defender_card, attacker_losses, defender_losses])
@@ -534,6 +546,8 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		"march_frame": 0,
 		"anim_state": "idle",
 		"anim_started_ms": 0.0,
+		"anim_reaction_state": "",
+		"anim_reaction_at_ms": 0.0,
 		"sprite_frame_path": BATTLE_SPRITES.state_frame_path(sprite_sheet, "idle", 0.0),
 		"sprite_sheet": _sprite_or_null(sprite_sheet),
 	}
@@ -593,12 +607,20 @@ func _public_unit(unit: Dictionary) -> Dictionary:
 	copy["sprite_frame_path"] = SafeDict.as_string(frame_info.get("frame_path"), "")
 	copy["attack_impact_ms"] = BATTLE_SPRITES.attack_impact_ms(sprite_sheet)
 	copy["attack_impact_frame"] = BATTLE_SPRITES.attack_impact_index(sprite_sheet)
+	# Reacción pendiente (si aún no se alcanzó attack_2) para que la UI sepa que
+	# después del ataque habrá hit/dead y cuándo.
+	copy["anim_reaction_state"] = SafeDict.as_string(unit.get("anim_reaction_state"), "")
+	copy["anim_reaction_at_ms"] = snappedf(SafeDict.as_float(unit.get("anim_reaction_at_ms"), 0.0), 0.1)
+	copy["anim_reaction_delay_ms"] = BATTLE_SPRITES.reaction_delay_ms(sprite_sheet)
+	copy["attack_frame_ms"] = BATTLE_SPRITES.attack_frame_ms(sprite_sheet)
 	copy["sprite_sheet"] = _sprite_or_null(sprite_sheet)
 	return copy
 
 
 func _animation_view(unit: Dictionary) -> Dictionary:
 	var sprite_sheet: Dictionary = SafeDict.as_dict(unit.get("sprite_sheet", null))
+	# Reacción programada: al alcanzar `attack_2` pasa de attack a hit/dead.
+	_resolve_pending_reaction(unit)
 	var state: String = SafeDict.as_string(unit.get("anim_state"), "idle")
 	if not BATTLE_SPRITES.ANIM_STATES.has(state):
 		state = "idle"
@@ -614,6 +636,22 @@ func _animation_view(unit: Dictionary) -> Dictionary:
 		"elapsed_ms": snappedf(elapsed_ms, 0.1),
 		"frame_info": BATTLE_SPRITES.animation_frame_info(sprite_sheet, state, elapsed_ms),
 	}
+
+
+## Aplica la reacción pendiente cuando el reloj alcanza `attack_2` (D-064).
+func _resolve_pending_reaction(unit: Dictionary) -> void:
+	var reaction: String = SafeDict.as_string(unit.get("anim_reaction_state"), "")
+	if reaction == "":
+		return
+	if SafeDict.as_string(unit.get("anim_state"), "") != "attack":
+		return
+	var reaction_at_ms: float = SafeDict.as_float(unit.get("anim_reaction_at_ms"), 0.0)
+	if _animation_ms < reaction_at_ms:
+		return
+	unit["anim_state"] = reaction
+	unit["anim_started_ms"] = reaction_at_ms
+	unit["anim_reaction_state"] = ""
+	unit["anim_reaction_at_ms"] = 0.0
 
 
 ## Dict de sprite o null (fallback) como en TacticalBattle.
