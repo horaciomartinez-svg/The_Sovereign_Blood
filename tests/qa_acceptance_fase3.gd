@@ -12,7 +12,9 @@ const PLAYER_FACTION := "england"
 const SEED := 1337
 
 const CORE_UNITS: Array[String] = [
-	"militia_spearman", "swiss_pikeman", "crossbowmen", "longbowman", "men_at_arms", "light_horseman",
+	"militia_spearman", "scottish_schiltron", "almogavar", "swiss_pikeman", "dismounted_men_at_arms",
+	"janissary", "arquebusier", "mounted_sergeants", "men_at_arms", "light_horseman", "steppe_cavalry",
+	"mamluk", "teutonic_knights", "crossbowmen", "longbowman", "bombarda", "hussite_war_wagon",
 ]
 const UNIT_PNG_DIR := "res://assets/art/sprites/units"
 const PROJECTILE_DIR := "res://assets/art/sprites/projectiles"
@@ -20,9 +22,18 @@ const PROJECTILE_FILES: Array[String] = [
 	"proyectil_virote.png", "proyectil_flecha.png", "proyectil_piedra.png",
 ]
 const EXPECTED_UNIT_COUNT := 17
-const EXPECTED_FALLBACK_COUNT := 11
+const EXPECTED_UNIT_PNG := 51
+const EXPECTED_PROJECTILE_COUNT := 3
+const EXPECTED_UNIT_SHEETS := 17
 const FACING_VALUES: Array[String] = ["E", "SE", "S", "SW", "W", "NW", "N"]
 const MIRROR_FACINGS: Array[String] = ["W", "SW", "NW", "N"]
+const PROJECTILE_EXPECTATIONS: Dictionary = {
+	"crossbowmen": {"type": "virote", "duration_ms": 350.0, "arc_height": 24.0},
+	"longbowman": {"type": "flecha", "duration_ms": 500.0, "arc_height": 40.0},
+	"janissary": {"type": "flecha", "duration_ms": 500.0, "arc_height": 40.0},
+	"steppe_cavalry": {"type": "flecha", "duration_ms": 500.0, "arc_height": 40.0},
+	"bombarda": {"type": "piedra", "duration_ms": 700.0, "arc_height": 56.0},
+}
 
 var _results: Array[Dictionary] = []
 
@@ -62,40 +73,38 @@ func _print_environment() -> void:
 func _criterion_1_sprites() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3-C1"
-	var name := "Sprites núcleo: 6 hojas válidas, 18 PNG de unidades y 3 proyectiles cargan en headless"
+	var name := "Sprites 17/17: 51 PNG de unidades + 3 proyectiles cargan en headless con dimensiones reales"
 	var data: Variant = _read_json("res://data/units.json")
 	if not (data is Dictionary):
 		_fail(id, name, "data/units.json no legible", started)
 		return
 	var units := _units_by_id(data)
-	var core_present: Array[String] = []
+	var integrated: Array[String] = []
 	var missing: Array[String] = []
 	for unit_id in CORE_UNITS:
 		var unit: Dictionary = units.get(unit_id, {})
 		var sheet: Variant = unit.get("sprite_sheet", null)
 		if sheet is Dictionary:
-			core_present.append(unit_id)
+			integrated.append(unit_id)
 		else:
 			missing.append(unit_id)
 	var unit_png := _count_png(UNIT_PNG_DIR)
 	var projectile_png := _count_png(PROJECTILE_DIR)
-	var assets_detail := "PNG unidades=%d/18; proyectiles=%d/3; dir_unidades=%s" % [
-		unit_png, projectile_png, str(DirAccess.dir_exists_absolute(UNIT_PNG_DIR)),
-	]
-	if core_present.is_empty():
-		_skip(id, name, "AG-2 aún no añade sprite_sheet a units.json (0/6); assets de AG-5: PNG unidades=%d/18, proyectiles=%d/3, dir=%s; C1 pendiente de datos/import" % [
-			unit_png, projectile_png, str(DirAccess.dir_exists_absolute(UNIT_PNG_DIR)),
-		], started)
+	if units.size() != EXPECTED_UNIT_COUNT:
+		_fail(id, name, "unidades=%d (esperado %d)" % [units.size(), EXPECTED_UNIT_COUNT], started)
 		return
-	if core_present.size() < CORE_UNITS.size():
-		_skip(id, name, "integración parcial %d/6 (%s); faltan: %s; %s" % [
-			core_present.size(), ", ".join(core_present), ", ".join(missing), assets_detail,
+	if integrated.size() < EXPECTED_UNIT_SHEETS:
+		_skip(id, name, "integración parcial %d/%d con sprite_sheet; faltan: %s; assets: PNG unidades=%d/%d, proyectiles=%d/%d; AG-5/AG-2 en curso" % [
+			integrated.size(), EXPECTED_UNIT_SHEETS, ", ".join(missing),
+			unit_png, EXPECTED_UNIT_PNG, projectile_png, EXPECTED_PROJECTILE_COUNT,
 		], started)
 		return
 
 	var issues: Array[String] = []
 	for unit_id in CORE_UNITS:
 		var unit: Dictionary = units.get(unit_id, {})
+		var unit_type := str(unit.get("type", ""))
+		var expected := _expected_sprite_size(unit_id, unit_type)
 		var sheet_value: Variant = unit.get("sprite_sheet", null)
 		if not (sheet_value is Dictionary):
 			issues.append("%s sin sprite_sheet" % unit_id)
@@ -118,7 +127,6 @@ func _criterion_1_sprites() -> void:
 					issues.append("%s frame %d no Texture2D" % [unit_id, frame_index])
 					continue
 				var texture := texture_value as Texture2D
-				var expected := _expected_sprite_size(unit_id)
 				if texture.get_width() != expected.x or texture.get_height() != expected.y:
 					issues.append("%s frame %d %dx%d (esperado %dx%d)" % [
 						unit_id, frame_index, texture.get_width(), texture.get_height(), expected.x, expected.y,
@@ -134,24 +142,23 @@ func _criterion_1_sprites() -> void:
 				issues.append("%s fps != 6" % unit_id)
 			if not bool(anim.get("loop", false)):
 				issues.append("%s loop != true" % unit_id)
-		var size_expected := _expected_sprite_size(unit_id)
-		if not _int_array_equals(sheet.get("size", []), [size_expected.x, size_expected.y]):
-			issues.append("%s size != [%d,%d]" % [unit_id, size_expected.x, size_expected.y])
+		if not _int_array_equals(sheet.get("size", []), [expected.x, expected.y]):
+			issues.append("%s size != [%d,%d]" % [unit_id, expected.x, expected.y])
 		if str(sheet.get("anchor", "")) != "bottom_center":
 			issues.append("%s anchor != bottom_center" % unit_id)
 		if str(sheet.get("facing", "")) != "E":
 			issues.append("%s facing != E" % unit_id)
-	if unit_png != 18:
-		issues.append("PNG de unidades=%d/18" % unit_png)
-	if projectile_png != 3:
-		issues.append("proyectiles=%d/3" % projectile_png)
+	if unit_png != EXPECTED_UNIT_PNG:
+		issues.append("PNG de unidades=%d/%d" % [unit_png, EXPECTED_UNIT_PNG])
+	if projectile_png != EXPECTED_PROJECTILE_COUNT:
+		issues.append("proyectiles=%d/%d" % [projectile_png, EXPECTED_PROJECTILE_COUNT])
 	for projectile_name in PROJECTILE_FILES:
 		var projectile_path := "%s/%s" % [PROJECTILE_DIR, projectile_name]
 		if not FileAccess.file_exists(projectile_path):
 			issues.append("falta %s" % projectile_name)
 		elif not ResourceLoader.exists(projectile_path) or not (load(projectile_path) is Texture2D):
 			issues.append("%s no carga" % projectile_name)
-	var detail := "6/6 sprite_sheet; 18 PNG; 3 proyectiles; cargan 18 texturas 64x64/64x80; anim march [0,1,2] fps=6 loop; anchor=bottom_center facing=E"
+	var detail := "17/17 sprite_sheet; 51 PNG; 3 proyectiles; 51 texturas reales (64x64 infantería/ranged, 64x80 caballería, 64x43 bombarda/hussite_war_wagon); anim march [0,1,2] fps=6 loop; anchor=bottom_center facing=E"
 	if not issues.is_empty():
 		_fail(id, name, "errores: %s" % ", ".join(issues.slice(0, 8)), started)
 		return
@@ -159,43 +166,41 @@ func _criterion_1_sprites() -> void:
 
 
 # ---------------------------------------------------------------------------
-# F3-C2 — 11 unidades restantes sin sprite → fallback heráldico
+# F3-C2 — Fallback vivo con una unidad sintética SIN sprite_sheet
 # ---------------------------------------------------------------------------
 
 func _criterion_2_fallback() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3-C2"
-	var name := "Fallback: las 11 unidades no núcleo no tienen sprite_sheet (sin huecos)"
-	var data: Variant = _read_json("res://data/units.json")
-	if not (data is Dictionary):
-		_fail(id, name, "data/units.json no legible", started)
+	var name := "Fallback: una unidad sintética SIN sprite_sheet nunca deja hueco (camino vivo)"
+	var script_value: Variant = load("res://scripts/battle/battle_sprites.gd")
+	if not (script_value is GDScript):
+		_skip(id, name, "battle_sprites.gd ausente (AG-2 pendiente): no se puede verificar el fallback", started)
 		return
-	var units := _units_by_id(data)
-	if units.size() != EXPECTED_UNIT_COUNT:
-		_fail(id, name, "unidades=%d (esperado %d)" % [units.size(), EXPECTED_UNIT_COUNT], started)
+	var script := script_value as GDScript
+	var empty_sheet: Dictionary = {}
+	var frames: Variant = script.call("frames_of", empty_sheet)
+	var frame_path: Variant = script.call("frame_path", empty_sheet, 0)
+	var march_frame: Variant = script.call("march_frame", empty_sheet, 1000.0, true)
+	var projectile: Variant = script.call("projectile_for_unit", "qa_synthetic_no_sprite")
+	var errors: Array[String] = []
+	if not (frames is Array) or not (frames as Array).is_empty():
+		errors.append("frames_of({}) debe ser []")
+	if str(frame_path) != "":
+		errors.append("frame_path({}) debe ser ''")
+	if int(march_frame) != 0:
+		errors.append("march_frame({}) debe ser 0 (fallback en reposo/marcha)")
+	if not (projectile is Dictionary) or not (projectile as Dictionary).is_empty():
+		errors.append("projectile_for_unit(synthetic) debe ser {}")
+	var tactical_text := _read_text("res://scripts/battle/tactical_battle.gd")
+	var close_text := _read_text("res://scripts/battle/close_combat.gd")
+	for marker in ["frames_of", "sprite_frame_path", "_sprite_or_null"]:
+		if not tactical_text.contains(marker) and not close_text.contains(marker):
+			errors.append("batalla sin marcador de fallback %s" % marker)
+	if not errors.is_empty():
+		_fail(id, name, "fallback roto: " + ", ".join(errors), started)
 		return
-	var core_count := 0
-	var fallback_ids: Array[String] = []
-	var violations: Array[String] = []
-	for unit_id in units.keys():
-		var unit: Dictionary = units[unit_id]
-		var has_sheet := unit.get("sprite_sheet", null) is Dictionary
-		if CORE_UNITS.has(str(unit_id)):
-			if has_sheet:
-				core_count += 1
-		else:
-			fallback_ids.append(str(unit_id))
-			if has_sheet:
-				violations.append(str(unit_id))
-	if fallback_ids.size() != EXPECTED_FALLBACK_COUNT:
-		_fail(id, name, "unidades no núcleo=%d (esperado %d)" % [fallback_ids.size(), EXPECTED_FALLBACK_COUNT], started)
-		return
-	if not violations.is_empty():
-		_fail(id, name, "unidades no núcleo con sprite_sheet: %s" % ", ".join(violations), started)
-		return
-	var detail := "%d unidades: %d núcleo (sprite %d/6) + %d sin sprite_sheet → fallback heráldico de Fase 2 (sin huecos)" % [
-		units.size(), CORE_UNITS.size(), core_count, fallback_ids.size(),
-	]
+	var detail := "unidad sintética SIN sprite_sheet: frames_of=[]; frame_path=''; march_frame=0; projectile={}; marcadores de fallback vivos en TacticalBattle/CloseCombat"
 	_pass(id, name, detail, started)
 
 
@@ -209,13 +214,18 @@ func _criterion_3_battle_sprites() -> void:
 	var name := "Crécy N1/N2/N3 con sprites: animación/facing/mirroring y proyectiles virote/flecha/piedra"
 	var data: Variant = _read_json("res://data/units.json")
 	var units: Dictionary = _units_by_id(data)
-	var core_integrated := 0
+	var integrated := 0
+	var missing_integration: Array[String] = []
 	for unit_id in CORE_UNITS:
 		var unit: Dictionary = units.get(unit_id, {})
 		if unit.get("sprite_sheet", null) is Dictionary:
-			core_integrated += 1
-	if core_integrated < CORE_UNITS.size():
-		_skip(id, name, "sin datos de sprites (sprite_sheet %d/6): no hay animación/proyectiles que verificar; AG-5/AG-2 pendientes" % core_integrated, started)
+			integrated += 1
+		else:
+			missing_integration.append(unit_id)
+	if integrated < EXPECTED_UNIT_SHEETS:
+		_skip(id, name, "integración parcial %d/%d con sprite_sheet (faltan: %s); no se pueden probar las 17 unidades, animación/proyectiles; AG-5/AG-2 en curso" % [
+			integrated, EXPECTED_UNIT_SHEETS, ", ".join(missing_integration),
+		], started)
 		return
 	var tactical_text := _read_text("res://scripts/battle/tactical_battle.gd")
 	var close_text := _read_text("res://scripts/battle/close_combat.gd")
@@ -225,7 +235,28 @@ func _criterion_3_battle_sprites() -> void:
 		if not tactical_text.contains(marker) and not close_text.contains(marker):
 			missing_markers.append(marker)
 	if not missing_markers.is_empty():
-		_skip(id, name, "datos de sprites presentes pero código aún sin APIs de animación/proyectiles (faltan: %s); AG-2/AG-3 pendientes" % ", ".join(missing_markers), started)
+		_skip(id, name, "datos 17/17 presentes pero código aún sin APIs de animación/proyectiles (faltan: %s); AG-2/AG-3 pendientes" % ", ".join(missing_markers), started)
+		return
+	var projectile_issues: Array[String] = []
+	var sprites_script: Variant = load("res://scripts/battle/battle_sprites.gd")
+	if not (sprites_script is GDScript):
+		projectile_issues.append("battle_sprites.gd ausente")
+	else:
+		for unit_id in PROJECTILE_EXPECTATIONS.keys():
+			var expected: Dictionary = PROJECTILE_EXPECTATIONS[unit_id]
+			var spec_value: Variant = (sprites_script as GDScript).call("projectile_for_unit", str(unit_id))
+			if not (spec_value is Dictionary) or (spec_value as Dictionary).is_empty():
+				projectile_issues.append("%s sin proyectil" % str(unit_id))
+				continue
+			var spec := spec_value as Dictionary
+			if str(spec.get("type", "")) != str(expected["type"]):
+				projectile_issues.append("%s tipo %s != %s" % [str(unit_id), str(spec.get("type", "")), str(expected["type"])])
+			if not is_equal_approx(float(spec.get("duration_ms", 0.0)), float(expected["duration_ms"])):
+				projectile_issues.append("%s duración != %s" % [str(unit_id), str(expected["duration_ms"])])
+			if not is_equal_approx(float(spec.get("arc_height", 0.0)), float(expected["arc_height"])):
+				projectile_issues.append("%s arco != %s" % [str(unit_id), str(expected["arc_height"])])
+	if not projectile_issues.is_empty():
+		_skip(id, name, "mapeo D-048 de proyectiles pendiente (AG-2): " + ", ".join(projectile_issues), started)
 		return
 	var battle := _autoload("BattleManager")
 	if battle == null or not battle.has_method("resolve_delegated"):
@@ -442,13 +473,15 @@ func _criterion_4_determinism() -> void:
 func _criterion_5_captures() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3-C5"
-	var name := "Capturas 64 px de milicia/ballesteros/arqueros + N2/N3 con sprites y proyectiles"
+	var name := "Capturas 64 px de milicia/ballesteros/arqueros/almogávar/jenízaro + N2/N3 con proyectiles"
 	var files := _files_in("res://docs/screenshots", "png")
 	var unit_captures: Array[String] = []
 	var unit_groups: Array[Array] = [
 		["militia", "milicia"],
 		["crossbow", "ballester"],
 		["longbow", "arquero"],
+		["almogavar", "almogávar"],
+		["janissary", "jenizaro"],
 	]
 	for group in unit_groups:
 		var found := _find_capture(files, group, ["64", "sprite", "unit", "unidad"])
@@ -457,8 +490,8 @@ func _criterion_5_captures() -> void:
 	var n2_capture := _find_capture(files, ["n2", "tactical"], ["sprite", "unit", "unidad"])
 	var n3_capture := _find_capture(files, ["n3", "close"], ["project", "proyectil", "virote", "flecha", "piedra", "sprite"])
 	var missing: Array[String] = []
-	if unit_captures.size() < 3:
-		missing.append("3 capturas de unidades 64px (%d/3)" % unit_captures.size())
+	if unit_captures.size() < 5:
+		missing.append("5 capturas de unidades 64px (%d/5)" % unit_captures.size())
 	if n2_capture == "":
 		missing.append("captura N2 con sprites")
 	if n3_capture == "":
@@ -479,7 +512,7 @@ func _criterion_5_captures() -> void:
 	if not wrong_sizes.is_empty():
 		_fail(id, name, "capturas con tamaño distinto de 1920x1080: " + ", ".join(wrong_sizes), started)
 		return
-	_pass(id, name, "5/5 capturas: %s" % ", ".join(captures), started)
+	_pass(id, name, "7/7 capturas: %s" % ", ".join(captures), started)
 
 
 # ---------------------------------------------------------------------------
@@ -499,8 +532,8 @@ func _criterion_6_no_regression() -> void:
 	if scene_count < 18:
 		issues.append("escenas=%d/18" % scene_count)
 	var test_count := _count_files("res://tests", "gd")
-	if test_count < 22:
-		issues.append("tests=%d/22" % test_count)
+	if test_count < 24:
+		issues.append("tests=%d/24 (run_all esperado 932+ en final)" % test_count)
 	for harness_path in ["res://tests/qa_acceptance.gd", "res://tests/qa_acceptance_fase2.gd", "res://tests/run_all.gd"]:
 		if not FileAccess.file_exists(harness_path):
 			issues.append("falta %s" % harness_path.get_file())
@@ -609,9 +642,11 @@ func _units_by_id(data: Variant) -> Dictionary:
 	return out
 
 
-func _expected_sprite_size(unit_id: String) -> Vector2i:
-	if unit_id == "men_at_arms" or unit_id == "light_horseman":
+func _expected_sprite_size(_unit_id: String, unit_type: String) -> Vector2i:
+	if unit_type == "cavalry" or unit_type == "light_cavalry":
 		return Vector2i(64, 80)
+	if unit_type == "artillery" or unit_type == "special":
+		return Vector2i(64, 43)
 	return Vector2i(64, 64)
 
 

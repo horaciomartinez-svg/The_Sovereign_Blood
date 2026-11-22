@@ -931,3 +931,59 @@ BASELINE FASE 3: PENDIENTE — 3 criterio(s) a la espera de módulos en curso (n
 Cuando AG-5/AG-2/AG-3 cierren sus módulos, **task-28** re-ejecutará el harness F3 (debe pasar a 6/6 PASS exit 0), la batería completa, revisará capturas/legibilidad de armas (REA §6) y emitirá el veredicto final «QA Fase 3: APROBADO/RECHAZADO». Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 — baseline (task-27).*
+
+---
+
+## 13. Fase 3 v2 — Baseline 17/17 (task-32, 2026-11-22)
+
+**Contexto:** nuevo alcance PRIORIDAD 1 — paquete v2 de Kimi con **17 unidades (51 cuadros de marcha)** + 3 proyectiles; GDD §10.3 actualizado (commit `464faff`) y decisiones **D-044..D-050**. Snapshot en HEAD **`8d4ae36`** (inicial `9ee52c6`; mismo estado 6/17). Estado: AG-5 ya copió **51 PNG de unidades + 3 proyectiles** a `assets/art/sprites/`; `data/units.json` tiene **6/17** `sprite_sheet`; el código de batalla ya expone `sprite_sheet`/`facing`/`mirror`/`march_frame`/`get_projectiles` (integración de 6) pero **D-048** (flecha para `janissary`/`steppe_cavalry`) aún no está; AG-5/AG-2/AG-3 siguen integrando las 11 restantes y las capturas de almogávar/jenízaro. Plan: **`docs/qa/fase3_plan.md`** (17/17). Harness: **`tests/qa_acceptance_fase3.gd`** (ampliado a 17/17, fallback sintético, D-048 y 7 capturas).
+
+> **Estado baseline: PENDIENTE (no es rechazo).** Harness **3 PASS / 0 FAIL / 3 SKIP** (exit 1; sale 0 solo con 6/6 PASS). La verificación final es **task-33**.
+
+### 13.1 Comandos y salidas del baseline
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3.gd` | **1** | **3 PASS / 0 FAIL / 3 SKIP**; `BASELINE FASE 3: PENDIENTE` (no rechazo) |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 4 | `--script tests/run_all.gd` | **0** | **932 pasados / 0 fallidos / 1 omitido**; `CI: OK` (ya cumple 932+) |
+| 5 | `--script tools/validate_data.gd` | **0** | **5.383 comprobaciones**, 0 errores/WARN |
+| 6 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 7 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+Salida resumida del harness F3 (HEAD `9ee52c6`):
+```text
+[INFO] Fase 3 — presencia de artefactos:
+  res://assets/art/sprites/units: true (51 PNG)
+  res://assets/art/sprites/projectiles: true (3 PNG)
+  [SKIP] F3-C1 — Sprites 17/17: integración parcial 6/17 con sprite_sheet; faltan 11; assets PNG unidades=51/51, proyectiles=3/3
+  [PASS] F3-C2 — Fallback: unidad sintética SIN sprite_sheet: frames_of=[]; frame_path=''; march_frame=0; camino vivo
+  [SKIP] F3-C3 — Crécy N1/N2/N3: integración parcial 6/17; no se pueden probar las 17 unidades/animación/proyectiles
+  [PASS] F3-C4 — Determinismo: N1 hash=08cc7cee592e343b; winner=england bajas=703/724 (2 ejecuciones)
+  [SKIP] F3-C5 — Capturas: 3/5 unidades 64px; faltan almogávar/jenízaro + N2/N3
+  [PASS] F3-C6 — No regresión: 17 unidades; 18 escenas; 24 tests; scripts fallos=0
+RESULTADO QA ACEPTACIÓN FASE 3: 3 PASS, 0 FAIL, 3 SKIP (de 6 criterios)
+BASELINE FASE 3: PENDIENTE — 3 criterio(s) a la espera de módulos en curso (no es rechazo)
+```
+
+### 13.2 Detalle
+
+| Criterio | Baseline | Motivo / evidencia |
+|---|---|---|
+| F3-C1 Sprites 17/17 | **SKIP** | Assets de AG-5 **51/51 PNG + 3/3 proyectiles** ya presentes; `units.json` **6/17** `sprite_sheet` (faltan scottish_schiltron, almogavar, dismounted_men_at_arms, janissary, arquebusier, mounted_sergeants, steppe_cavalry, mamluk, teutonic_knights, bombarda, hussite_war_wagon). |
+| F3-C2 Fallback sintético | **PASS** | `battle_sprites.gd`: `frames_of({})=[]`, `frame_path=''`, `march_frame=0`, sin proyectil; marcadores de fallback vivos en `TacticalBattle`/`CloseCombat`. |
+| F3-C3 Crécy 17 + proyectiles | **SKIP** | 6/17 hojas; **D-048** aún no incluye `janissary`/`steppe_cavalry`→flecha en `projectile_for_unit` (solo crossbow/longbow/bombarda); AG-2 en curso. |
+| F3-C4 Determinismo | **PASS** | N1 hash idéntico en 2 ejecuciones `08cc7cee592e343b` (england, 703/724). |
+| F3-C5 Capturas | **SKIP** | 46–49 PNG en `docs/screenshots`; hay 3/5 capturas de unidades (faltan almogávar y jenízaro) y las capturas N2/N3 con proyectiles; AG-3/AG-0 pendientes. |
+| F3-C6 No regresión | **PASS** | 17 unidades; 18 escenas; 24 tests; F1/F2/run_all; artefactos F2; 0 scripts sin compilar; `run_all` externo **932/0/1**. |
+
+### 13.3 Riesgos v2 y siguiente paso
+
+Riesgos actualizados en `docs/qa/fase3_plan.md` §4: R-F3-01 ruta de assets (resuelta a fecha baseline: 51 PNG en `assets/art/sprites/units/`), R-F3-02 import, R-F3-03 fallback sintético, R-F3-04 determinismo, R-F3-05 campos aditivos, R-F3-06 capturas, R-F3-07 concurrencia, **R-F3-08 64×43** (bombarda/carro), **R-F3-09 D-045 id `bombarda`**, **R-F3-10 D-048** proyectiles ampliados, R-F3-11 `src/` sin importar (D-046), R-F3-12 animaciones extra fuera de P1 (D-049).
+
+**Snapshot concurrente:** AG-5 ya copió los 51+3 assets; AG-2 ha integrado 6/17 hojas y las APIs de animación/proyectiles; AG-3 ha renderizado/capturado el set de 6. El harness detectará el avance (C1 validará las 17 hojas; C3 el mapeo D-048 y las 17 unidades; C5 las 7 capturas).
+
+Cuando AG-5/AG-2/AG-3 cierren, **task-33** re-ejecutará el harness (debe 6/6 PASS exit 0), la batería completa, revisará capturas/legibilidad del arma (REA §6) y emitirá el veredicto final «QA Fase 3: APROBADO/RECHAZADO». Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 v2 — baseline 17/17 (task-32).*
