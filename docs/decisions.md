@@ -220,3 +220,38 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** §10.3 contempla idle/ataque/impacto/muerte y las 11 unidades restantes; el equipo DSH no tiene generador de arte IA propio.
 **Decisión:** se completa primero la integración de las 6 unidades núcleo; para el resto y para los cuadros de ataque se solicitará a Kimi la generación con el mismo pipeline (mediante el usuario/AG-0), registrando la petición en `docs/STATUS.md`/`docs/issues.md`. Mientras tanto, las unidades sin sprite mantienen el fallback heráldico.
 **Consecuencia:** sin bloquear Fase 3 por capacidad de arte; la petición queda trazada y priorizada por escenario 1.
+
+## D-044 · Paquete de sprites v2: las 17 unidades (2026-11-22)
+**Contexto:** el usuario entregó un segundo `Sprites_Unidades_TSB.zip` (106 MB) que cubre las **17 unidades** de `units.json` × 3 cuadros de marcha (51 PNG) + 3 proyectiles + `_raw_1024/`, ampliando el paquete de 6 unidades integrado hasta ahora. El GDD v1.6 del repo todavía describía el bloque de 6; el usuario indica que el contrato completo de las 17 unidades es el vigente.
+**Decisión:** el paquete v2 **sustituye** al de 6 unidades. Se actualiza el bloque §10.3 del GDD (repo y master del workspace) con el contrato de las 17 unidades, los 3 formatos (64×64/64×80/64×43) y el mapeo de proyectiles; se reabre la PRIORIDAD 1 para integrar las 17 y se mantienen los commits previos de 6 unidades como base. La verificación se hará contra GDD v1.6 tal y como queda actualizado.
+**Consecuencia:** alcance de assets completo; los criterios §10.3 se evalúan sobre 17/17 unidades.
+
+## D-045 · Normalización del id `bombard` ↔ `bombarda` (2026-11-22)
+**Contexto:** `data/units.json` usa el id `bombarda` (referenciado en tests y datos del juego); el paquete de Kimi nombra los archivos `bombard_march_*.png`.
+**Decisión:** se conserva el id del dataset (`bombarda`) y **AG-5 renombra los archivos** del paquete a `bombarda_march_{1,2,3}.png` en producción y en `src/`; no se renombran datos ni se tocan referencias del juego.
+**Consecuencia:** `sprite_sheet` de `bombarda` apunta a archivos existentes; se evita romper `units.json`, escenarios o tests.
+
+## D-046 · Fuentes `_raw_1024` en `src/` (actualiza D-041) (2026-11-22)
+**Contexto:** el paquete v2 entrega los originales `_raw_1024/` (1024/1536 px, 51 archivos) y el usuario indica que se guarden en `assets/art/sprites/units/src/` como almacén sin importar. El paquete v1 usaba los 512 como fuente.
+**Decisión:** `src/` pasa a contener los **51 originales `_raw_1024`** con `.gdignore` (sin importación); se retiran de `src/` los 18 PNG 512 del paquete anterior. Los 512 del paquete v2 no se versionan por separado (la producción 64 px se genera desde 1024 con LANCZOS). El peso se asume como almacén de fuentes.
+**Consecuencia:** fuente de máxima calidad versionada para futuros reescalados; el proyecto sigue importando solo producción y proyectiles.
+
+## D-047 · Formatos de producción: 64×64 / 64×80 / 64×43 (2026-11-22)
+**Contexto:** el paquete v2 incluye artillería y vagón con lienzo panorámico 512×341; la reducción 8:1 da 64×42,6.
+**Decisión:** producción a **64×64** (infantería), **64×80** (caballería) y **64×43** (bombarda y carro húsita), con LANCZOS y proporción mantenida (padding mínimo si el redondeo lo exige). El render ancla `bottom_center` y escala por radio de hex; los sprites panorámicos se centran en su celda.
+**Consecuencia:** criterio de legibilidad uniforme; `units.json.size` refleja el tamaño real por tipo.
+
+## D-048 · Mapeo de proyectiles ampliado (2026-11-22)
+**Contexto:** el paquete v2 define proyectiles para más unidades de las inicialmente previstas.
+**Decisión:** capa separada con trayectoria balística: **virote → `crossbowmen`; flecha → `longbowman`, `janissary` y `steppe_cavalry`; piedra → `bombarda`**. Duraciones/arcos: virote 350 ms/24 px, flecha 500 ms/40 px, piedra 700 ms/56 px (D-042 se mantiene para el resto).
+**Consecuencia:** las unidades de arco compuesto disparan flecha; la bombarda dispara piedra; los tests cubren el mapeo.
+
+## D-049 · Cuadros de combate idle/ataque/impacto/muerte (2026-11-22)
+**Contexto:** §10.3 contempla hojas idle(2)/ataque(4-6)/impacto(2)/muerte(2); el paquete v2 entrega solo marcha (3 cuadros). El equipo DSH no tiene generador de arte IA.
+**Decisión:** se completa la integración de marcha de las 17 unidades; para los cuadros de combate y cualquier ajuste de estilo se solicitará a Kimi la generación con este set como referencia de estilo (vía usuario/AG-0) y se registrará la petición en STATUS/issues. Mientras tanto se usan marcha 0 y los proyectiles.
+**Consecuencia:** Fase 3 no se bloquea por animaciones adicionales; petición trazada.
+
+## D-050 · Criterio de capturas de legibilidad (2026-11-22)
+**Contexto:** el REA §6 exige que el arma se reconozca en silueta; el usuario pide mínimo milicia, ballesteros, arqueros, almogávar y jenízaro a 64 px reales.
+**Decisión:** las capturas de aceptación serán a tamaño real 64 px (sin zoom) de `militia_spearman`, `crossbowmen`, `longbowman`, `almogavar` y `janissary`, además de una captura N2 y otra N3 con sprites/proyectiles; se guardan en `docs/screenshots/` y se revisan visualmente.
+**Consecuencia:** criterio objetivo y mínimo para cerrar la integración de sprites.
