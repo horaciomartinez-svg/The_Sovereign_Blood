@@ -5,15 +5,15 @@
 | **Autor** | AG-4 (QA independiente) |
 | **Fecha** | 2026-11-23 |
 | **Directiva** | D-066: congelar 1402/1453 y centrarse en que el MVP con **un solo escenario (1337)** funcione de principio a fin. GDD v1.8.1; baseline `be28088` / tag `fase-3.2`; QA animación 6/6. |
-| **Alcance** | Loop completo 1337, 4 condiciones §4.5, N1/N2/N3, save/load 3 puntos, simulación 10 años × 8 facciones, estabilidad/rendimiento, UX/audio/capturas, congelación 1402/1453 y fallbacks. |
-| **Harness** | `tests/qa_acceptance_mvp_1337.gd` (C1-C10; `extends SceneTree`; compila siempre) |
+| **Alcance** | Loop completo 1337, 4 condiciones §4.5, N1/N2/N3, save/load 3 puntos, simulación 10 años × 8 facciones, estabilidad/rendimiento, UX/audio/capturas, congelación 1402/1453, fallbacks y **banda sonora (D-067)**. |
+| **Harness** | `tests/qa_acceptance_mvp_1337.gd` (C1-C11; `extends SceneTree`; compila siempre) |
 | **Baseline** | HEAD `6b4e26b` (D-066 + STATUS; AG-1/AG-2/AG-3 del tramo en curso). |
 
-> **Semántica:** PASS = criterio cumplido; SKIP = pendiente de módulo en curso (justificado); FAIL = incumplimiento. **Exit 0 solo con C1-C10 PASS.** Baseline con SKIP sale 1 e imprime «PENDIENTE», no «rechazado».
+> **Semántica:** PASS = criterio cumplido; SKIP = pendiente de módulo en curso (justificado); FAIL = incumplimiento. **Exit 0 solo con C1-C11 PASS.** Baseline con SKIP sale 1 e imprime «PENDIENTE», no «rechazado».
 
 ---
 
-## 1. Matriz C1-C10 → test → comando → evidencia
+## 1. Matriz C1-C11 → test → comando → evidencia
 
 | # | Criterio (prompt MVP §5) | Test en `qa_acceptance_mvp_1337.gd` | Comando | Evidencia esperada |
 |---|---|---|---|---|
@@ -27,6 +27,7 @@
 | C8 | UX: 0 botones muertos, PG visible, audio mínimo (click/campana/espada), capturas §9 | `_criterion_8_ux()` | ídem + capturas | PASS audios/hooks/capturas |
 | C9 | 1402/1453 congelados y «EN PAUSA» en UI (flag reversible); sin trabajo nuevo | `_criterion_9_pause()` | ídem | PASS flag/texto/captura |
 | C10 | Sin arte externo nuevo; fallbacks operativos | `_criterion_10_no_external_art()` | ídem | PASS petición congelada y fallback 5 slots |
+| C11 | Música MVP D-067: 6 OGG cargan headless (`AudioStreamOggVorbis`, duración>0), cambio de contexto/crossfade 1,5-2 s, buses Master/Music/SFX, opciones Music/SFX persistentes en `user://` y mute, `docs/audio_licenses.md` sin copyright | `_criterion_11_music()` | ídem + revisión licencias | PASS 6/6 OGG, buses, crossfade, opciones y licencias |
 
 ---
 
@@ -47,7 +48,7 @@
 ### C4 — Save/load 3 puntos
 1. Turno intermedio: nuevo juego + 2 trimestres → `to_dict`/`from_dict` → hash idéntico.
 2. Fin de año: avanzar hasta `year` distinto → hash idéntico tras round-trip.
-3. Batalla pendiente: crear N2 (`launch_tactical`) y guardar/restaurar `GameState` mientras está pendiente. Si no existe serialización de batalla pendiente (API AG-2), **SKIP** con motivo (no inventar).
+3. Batalla pendiente: `launch_tactical` registra `GameState.set_pending_battle(...)`; guardar/restaurar (`to_dict`/`from_dict` y `save_game`/`load_game`) → hash idéntico y `get_pending_battle()` restaurado (`level=2`). AG-2 ya expone `set/get/has/clear_pending_battle`.
 
 ### C5 — 10 años × 8 facciones
 - Por cada facción: `new_game`, 40 trimestres o hasta game_over; validar `to_dict` al final de cada año (10/10); sin crash; hash determinista en 2 ejecuciones de una facción.
@@ -72,6 +73,13 @@
 ### C10 — Sin arte externo
 - `docs/art/requests/kimi_phase3_assets.md` congelado (sin nueva petición); no hay assets de retratos nuevos; fallback de retratos 5 slots operativo (14 1337 textura + nuevos fallback).
 
+### C11 — Banda sonora (D-067)
+- `assets/audio/music/`: **6 OGG** (menú, mapa, N2, N3, fin de año, cierre); cada uno carga en headless como `AudioStreamOggVorbis` con `get_length()>0`.
+- `data/audio_tracks.json`: contexto → ruta `res://`, `loop`, `volume_db`; 6 contextos sin hardcode.
+- Buses **Master/Music/SFX** en `AudioServer`; crossfade 1,5-2 s al cambiar contexto; música no se corta al guardar/cargar.
+- `options_menu`: sliders Music/SFX, mute global, persistencia en `user://`; `AudioManager` con API de música/volumen.
+- `docs/audio_licenses.md`: 6 pistas con composición/síntesis PD, fuente/licencia/atribución, sin grabaciones de terceros ni copyright.
+
 ---
 
 ## 3. Comandos
@@ -79,7 +87,7 @@
 ```powershell
 $g = "C:\Godot\Godot_v4.7.2-stable_win64_console.exe"
 $repo = "C:\Proyectos\TSB\sovereigns-blood"
-& $g --headless --path $repo --script tests/qa_acceptance_mvp_1337.gd      # C1-C10
+& $g --headless --path $repo --script tests/qa_acceptance_mvp_1337.gd      # C1-C11
 & $g --headless --path $repo --script tests/qa_acceptance_fase3_anim.gd   # animación ×2
 & $g --headless --path $repo --script tests/qa_acceptance_fase3.gd        # sprites
 & $g --headless --path $repo --script tests/qa_acceptance_tiles.gd        # tiles
@@ -93,6 +101,8 @@ $repo = "C:\Proyectos\TSB\sovereigns-blood"
 ```
 
 **Baseline ejecutado (HEAD `6b4e26b`, D-066; AG-1/AG-2/AG-3 del tramo en curso):** **8 PASS / 0 FAIL / 2 SKIP** — C1, C2, C3, C5, C6, C7, C9, C10 PASS; **C4 SKIP** (save de batalla pendiente sin API de serialización) y **C8 SKIP** (capturas MVP aún no copiadas). Salida 1 con «PENDIENTE», no rechazo. Detalle en `docs/issues.md` §21. Observación de baseline: el `AudioManager` nuevo emite `ERROR: Playback can only happen when a node is inside the scene tree` en ejecuciones headless (152 líneas en el harness MVP); debe quedar 0 en task-56 (R-MVP-13).
+
+**Actualización post-AG-2 (task-53) y C11:** C4 ya pasa con la API `pending_battle` (3/3 hashes) y el audio headless quedó en **0 ERROR**; el harness C1-C11 está en **9 PASS / 0 FAIL / 2 SKIP** — solo **C8** (capturas AG-3) y **C11** (6 OGG/buses/opciones/licencias, AG-5/AG-2/AG-3/AG-1) pendientes. Task-56 pasa a C1-C11 y depende de task-57/58/59/60.
 
 ---
 
@@ -118,12 +128,13 @@ $repo = "C:\Proyectos\TSB\sovereigns-blood"
 | R-MVP-16 | Peste Negra sin efecto dinástico | V3 en C2 |
 | R-MVP-17 | Guerra anglo-francesa no declarada/eventos war no disparan | V4 en C2 |
 | R-MVP-18 | Polonia sin heir válido (fallback spouse) | V5 en C2/C1 |
+| R-MVP-19 | Música D-067 incompleta: <6 OGG, sin buses/crossfade, opciones no persistentes o licencias con copyright | C11 exige 6 `AudioStreamOggVorbis`, buses, API/contextos, `user://` y `docs/audio_licenses.md` PD/síntesis |
 
 ---
 
 ## 5. Verificación final (task-56)
 
-Harness C1-C10 10/10 PASS exit 0; batería completa; revisión de capturas/UX/audio; veredicto **«QA MVP-1337: APROBADO/RECHAZADO»** en `docs/qa/fase3_mvp_report.md` + `docs/issues.md`, con métricas y observaciones.
+Harness C1-C11 11/11 PASS exit 0; batería completa; revisión de capturas/UX/audio/música; veredicto **«QA MVP-1337: APROBADO/RECHAZADO»** en `docs/qa/fase3_mvp_report.md` + `docs/issues.md`, con métricas y observaciones.
 
 ---
 
@@ -139,4 +150,10 @@ Estos 5 puntos **no bloquean el baseline**; se añaden a task-56 y sus umbrales 
 | V4 | Guerra anglo-francesa no declarada; eventos war 1340-1367 no disparan en partida pasiva | C2: nueva partida pasiva England/France; comprobar guerra activa y eventos Sluys/Crécy/Calais/Poitiers/Brétigny | Guerra declarada y eventos `war` disparan (o decisión documentada) |
 | V5 | Polonia sin heir válido; fallback elige spouse | C2/C1: comprobar `heir_id`/rol heir de Polonia | Heredero válido o fallback documentado, sin gobernante-spouse inválido |
 
-**Implementación:** se añadirán como subcomprobaciones de C2/C5 (sin crear criterios nuevos) para mantener C1-C10; se reportarán métricas antes/después. Coordinar con AG-2 los umbrales exactos de V1/V2 antes de fijarlos como FAIL.
+**Implementación:** se integraron como subcomprobaciones/evidencia de C2/C5 (sin crear criterios nuevos) para mantener C1-C11; umbrales acordados con AG-2/D-068. Reporte final en `docs/qa/fase3_mvp_report.md` §4.
+
+---
+
+## 7. Resultado de la verificación final (task-56)
+
+**APROBADO 11/11** — HEAD `b7904cf8`; harness ×2 exit 0; `run_all` 1742/0/2; validate 12/8/11.681 0 WARN; editor/headless 0; F1/F2/sprites/tiles/final/anim verdes; `ui_smoke` 47/18. V1 tesoros ×1,10-×1,95; V2 apoyo mínimo 11-63; V3 Peste Negra dinástica PASS; V4 guerra/eventos PASS; V5 Polonia sin spouse PASS. Detalle y observaciones en `docs/qa/fase3_mvp_report.md` y `docs/issues.md` §21.5.

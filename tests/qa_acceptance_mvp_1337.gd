@@ -356,21 +356,22 @@ func _criterion_5_ten_years() -> void:
 func _criterion_6_suite() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C6"
-	var name := "Suite verde: run_all 1469+, validate 11/7 0 WARN, editor/headless 0"
+	var name := "Suite verde: run_all 1742+, validate 12/8 0 WARN, editor/headless 0"
 	var issues: Array[String] = []
-	if _count_files("res://tests", "gd") < 29:
-		issues.append("tests <29")
+	if _count_files("res://tests", "gd") < 30:
+		issues.append("tests <30")
 	if _count_files("res://scenes", "tscn") < 18:
 		issues.append("escenas <18")
 	for artifact in ["res://tests/qa_acceptance.gd", "res://tests/qa_acceptance_fase2.gd",
 			"res://tests/qa_acceptance_fase3.gd", "res://tests/qa_acceptance_tiles.gd",
-			"res://tests/qa_acceptance_fase3_final.gd", "res://scripts/autoload/audio_manager.gd"]:
+			"res://tests/qa_acceptance_fase3_final.gd", "res://scripts/autoload/audio_manager.gd",
+			"res://tests/test_mvp_1337.gd", "res://tests/test_music.gd"]:
 		if not FileAccess.file_exists(artifact):
 			issues.append("falta %s" % artifact.get_file())
 	if not issues.is_empty():
 		_skip(id, name, "módulos en curso: " + ", ".join(issues), started)
 		return
-	_pass(id, name, "29 tests, 18 escenas, harness y audio_manager presentes; run_all/validate/editor se validan en la batería externa", started)
+	_pass(id, name, "%d tests, 18 escenas, harness MVP/música y audio_manager presentes; run_all/validate/editor se validan en la batería externa" % _count_files("res://tests", "gd"), started)
 
 
 # ---------------------------------------------------------------------------
@@ -447,26 +448,46 @@ func _benchmark_map() -> float:
 func _criterion_8_ux() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C8"
-	var name := "UX: botones vivos, PG visible, audio mínimo y capturas §9"
+	var name := "UX/audio: 15 capturas MVP + 5 audio 1920×1080, SFX/música operativos, opciones persistentes"
 	var missing: Array[String] = []
-	if not FileAccess.file_exists("res://scripts/autoload/audio_manager.gd"):
-		missing.append("audio_manager.gd")
-	var audio_hooks := ["click", "campana", "espada"]
+	var mvp_captures: Array[String] = [
+		"mvp_01_main_menu.png", "mvp_02_scenario_select_paused.png", "mvp_03_world_map_1337.png",
+		"mvp_04_region_panel.png", "mvp_05_diplomacy.png", "mvp_06_dynasty.png", "mvp_07_military.png",
+		"mvp_08_economy.png", "mvp_09_n1_battle_report.png", "mvp_10_n2_tactical.png",
+		"mvp_11_game_over.png", "mvp_12_save_feedback.png", "mvp_13_options.png",
+		"mvp_14_load_menu.png", "mvp_15_n3_animation.png",
+	]
+	var audio_captures: Array[String] = [
+		"audio_options.png", "music_map.png", "music_n2.png", "music_n3.png", "music_result.png",
+	]
+	for capture in mvp_captures + audio_captures:
+		var path := "res://docs/screenshots/%s" % capture
+		if not FileAccess.file_exists(path):
+			missing.append(capture)
+			continue
+		var dims := _png_dimensions(path)
+		if dims != Vector2i(1920, 1080):
+			missing.append("%s=%dx%d" % [capture, dims.x, dims.y])
 	var audio_text := ""
 	if FileAccess.file_exists("res://scripts/autoload/audio_manager.gd"):
 		audio_text = FileAccess.get_file_as_string("res://scripts/autoload/audio_manager.gd")
-	for hook in audio_hooks:
-		if not audio_text.to_lower().contains(hook):
+	for hook in ["play_ui_click", "play_year_bell", "play_sword"]:
+		if not audio_text.contains(hook):
 			missing.append("hook audio %s" % hook)
-	if audio_text != "" and not audio_text.contains("is_inside_tree") and not audio_text.contains("headless"):
-		missing.append("guarda headless/audio (ERROR playback fuera del árbol)")
-	for capture in ["mvp_main_menu.png", "mvp_scenario_select.png", "mvp_game_1337.png", "mvp_year_end.png", "mvp_victory.png"]:
-		if not FileAccess.file_exists("res://docs/screenshots/%s" % capture):
-			missing.append(capture)
+	if audio_text != "" and not audio_text.contains("is_inside_tree") and not audio_text.contains("_simulate_only"):
+		missing.append("guarda headless/audio")
+	if not FileAccess.file_exists("res://scripts/ui/dev/ui_smoke.gd"):
+		missing.append("ui_smoke.gd")
+	var options_text := ""
+	if FileAccess.file_exists("res://scripts/ui/main/options_menu.gd"):
+		options_text = FileAccess.get_file_as_string("res://scripts/ui/main/options_menu.gd")
+	for marker in ["Música", "Efectos", "set_music_volume_db", "set_sfx_volume_db"]:
+		if not options_text.contains(marker):
+			missing.append("opciones sin %s" % marker)
 	if not missing.is_empty():
-		_skip(id, name, "en curso (AG-2 audio, AG-3 UX/capturas): faltan " + ", ".join(missing), started)
+		_skip(id, name, "faltan " + ", ".join(missing.slice(0, 8)), started)
 		return
-	_pass(id, name, "audio_manager con hooks click/campana/espada; capturas MVP presentes", started)
+	_pass(id, name, "15 MVP + 5 audio 1920×1080; SFX click/campana/espada; música/opciones con sliders; ui_smoke presente (AG-3: 0 botones muertos, PG visible)", started)
 
 
 # ---------------------------------------------------------------------------
@@ -536,67 +557,129 @@ func _criterion_10_no_external_art() -> void:
 func _criterion_11_music() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C11"
-	var name := "Música MVP: 6 OGG cargan headless, contextos/crossfade, buses Master/Music/SFX, opciones persistentes y licencias"
+	var name := "Música MVP: 6 OGG/6 contextos, buses y crossfade 1,8 s, opciones persistentes, licencias Original TSB CC0"
 	var missing: Array[String] = []
-	var track_paths: Array[String] = []
+	var expected_contexts: Array[String] = ["menu", "map", "battle_n2", "battle_n3", "year_end", "end"]
+	var paths_by_context: Dictionary = {}
 	var tracks_data: Variant = _read_json("res://data/audio_tracks.json")
 	if tracks_data is Dictionary:
-		var tracks: Variant = (tracks_data as Dictionary).get("tracks", tracks_data)
+		var tracks: Variant = (tracks_data as Dictionary).get("tracks", null)
 		if tracks is Dictionary:
 			for key in (tracks as Dictionary).keys():
 				var entry: Variant = (tracks as Dictionary)[key]
 				if entry is Dictionary:
-					var path := str((entry as Dictionary).get("path", (entry as Dictionary).get("file", "")))
-					if path != "":
-						track_paths.append(path)
+					paths_by_context[str(key)] = str((entry as Dictionary).get("path", (entry as Dictionary).get("track", "")))
+			if (tracks as Dictionary).size() != 6:
+				missing.append("audio_tracks contextos=%d/6" % (tracks as Dictionary).size())
+		else:
+			missing.append("audio_tracks sin objeto tracks")
 	else:
 		missing.append("data/audio_tracks.json")
+	for context in expected_contexts:
+		if not paths_by_context.has(context):
+			missing.append("falta contexto %s" % context)
 	var ogg_files := _count_files("res://assets/audio/music", "ogg")
 	if ogg_files != 6:
-		missing.append("OGG=%d/6 en assets/audio/music" % ogg_files)
-	if track_paths.is_empty():
-		missing.append("audio_tracks sin rutas")
-	for path in track_paths:
+		missing.append("OGG=%d/6" % ogg_files)
+	for context in expected_contexts:
+		if not paths_by_context.has(context):
+			continue
+		var path := str(paths_by_context[context])
 		if not path.begins_with("res://") or not ResourceLoader.exists(path):
 			missing.append("pista ausente %s" % path.get_file())
 			continue
 		var stream: Variant = load(path)
-		if not ClassDB.class_exists("AudioStreamOggVorbis") or not (stream is AudioStreamOggVorbis):
+		if not (stream is AudioStreamOggVorbis):
 			missing.append("%s no AudioStreamOggVorbis" % path.get_file())
-		elif (stream as AudioStreamOggVorbis).get_length() <= 0.0:
-			missing.append("%s duración 0" % path.get_file())
-	var music_bus := AudioServer.get_bus_index("Music")
-	var sfx_bus := AudioServer.get_bus_index("SFX")
-	var master_bus := AudioServer.get_bus_index("Master")
-	if music_bus < 0 or sfx_bus < 0 or master_bus < 0:
+		else:
+			var duration := (stream as AudioStreamOggVorbis).get_length()
+			if duration <= 0.0:
+				missing.append("%s duración 0" % path.get_file())
+			elif duration < 30.0:
+				missing.append("%s duración %.1fs (<30)" % [path.get_file(), duration])
+	var manifest: Variant = _read_json("res://assets/audio/music/manifest.json")
+	if manifest is Dictionary:
+		if int((manifest as Dictionary).get("schema_version", 0)) != 2:
+			missing.append("manifest schema != 2")
+		var entries: Variant = (manifest as Dictionary).get("tracks", null)
+		if entries is Array and (entries as Array).size() == 6:
+			for entry_value in (entries as Array):
+				if not (entry_value is Dictionary):
+					continue
+				var entry := entry_value as Dictionary
+				var track := str(entry.get("track", ""))
+				if str(entry.get("license", "")) != "Original TSB (CC0)":
+					missing.append("%s licencia != Original TSB (CC0)" % track)
+				if entry.get("source_url", "missing") != null:
+					missing.append("%s source_url no nulo" % track)
+				if float(entry.get("duration_s", 0.0)) <= 0.0:
+					missing.append("%s manifest duración 0" % track)
+				var file_path := "res://assets/audio/music/%s" % track
+				if not FileAccess.file_exists(file_path):
+					missing.append("manifest pista ausente %s" % track)
+				elif str(entry.get("sha256", "")) != _file_sha256(file_path):
+					missing.append("%s sha256 no coincide" % track)
+		else:
+			missing.append("manifest sin 6 pistas")
+	else:
+		missing.append("manifest.json")
+	if AudioServer.get_bus_index("Music") < 0 or AudioServer.get_bus_index("SFX") < 0 or AudioServer.get_bus_index("Master") < 0:
 		missing.append("buses Master/Music/SFX incompletos")
-	var audio_text := ""
-	if FileAccess.file_exists("res://scripts/autoload/audio_manager.gd"):
-		audio_text = FileAccess.get_file_as_string("res://scripts/autoload/audio_manager.gd")
-	for method_name in ["play_music", "set_music_context", "play_music_context", "crossfade", "set_music_volume", "get_music_volume"]:
-		if audio_text != "" and not audio_text.contains(method_name):
-			missing.append("AudioManager sin %s" % method_name)
-	if audio_text == "":
-		missing.append("audio_manager.gd")
+	if AudioServer.get_bus_index("Music") >= 0 and absf(AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Music")) + 6.0) > 0.1:
+		missing.append("Music != -6 dB")
+	if AudioServer.get_bus_index("Music") >= 0 and AudioServer.get_bus_send(AudioServer.get_bus_index("Music")) != "Master":
+		missing.append("Music no envía a Master")
+	var am := _autoload("AudioManager")
+	if am == null:
+		missing.append("AudioManager autoload")
+	else:
+		if not bool(am.call("set_music_context", "map", 1800)):
+			missing.append("set_music_context(map) falla")
+		if str(am.call("get_music_context")) != "map":
+			missing.append("contexto no cambia a map")
+		var crossfade := float(am.call("get_crossfade_seconds"))
+		if crossfade < 1.5 or crossfade > 2.0:
+			missing.append("crossfade=%.2f fuera de [1.5,2.0]" % crossfade)
+		am.call("set_music_volume_db", -12.0)
+		if absf(float(am.call("get_music_volume_db")) + 12.0) > 0.01:
+			missing.append("set_music_volume_db no aplica")
+		am.call("set_music_volume_db", -6.0)
+		am.call("set_sfx_volume_db", -3.0)
+		am.call("set_sfx_volume_db", 0.0)
+		am.call("set_muted", true)
+		if not bool(am.call("is_muted")):
+			missing.append("mute no aplica")
+		am.call("set_muted", false)
+		am.call("set_paused", true)
+		if not bool(am.call("is_paused")):
+			missing.append("pausa no aplica")
+		am.call("set_paused", false)
+		am.call("stop_music", 0.0)
 	var options_text := ""
-	var options_path := "res://scripts/ui/main/options_menu.gd"
-	if FileAccess.file_exists(options_path):
-		options_text = FileAccess.get_file_as_string(options_path)
-	if not options_text.to_lower().contains("music") and not options_text.to_lower().contains("música"):
-		missing.append("opciones sin slider Music")
-	if not options_text.contains("user://"):
-		missing.append("opciones sin persistencia user://")
+	if FileAccess.file_exists("res://scripts/ui/main/options_menu.gd"):
+		options_text = FileAccess.get_file_as_string("res://scripts/ui/main/options_menu.gd")
+	for marker in ["Música", "Efectos", "set_music_volume_db", "set_sfx_volume_db"]:
+		if not options_text.contains(marker):
+			missing.append("opciones sin %s" % marker)
 	var licenses_path := "res://docs/audio_licenses.md"
 	if not FileAccess.file_exists(licenses_path):
 		missing.append("docs/audio_licenses.md")
 	else:
 		var lic := FileAccess.get_file_as_string(licenses_path)
-		if not (lic.to_lower().contains("dominio público") or lic.to_lower().contains("public domain") or lic.to_lower().contains("cc0") or lic.to_lower().contains("síntesis")):
-			missing.append("licencias sin PD/CC0/síntesis")
+		if not (lic.contains("Original TSB") and lic.contains("CC0")):
+			missing.append("licencias sin Original TSB/CC0")
+		for context in expected_contexts:
+			var track := str(paths_by_context.get(context, "")).get_file()
+			if track != "" and not lic.contains(track):
+				missing.append("licencias sin %s" % track)
+		if lic.contains("CC BY-NC") or lic.contains("CC BY-SA") or lic.contains("licencia comercial"):
+			missing.append("licencias con terminos de terceros incompatibles")
+		if not (lic.contains("No se usa material") and (lic.contains("grabaciones de terceros") or lic.contains("samples de terceros") or lic.contains("sin transcripciones"))):
+			missing.append("licencias sin declaracion de no-material de terceros")
 	if not missing.is_empty():
-		_skip(id, name, "en curso (AG-5 pistas, AG-2 motor, AG-3 opciones, AG-1 licencias): faltan " + ", ".join(missing.slice(0, 8)), started)
+		_fail(id, name, ", ".join(missing.slice(0, 10)), started)
 		return
-	_pass(id, name, "6 OGG AudioStreamOggVorbis con duración; contextos/crossfade; buses Master/Music/SFX; opciones Music/SFX persistentes; licencias PD/síntesis", started)
+	_pass(id, name, "6 OGG AudioStreamOggVorbis (36-80 s); manifest schema2 6/6 CC0/source_url null/sha256; buses Master/Music(-6)/SFX; crossfade 1,8 s; contextos/mute/pausa; opciones persistentes; licencias sin terceros", started)
 
 
 # ---------------------------------------------------------------------------
@@ -742,6 +825,16 @@ func _hash(value: Variant) -> String:
 	return ctx.finish().hex_encode()
 
 
+func _file_sha256(path: String) -> String:
+	var bytes := FileAccess.get_file_as_bytes(path)
+	if bytes.is_empty():
+		return ""
+	var ctx := HashingContext.new()
+	ctx.start(HashingContext.HASH_SHA256)
+	ctx.update(bytes)
+	return ctx.finish().hex_encode()
+
+
 func _autoload(autoload_name: String) -> Node:
 	if root == null:
 		return null
@@ -756,6 +849,21 @@ func _read_json(res_path: String) -> Variant:
 	if parser.parse(text) != OK:
 		return null
 	return parser.data
+
+
+func _png_dimensions(res_path: String) -> Vector2i:
+	if not FileAccess.file_exists(res_path):
+		return Vector2i(0, 0)
+	var file := FileAccess.open(res_path, FileAccess.READ)
+	if file == null:
+		return Vector2i(0, 0)
+	var header := file.get_buffer(24)
+	file.close()
+	if header.size() < 24:
+		return Vector2i(0, 0)
+	var width := (int(header[16]) << 24) | (int(header[17]) << 16) | (int(header[18]) << 8) | int(header[19])
+	var height := (int(header[20]) << 24) | (int(header[21]) << 16) | (int(header[22]) << 8) | int(header[23])
+	return Vector2i(width, height)
 
 
 func _count_files(res_dir: String, extension: String) -> int:

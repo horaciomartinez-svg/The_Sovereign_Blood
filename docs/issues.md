@@ -1362,7 +1362,7 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 
 ## 21. Fase 3.3 — MVP-1337: plan y baseline QA (task-55, 2026-11-23)
 
-**Directiva:** D-066 (congelar 1402/1453, foco en MVP con 1337). HEAD **`6b4e26b`** (D-066 + STATUS; AG-1/AG-2/AG-3 del tramo en curso). Plan: **`docs/qa/fase3_mvp_plan.md`**. Harness: **`tests/qa_acceptance_mvp_1337.gd`** (C1-C10; compila, SKIP justificado, exit 0 solo con 10/10).
+**Directiva:** D-066 (congelar 1402/1453, foco en MVP con 1337) + D-067 (banda sonora). HEAD **`6b4e26b`** inicial; harness **`tests/qa_acceptance_mvp_1337.gd`** actualizado a **C1-C11** (compila, SKIP justificado, exit 0 solo con 11/11).
 
 ### 21.1 Baseline C1-C10 — **8 PASS / 0 FAIL / 2 SKIP** (salida 1 «PENDIENTE», no rechazo)
 
@@ -1399,6 +1399,43 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 - **Riesgos:** R-MVP-01..13 en `docs/qa/fase3_mvp_plan.md`.
 - **Añadido para task-56 (auditoría AG-1):** V1 inflación 10 años, V2 apoyo en montaña, V3 efecto dinástico de la Peste Negra, V4 guerra anglo-francesa/eventos `war` 1340-1367, V5 heredero válido de Polonia; se integrarán en C2/C5 con umbrales coordinados con AG-2 (R-MVP-14..18). No bloquean el baseline.
 
+### 21.4 Actualización C1-C11 (D-067) — **9 PASS / 0 FAIL / 2 SKIP**
+
+Tras AG-2 (task-53) y la directiva v2, el harness se amplió a **C11** y se re-ejecutó:
+- **C4 ahora PASS:** `launch_tactical` registra `GameState.set_pending_battle` (`level=2`), `to_dict`/`from_dict` preserva el contexto y hash exacto; **3/3 puntos** (turno, batalla pendiente, fin de año).
+- **Audio headless corregido:** `run_all` y harness MVP con **0 líneas `ERROR:`** (guarda `_simulate_only` de AG-2).
+- **C11 SKIP justificado:** aún no hay `assets/audio/music/*.ogg` ni `data/audio_tracks.json`, buses Master/Music/SFX, API de música/crossfade ni `docs/audio_licenses.md`; depende de AG-5 (pistas), AG-2 (motor/buses/audio_tracks), AG-3 (opciones/contextos) y AG-1 (licencias) — task-57/58/59/60.
+- **C8 sigue SKIP:** faltan capturas MVP de AG-3; SFX click/campana/espada ya están integrados.
+- **Task-56** pasa a C1-C11 y depende de task-52/53/54 + 57/58/59/60. Plan y riesgos actualizados en `docs/qa/fase3_mvp_plan.md`.
+
 **task-55 COMPLETADA** (baseline/plan; verificación final = task-56, bloqueada por AG-1/AG-2/AG-3). Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3.3 — plan y baseline MVP-1337 (task-55).*
+
+---
+
+### 21.5 Verificación final MVP-1337 (task-56, 2026-11-23) — **APROBADO 11/11**
+
+**HEAD verificado `b7904cf8`.** Harness `tests/qa_acceptance_mvp_1337.gd` ×2 → **11 PASS / 0 FAIL / 0 SKIP**, exit **0/0**; 0 líneas `ERROR:` en consola. Informe completo: **`docs/qa/fase3_mvp_report.md`**.
+
+| # | Estado | Evidencia |
+|---|---|---|
+| C1 | **PASS** | 8/8 facciones arrancan + 4 trimestres; England a 1399 con motivo de supervivencia |
+| C2 | **PASS** | 5 motivos: prestigio, conquista≥70%, supervivencia, pérdida total, extinción |
+| C3 | **PASS** | N1/N2/N3 con informe/outcome; animación v1.8.1; baseline anim 6/6 |
+| C4 | **PASS** | 3/3 save/load: turno, fin de año y **batalla pendiente** (`pending_battle level=2`, contexto+hash) |
+| C5 | **PASS** | 10 años × 8 facciones; 8/8 sin errores; serializable cada año |
+| C6 | **PASS** | `run_all` **1742/0/2**, `CI: OK`; validate **12/8, 11.681 comprobaciones, 0 WARN**; editor/headless 0 |
+| C7 | **PASS** | IA **13-25 ms** (<2000); mapa **0,021-0,025 ms/frame** (<8; CPU headless) |
+| C8 | **PASS** | **15 capturas MVP + 5 audio** 1920×1080; SFX + opciones Music/SFX/mute; `ui_smoke` **47/18 OK**; 0 botones muertos/PG (AG-3) |
+| C9 | **PASS** | «EN PAUSA» + flag; `git diff fase-3.2` sobre datos 1402/1453 = **0 archivos** |
+| C10 | **PASS** | 14 retratos 1337 + 42 fallbacks; sin arte nuevo/petición congelada |
+| C11 | **PASS** | 6 OGG `AudioStreamOggVorbis` (36-80 s); manifest schema2 **6/6 Original TSB CC0, source_url null, sha256**; buses Master/Music(−6)/SFX; crossfade 1,8 s; `user://audio_config.json`; `audio_licenses.md` sin terceros |
+
+**Batería:** F1 6/6, F2 6/6, sprites 6/6, tiles 7/7, final Fase 3 7/7, animación 6/6; `ui_smoke` 47/18; `simulate_balance` 8/8 `ok` (tesoros ×1,10-×1,95, apoyo mínimo 11-63); `test_mvp` V3/V4/V5 PASS (Peste Negra dinástica, guerra/eventos, Polonia sin spouse).
+
+**Veredicto: QA MVP-1337 (Fase 3.3): APROBADO** (11/11). Observaciones no bloqueantes: audio solo verificable técnicamente en headless (escucha humana pendiente), nodo de batalla no serializado (solo contexto), rendimiento GPU no medible, 2 tests omitidos intencionales. Tags `fase-3/3.1/3.2`; **`fase-3.3` pendiente** de STATUS/tag/push de AG-0.
+
+**task-56 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3.3 — MVP-1337 (task-56).*
