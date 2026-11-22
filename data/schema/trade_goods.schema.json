@@ -1,0 +1,1014 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade_goods.schema.json",
+  "title": "trade_goods.json — The Sovereign's Blood (Fase 4, D-069)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "trade_goods"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "trade_goods": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "especias",
+        "pieles",
+        "lana",
+        "vino",
+        "sal",
+        "grano",
+        "armas",
+        "caballos",
+        "hierro",
+        "madera"
+      ],
+      "properties": {
+        "especias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "especias"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "pieles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "pieles"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "lana": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "lana"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "vino": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "vino"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "sal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "sal"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "grano": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "grano"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "armas": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "armas"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "caballos": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "caballos"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "hierro": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "hierro"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        },
+        "madera": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name",
+            "base_price",
+            "produced_by",
+            "used_by",
+            "consumption",
+            "estimate"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "const": "madera"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_price": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "produced_by": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "terrain",
+                "buildings"
+              ],
+              "properties": {
+                "terrain": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "plains",
+                      "forest",
+                      "mountain",
+                      "coast",
+                      "city"
+                    ]
+                  }
+                },
+                "buildings": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "granary",
+                      "workshops",
+                      "market",
+                      "walls",
+                      "castle",
+                      "shipyard",
+                      "university",
+                      "cathedral",
+                      "mine"
+                    ]
+                  }
+                }
+              }
+            },
+            "used_by": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "recruitment",
+                  "consumption",
+                  "trade"
+                ]
+              }
+            },
+            "consumption": {
+              "type": "string",
+              "enum": [
+                "food",
+                "luxury",
+                "military",
+                "industrial"
+              ]
+            },
+            "estimate": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "pattern": "^https://[^ ]+$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

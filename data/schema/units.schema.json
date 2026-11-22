@@ -292,6 +292,14 @@
                 ]
               }
             }
+          },
+          "recruit_goods": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            }
           }
         }
       }

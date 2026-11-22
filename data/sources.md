@@ -5,8 +5,8 @@
 | **Entregable** | `data/sources.md` (GDD §7.8 / §4.1) |
 | **Autor** | AG-1 (Historian / Data) |
 | **Fecha** | 2026-11-21 |
-| **Alcance** | Fase 0: Escenario 1 «Dos Coronas» (1337); Fase 2: Mapa §10.1 (`map_borders.json`) y `portrait` §10.2; Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11) |
-| **Datasets cubiertos** | `factions.json` (23), `regions.json` (47×3 años), `characters.json` (175), `units.json`, `events_1337/1402/1453.json`, `scenarios/scenario_1337/1402/1453.json`, `map_borders.json`, `schema/*.schema.json` |
+| **Alcance** | Fase 0: Escenario 1 «Dos Coronas» (1337); Fase 2: Mapa §10.1 (`map_borders.json`) y `portrait` §10.2; Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11); Fase 4: mercancías y `recruit_goods` (§13) |
+| **Datasets cubiertos** | `factions.json` (23), `regions.json` (47×3 años), `characters.json` (175), `units.json` (con `recruit_goods`), `trade_goods.json` (10), `events_1337/1402/1453.json`, `scenarios/scenario_1337/1402/1453.json`, `map_borders.json`, `schema/*.schema.json` |
 
 ## 1. Regla de oro y método
 
@@ -636,10 +636,73 @@ Recomendación a AG-2: revisar `TERRAIN_FOOD`/`FOOD_NEED_PER_WORKER`/bonus de ap
 - `validate_data` sin errores; suite completa `1469 pasados, 0 fallidos, 1 omitido` (incluye
   `[SUITE] events` 12/12).
 
+## 13. Mercancías y `recruit_goods` (Fase 4 — D-069/D-070)
+
+`data/trade_goods.json` (envelope D-009, objeto keyed por id) define las **10 mercancías** pedidas
+en D-069. Los precios son **valores de diseño normalizados** (unidades de oro por unidad de bien,
+con grano=10 como referencia), no cotizaciones históricas exactas: todas las fichas llevan
+`"estimate": true`, y las URLs son referencias temáticas de la mercancía/producción, no tablas de
+precios de época. La producción depende de `produced_by.terrain` y/o `produced_by.buildings`
+(enum de terreno/edificios del juego); `used_by`/`consumption` son informativos para el
+`TradeSystem` de AG-2, que calcula la producción por región.
+
+| id | Nombre | Precio base | Producido por (terreno / edificios) | Uso | Consumo | Fuente temática |
+|---|---|---|---|---|---|---|
+| `especias` | Especias | 80 | coast/city · market | trade, consumption | luxury | https://en.wikipedia.org/wiki/Spice_trade |
+| `pieles` | Pieles | 30 | forest · market | trade, consumption | luxury | https://en.wikipedia.org/wiki/Fur_trade |
+| `lana` | Lana | 25 | plains · workshops | trade | industrial | https://en.wikipedia.org/wiki/Wool_trade |
+| `vino` | Vino | 35 | plains · market | trade, consumption | luxury | https://en.wikipedia.org/wiki/History_of_wine |
+| `sal` | Sal | 20 | coast · mine | consumption, trade | food | https://en.wikipedia.org/wiki/Salt |
+| `grano` | Grano | 10 | plains · granary | consumption | food | https://en.wikipedia.org/wiki/Grain |
+| `armas` | Armas | 60 | city · workshops | recruitment | military | https://en.wikipedia.org/wiki/Weapon |
+| `caballos` | Caballos | 70 | plains · — | recruitment, trade | military | https://en.wikipedia.org/wiki/Horse |
+| `hierro` | Hierro | 50 | mountain · mine | trade, recruitment | industrial | https://en.wikipedia.org/wiki/Iron |
+| `madera` | Madera | 15 | forest · — | trade, recruitment | industrial | https://en.wikipedia.org/wiki/Timber |
+
+**Nota:** no se modifica `regions.json` ni ningún `year_data` 1402/1453; la producción de bienes
+se deriva en el motor a partir del terreno/edificios existentes (D-069), no de datos por año.
+
+### 13.1 `recruit_goods` de unidades (D-070)
+
+Añadido a **9 de las 17 unidades**; el resto no consume mercancías. La cantidad es **por bloque de
+200 hombres** (`UNIT_MEN_PER_BLOCK=200`, D-070); el motor multiplica por `blocks = ceil(amount/200)`
+y descuenta del inventario. Si falta el bien, el reclutamiento falla con motivo `missing_goods`
+(sin gastar oro ni crear ejército).
+
+| Unidad | Tipo | `recruit_goods` por bloque |
+|---|---|---|
+| `mounted_sergeants` | caballería | `{"caballos": 1}` |
+| `men_at_arms` | caballería | `{"caballos": 2}` |
+| `light_horseman` | caballería ligera | `{"caballos": 1}` |
+| `steppe_cavalry` | caballería ligera | `{"caballos": 1}` |
+| `mamluk` | caballería | `{"caballos": 2}` |
+| `teutonic_knights` | caballería | `{"caballos": 2}` |
+| `dismounted_men_at_arms` | infantería pesada | `{"armas": 1}` |
+| `bombarda` | artillería | `{"hierro": 2, "madera": 1}` |
+| `hussite_war_wagon` | especial/artillería | `{"madera": 2, "hierro": 1}` |
+
+Justificación de artillería: la bombarda consume hierro (cañón/proyectiles) y madera (afuste), y
+el carro húsita madera/hierro (carro y herrajes); es una decisión de diseño de AG-2/D-070,
+documentada aquí. Las unidades sin `recruit_goods` (milicia, arqueros, ballesteros, almogávares,
+piqueros, arcabuceros, jenízaros, etc.) no consumen mercancías de reclutamiento.
+
+### 13.2 Verificación
+
+- `trade_goods.json`: 10/10 bienes, ids únicos, `base_price` entero > 0, `produced_by` con
+  terreno/edificios válidos, `used_by`/`consumption` admitidos, `source` https y `estimate:true`.
+- `units.json`: 9/17 unidades con `recruit_goods`; 8/17 sin campo (correcto). El resto de campos
+  de unidades no se modifica.
+- `data/schema/trade_goods.schema.json` y `data/schema/units.schema.json` actualizados (draft
+  2020-12, subconjunto D-004); `validate_data` valida ambos.
+- AG-2 reconoce `trade_goods` como dataset de juego en el validador (coordinación D-069); con ello
+  `validate_data` queda **0 WARN/0 errores**.
+- Sin cambios en `year_data` 1402/1453 ni en scenarios congelados.
+
 ---
 
 *Generado por AG-1. Fase 0: Escenario 1. Fase 2: `map_borders.json` (§9) y `portrait` (§10).
 Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11).
-Fase 3.3 MVP-1337: auditoría de eventos/balance (§12), sin cambios de datos. Cualquier corrección
-de dato debe mantener la URL de fuente o marcar `"estimate": true`; las reglas de validación están
-en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en GDD §12-§13.*
+Fase 3.3 MVP-1337: auditoría de eventos/balance (§12). Fase 4: mercancías y `recruit_goods` (§13).
+Cualquier corrección de dato debe mantener la URL de fuente o marcar `"estimate": true`; las
+reglas de validación están en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en
+GDD §12-§13.*

@@ -383,6 +383,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 1
       }
     },
     {
@@ -466,6 +469,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 2
       }
     },
     {
@@ -544,6 +550,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 1
       }
     },
     {
@@ -624,6 +633,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 1
       }
     },
     {
@@ -778,6 +790,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 2
       }
     },
     {
@@ -933,6 +948,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "armas": 1
       }
     },
     {
@@ -1018,6 +1036,10 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "hierro": 2,
+        "madera": 1
       }
     },
     {
@@ -1184,6 +1206,10 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "madera": 2,
+        "hierro": 1
       }
     },
     {
@@ -1338,6 +1364,9 @@
         ],
         "anchor": "bottom_center",
         "facing": "E"
+      },
+      "recruit_goods": {
+        "caballos": 2
       }
     }
   ]

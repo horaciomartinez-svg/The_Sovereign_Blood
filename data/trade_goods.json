@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "trade_goods": {
+    "especias": {
+      "id": "especias",
+      "name": "Especias",
+      "base_price": 80,
+      "produced_by": {
+        "terrain": [
+          "coast",
+          "city"
+        ],
+        "buildings": [
+          "market"
+        ]
+      },
+      "used_by": [
+        "trade",
+        "consumption"
+      ],
+      "consumption": "luxury",
+      "source": "https://en.wikipedia.org/wiki/Spice_trade",
+      "estimate": true
+    },
+    "pieles": {
+      "id": "pieles",
+      "name": "Pieles",
+      "base_price": 30,
+      "produced_by": {
+        "terrain": [
+          "forest"
+        ],
+        "buildings": [
+          "market"
+        ]
+      },
+      "used_by": [
+        "trade",
+        "consumption"
+      ],
+      "consumption": "luxury",
+      "source": "https://en.wikipedia.org/wiki/Fur_trade",
+      "estimate": true
+    },
+    "lana": {
+      "id": "lana",
+      "name": "Lana",
+      "base_price": 25,
+      "produced_by": {
+        "terrain": [
+          "plains"
+        ],
+        "buildings": [
+          "workshops"
+        ]
+      },
+      "used_by": [
+        "trade"
+      ],
+      "consumption": "industrial",
+      "source": "https://en.wikipedia.org/wiki/Wool_trade",
+      "estimate": true
+    },
+    "vino": {
+      "id": "vino",
+      "name": "Vino",
+      "base_price": 35,
+      "produced_by": {
+        "terrain": [
+          "plains"
+        ],
+        "buildings": [
+          "market"
+        ]
+      },
+      "used_by": [
+        "trade",
+        "consumption"
+      ],
+      "consumption": "luxury",
+      "source": "https://en.wikipedia.org/wiki/History_of_wine",
+      "estimate": true
+    },
+    "sal": {
+      "id": "sal",
+      "name": "Sal",
+      "base_price": 20,
+      "produced_by": {
+        "terrain": [
+          "coast"
+        ],
+        "buildings": [
+          "mine"
+        ]
+      },
+      "used_by": [
+        "consumption",
+        "trade"
+      ],
+      "consumption": "food",
+      "source": "https://en.wikipedia.org/wiki/Salt",
+      "estimate": true
+    },
+    "grano": {
+      "id": "grano",
+      "name": "Grano",
+      "base_price": 10,
+      "produced_by": {
+        "terrain": [
+          "plains"
+        ],
+        "buildings": [
+          "granary"
+        ]
+      },
+      "used_by": [
+        "consumption"
+      ],
+      "consumption": "food",
+      "source": "https://en.wikipedia.org/wiki/Grain",
+      "estimate": true
+    },
+    "armas": {
+      "id": "armas",
+      "name": "Armas",
+      "base_price": 60,
+      "produced_by": {
+        "terrain": [
+          "city"
+        ],
+        "buildings": [
+          "workshops"
+        ]
+      },
+      "used_by": [
+        "recruitment"
+      ],
+      "consumption": "military",
+      "source": "https://en.wikipedia.org/wiki/Weapon",
+      "estimate": true
+    },
+    "caballos": {
+      "id": "caballos",
+      "name": "Caballos",
+      "base_price": 70,
+      "produced_by": {
+        "terrain": [
+          "plains"
+        ],
+        "buildings": []
+      },
+      "used_by": [
+        "recruitment",
+        "trade"
+      ],
+      "consumption": "military",
+      "source": "https://en.wikipedia.org/wiki/Horse",
+      "estimate": true
+    },
+    "hierro": {
+      "id": "hierro",
+      "name": "Hierro",
+      "base_price": 50,
+      "produced_by": {
+        "terrain": [
+          "mountain"
+        ],
+        "buildings": [
+          "mine"
+        ]
+      },
+      "used_by": [
+        "trade",
+        "recruitment"
+      ],
+      "consumption": "industrial",
+      "source": "https://en.wikipedia.org/wiki/Iron",
+      "estimate": true
+    },
+    "madera": {
+      "id": "madera",
+      "name": "Madera",
+      "base_price": 15,
+      "produced_by": {
+        "terrain": [
+          "forest"
+        ],
+        "buildings": []
+      },
+      "used_by": [
+        "trade",
+        "recruitment"
+      ],
+      "consumption": "industrial",
+      "source": "https://en.wikipedia.org/wiki/Timber",
+      "estimate": true
+    }
+  }
+}
