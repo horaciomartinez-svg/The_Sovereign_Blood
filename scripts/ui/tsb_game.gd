@@ -486,6 +486,18 @@ static func unit(unit_id: String) -> Dictionary:
 	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
 
 
+static func all_units() -> Array:
+	ensure_data()
+	var out: Array = []
+	for id: Variant in _units.keys():
+		var entry: Variant = _units[id]
+		if entry is Dictionary:
+			out.append((entry as Dictionary).duplicate(true))
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return str(a.get("id", "")) < str(b.get("id", "")))
+	return out
+
+
 static func units_for_faction(faction_id: String) -> Array:
 	ensure_data()
 	var source: Dictionary = _units

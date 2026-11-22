@@ -11,6 +11,7 @@ const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
+const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
 
 const CARD_LABELS := {
 	"carga": "Carga",
@@ -38,6 +39,14 @@ var _status: Label = null
 var _campaign_context: Dictionary = {}
 var _campaign_applied := false
 var _campaign_apply_result: Dictionary = {}
+var _battlefield: Control = null
+var _field_attacker: Sprite2D = null
+var _field_defender: Sprite2D = null
+var _field_attacker_fallback: ColorRect = null
+var _field_defender_fallback: ColorRect = null
+var _field_defender_label: Label = null
+var _field_projectiles: Node2D = null
+var _field_textures: Dictionary = {}
 
 
 func _ready() -> void:
@@ -71,7 +80,142 @@ func setup(attacker_unit: Dictionary, defender_unit: Dictionary, campaign_contex
 		_show_pending()
 		return
 	add_child(_cc)
+	if _field_projectiles != null:
+		_field_projectiles.call("setup", _cc, "normalized")
 	_rebuild()
+
+
+## Campo visual del duelo (Fase 3 §4): dos Sprite2D ancla bottom_center (el
+## defensor espejado, mira al O) y una capa Node2D separada para proyectiles.
+func _build_battlefield() -> void:
+	_battlefield = Control.new()
+	_battlefield.custom_minimum_size = Vector2(0, 190)
+	_battlefield.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_battlefield.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_content.add_child(_battlefield)
+	var back := ColorRect.new()
+	back.color = Color("556246")
+	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_battlefield.add_child(back)
+	var center_line := ColorRect.new()
+	center_line.color = Palette.with_alpha(Palette.PARCHMENT_LIGHT, 0.18)
+	center_line.anchor_left = 0.5
+	center_line.anchor_right = 0.5
+	center_line.anchor_top = 0.05
+	center_line.anchor_bottom = 0.95
+	center_line.offset_left = -1.0
+	center_line.offset_right = 1.0
+	center_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_battlefield.add_child(center_line)
+	var attacker_label := UIKit.label(_battlefield, "ATACANTE", "InkLabel")
+	attacker_label.position = Vector2(16, 8)
+	attacker_label.add_theme_font_size_override("font_size", 13)
+	attacker_label.add_theme_color_override("font_color", Palette.PARCHMENT_LIGHT)
+	var defender_label := UIKit.label(_battlefield, "DEFENSOR", "InkLabel")
+	_field_defender_label = defender_label
+	defender_label.add_theme_font_size_override("font_size", 13)
+	defender_label.add_theme_color_override("font_color", Palette.PARCHMENT_LIGHT)
+	_field_attacker_fallback = ColorRect.new()
+	_field_attacker_fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_field_attacker_fallback.size = Vector2(30, 52)
+	_field_attacker_fallback.visible = false
+	_battlefield.add_child(_field_attacker_fallback)
+	_field_defender_fallback = ColorRect.new()
+	_field_defender_fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_field_defender_fallback.size = Vector2(30, 52)
+	_field_defender_fallback.visible = false
+	_battlefield.add_child(_field_defender_fallback)
+	_field_attacker = Sprite2D.new()
+	_field_attacker.centered = false
+	_field_attacker.z_index = 2
+	_battlefield.add_child(_field_attacker)
+	_field_defender = Sprite2D.new()
+	_field_defender.centered = false
+	_field_defender.z_index = 2
+	_battlefield.add_child(_field_defender)
+	_field_projectiles = BattleProjectileLayer.new()
+	_field_projectiles.z_index = 10
+	_battlefield.add_child(_field_projectiles)
+	_battlefield.resized.connect(_layout_battlefield)
+
+
+func _process(delta: float) -> void:
+	if _cc != null and is_instance_valid(_cc):
+		_cc.call("tick_animation", delta * 1000.0)
+		if _field_projectiles != null:
+			_field_projectiles.queue_redraw()
+
+
+func _layout_battlefield() -> void:
+	if _battlefield == null or _battlefield.size.x < 10.0:
+		return
+	if _field_projectiles != null:
+		_field_projectiles.call("set_arena_size", _battlefield.size)
+	var foot_y := _battlefield.size.y - 20.0
+	_place_field_sprite(_field_attacker, _field_attacker_fallback, _battlefield.size.x * 0.28, foot_y)
+	_place_field_sprite(_field_defender, _field_defender_fallback, _battlefield.size.x * 0.72, foot_y)
+	if _field_defender_label != null:
+		_field_defender_label.position = Vector2(_battlefield.size.x - 140.0, 8.0)
+
+
+func _place_field_sprite(sprite: Sprite2D, fallback: ColorRect, foot_x: float, foot_y: float) -> void:
+	if sprite != null and sprite.texture != null:
+		var scale := 1.15
+		sprite.scale = Vector2(scale, scale)
+		var tex_size := Vector2(sprite.texture.get_width(), sprite.texture.get_height()) * scale
+		sprite.position = Vector2(foot_x - tex_size.x * 0.5, foot_y - tex_size.y)
+	if fallback != null:
+		fallback.position = Vector2(foot_x - fallback.size.x * 0.5, foot_y - fallback.size.y)
+
+
+func _update_battlefield_units() -> void:
+	if _cc == null or _battlefield == null:
+		return
+	var state: Dictionary = _cc.call("get_state")
+	var attacker_value: Variant = state.get("attacker", {})
+	var defender_value: Variant = state.get("defender", {})
+	var attacker := attacker_value as Dictionary if attacker_value is Dictionary else {}
+	var defender := defender_value as Dictionary if defender_value is Dictionary else {}
+	_apply_field_unit(_field_attacker, _field_attacker_fallback, attacker)
+	_apply_field_unit(_field_defender, _field_defender_fallback, defender, true)
+	_layout_battlefield()
+
+
+func _apply_field_unit(sprite: Sprite2D, fallback: ColorRect, unit: Dictionary, mirror_default: bool = false) -> void:
+	if sprite == null:
+		return
+	var path := str(unit.get("sprite_frame_path", ""))
+	var texture := _field_texture(path)
+	var faction_id := str(unit.get("faction", ""))
+	var color := TSBGame.faction_color(faction_id) if not faction_id.is_empty() else Palette.CRIMSON
+	if texture != null:
+		sprite.texture = texture
+		sprite.visible = true
+		sprite.flip_h = bool(unit.get("mirror", mirror_default)) if unit.has("mirror") else mirror_default
+		if fallback != null:
+			fallback.visible = false
+	else:
+		sprite.visible = false
+		if fallback != null:
+			fallback.visible = true
+			fallback.color = color
+			if mirror_default:
+				fallback.color = color.darkened(0.12)
+
+
+func _field_texture(path: String) -> Texture2D:
+	if path.is_empty():
+		return null
+	if _field_textures.has(path):
+		return _field_textures[path] as Texture2D
+	var texture: Texture2D = null
+	if ResourceLoader.exists(path):
+		var loaded: Variant = load(path)
+		if loaded is Texture2D:
+			texture = loaded as Texture2D
+	_field_textures[path] = texture
+	return texture
 
 
 func _build_shell() -> void:
@@ -82,6 +226,7 @@ func _build_shell() -> void:
 	subtitle.add_theme_font_size_override("font_size", 15)
 	subtitle.add_theme_color_override("font_color", Palette.CRIMSON)
 	UIKit.hsep(_content, Palette.with_alpha(Palette.GOLD_DIM, 0.8))
+	_build_battlefield()
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -164,6 +309,7 @@ func _rebuild() -> void:
 		round_label2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		round_label2.add_theme_font_size_override("font_size", 14)
 
+	_update_battlefield_units()
 	if finished:
 		_show_outcome()
 

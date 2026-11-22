@@ -15,6 +15,7 @@ const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const GameConstants = preload("res://scripts/utils/game_constants.gd")
+const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
 
 const HEX_DIRS: Array[Vector2i] = [
 	Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1),
@@ -33,6 +34,13 @@ var _side_box: VBoxContainer = null
 var _round_label: Label = null
 var _selected_unit := ""
 var _reachable: Dictionary = {}
+
+
+func _process(delta: float) -> void:
+	if _stage == "n2" and _tb != null and is_instance_valid(_tb):
+		_tb.call("tick_animation", delta * 1000.0)
+		if _canvas != null:
+			_canvas.call("tick_animation")
 
 
 func _ready() -> void:
@@ -223,9 +231,9 @@ func _build_n2_ui() -> void:
 	_canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_canvas.custom_minimum_size = Vector2(980, 650)
-	_canvas.call("set_tb", _tb)
 	_canvas.connect("cell_clicked", _on_cell_clicked)
 	body.add_child(_canvas)
+	_canvas.call("set_tb", _tb)
 
 	var side_panel := PanelContainer.new()
 	side_panel.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_SOFT, 0.10), Palette.with_alpha(Palette.GOLD_DIM, 0.6), 1, 5, 10, 8))
@@ -257,6 +265,7 @@ func _sync_n2() -> void:
 		TSBGame.region_name(str(state.get("region_id", ""))),
 	]
 	_canvas.call("set_selection", _selected_unit, _reachable)
+	_canvas.call("tick_animation")
 	_canvas.queue_redraw()
 	_rebuild_side(state)
 	if bool(_tb.call("is_finished")):
@@ -591,6 +600,7 @@ class TacticalCanvas extends Control:
 	const PaletteLocal = preload("res://scripts/ui/theme/tsb_palette.gd")
 	const TSBGameLocal = preload("res://scripts/ui/tsb_game.gd")
 	const ThemeBuilderLocal = preload("res://scripts/ui/theme/tsb_theme.gd")
+	const ProjectileLayerLocal = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
 
 	var tb: Node = null
 	var selected_unit := ""
@@ -599,13 +609,23 @@ class TacticalCanvas extends Control:
 	var _origin := Vector2.ZERO
 	var _cells: Dictionary = {}   # "q,r" -> Vector2 centro
 	var _hover_key := ""
+	var _unit_sprites: Dictionary = {}
+	var _sprite_textures: Dictionary = {}
+	var _sprite_scale := 0.8
+	var _projectile_layer: Node2D = null
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_STOP
+		_projectile_layer = ProjectileLayerLocal.new()
+		_projectile_layer.z_index = 10
+		add_child(_projectile_layer)
 
 	func set_tb(node: Node) -> void:
 		tb = node
+		if _projectile_layer != null:
+			_projectile_layer.call("setup", tb, "tactical")
 		_rebuild_layout()
+		_sync_unit_sprites()
 		queue_redraw()
 
 	func set_selection(unit_id: String, reachable_map: Dictionary) -> void:
@@ -613,9 +633,16 @@ class TacticalCanvas extends Control:
 		reachable = reachable_map
 		queue_redraw()
 
+	func tick_animation() -> void:
+		_sync_unit_sprites()
+		if _projectile_layer != null:
+			_projectile_layer.queue_redraw()
+		queue_redraw()
+
 	func _notification(what: int) -> void:
 		if what == NOTIFICATION_RESIZED:
 			_rebuild_layout()
+			_sync_unit_sprites()
 			queue_redraw()
 
 	func _rebuild_layout() -> void:
@@ -652,9 +679,84 @@ class TacticalCanvas extends Control:
 				var q := int((hex as Dictionary).get("q", 0))
 				var r := int((hex as Dictionary).get("r", 0))
 				_cells["%d,%d" % [q, r]] = _hex_center(q, r)
+		_sprite_scale = clampf(_radius / 32.0, 0.6, 1.0)
+		if _projectile_layer != null:
+			_projectile_layer.call("set_point_provider", Callable(self, "_hex_center"))
+			_projectile_layer.call("set_arc_scale", _sprite_scale)
 
 	func _hex_center(q: int, r: int) -> Vector2:
 		return _origin + Vector2(sqrt(3.0) * _radius * (float(q) + float(r) * 0.5), 1.5 * _radius * float(r))
+
+	func _unit_foot(center: Vector2) -> Vector2:
+		return center + Vector2(0, _radius * 0.48)
+
+	## Crea/actualiza un Sprite2D por unidad con sprite_sheet (Fase 3 §4). Las 11
+	## unidades sin sprite siguen usando el marcador heráldico dibujado en _draw.
+	func _sync_unit_sprites() -> void:
+		if tb == null or _cells.is_empty():
+			return
+		var units: Variant = tb.call("get_units")
+		if not (units is Array):
+			return
+		var alive: Dictionary = {}
+		for unit_value: Variant in (units as Array):
+			if not (unit_value is Dictionary):
+				continue
+			var unit := unit_value as Dictionary
+			var unit_id := str(unit.get("id", ""))
+			var sprite_path := str(unit.get("sprite_frame_path", ""))
+			var sheet: Variant = unit.get("sprite_sheet", null)
+			var has_sprite := sheet is Dictionary and not (sheet as Dictionary).is_empty() and not sprite_path.is_empty()
+			if not has_sprite:
+				continue
+			alive[unit_id] = true
+			var center: Vector2 = _cells.get("%d,%d" % [int(unit.get("q", 0)), int(unit.get("r", 0))], _hex_center(int(unit.get("q", 0)), int(unit.get("r", 0))))
+			var sprite: Sprite2D = null
+			if _unit_sprites.has(unit_id) and is_instance_valid(_unit_sprites[unit_id]):
+				sprite = _unit_sprites[unit_id] as Sprite2D
+			else:
+				sprite = Sprite2D.new()
+				sprite.name = "UnitSprite_%s" % unit_id
+				sprite.centered = false
+				sprite.z_index = 2
+				add_child(sprite)
+				_unit_sprites[unit_id] = sprite
+			var texture := _sprite_texture(sprite_path)
+			if texture != null and sprite.texture != texture:
+				sprite.texture = texture
+			sprite.visible = texture != null
+			if texture == null:
+				continue
+			sprite.flip_h = bool(unit.get("mirror", false))
+			var scale := _sprite_scale
+			sprite.scale = Vector2(scale, scale)
+			var sprite_size := Vector2(texture.get_width(), texture.get_height()) * scale
+			sprite.position = _unit_foot(center) - Vector2(sprite_size.x * 0.5, sprite_size.y - 1.0)
+		for unit_id: Variant in _unit_sprites.keys():
+			if not alive.has(str(unit_id)):
+				var old: Variant = _unit_sprites[unit_id]
+				if old is Node and is_instance_valid(old):
+					(old as Node).queue_free()
+				_unit_sprites.erase(unit_id)
+
+	func _sprite_texture(path: String) -> Texture2D:
+		if path.is_empty():
+			return null
+		if _sprite_textures.has(path):
+			return _sprite_textures[path] as Texture2D
+		var texture: Texture2D = null
+		if ResourceLoader.exists(path):
+			var loaded: Variant = load(path)
+			if loaded is Texture2D:
+				texture = loaded as Texture2D
+		_sprite_textures[path] = texture
+		return texture
+
+	func _has_visible_sprite(unit_id: String) -> bool:
+		if not _unit_sprites.has(unit_id):
+			return false
+		var sprite: Variant = _unit_sprites[unit_id]
+		return sprite is Sprite2D and (sprite as Sprite2D).visible
 
 	func _hex_points(center: Vector2) -> PackedVector2Array:
 		var points := PackedVector2Array()
@@ -703,24 +805,34 @@ class TacticalCanvas extends Control:
 			if not (unit is Dictionary):
 				continue
 			var data := unit as Dictionary
+			var unit_id := str(data.get("id", ""))
 			var q := int(data.get("q", 0))
 			var r := int(data.get("r", 0))
 			var center: Vector2 = _cells.get("%d,%d" % [q, r], _hex_center(q, r))
 			var color := TSBGameLocal.faction_color(str(data.get("faction", "")))
-			var is_selected := str(data.get("id", "")) == selected_unit
+			var is_selected := unit_id == selected_unit
+			var has_sprite := _has_visible_sprite(unit_id)
 			var unit_radius := _radius * (0.62 if bool(data.get("commander", false)) else 0.52)
-			draw_circle(center, unit_radius + 2.0, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.55))
-			draw_circle(center, unit_radius, color)
-			draw_circle(center, unit_radius, PaletteLocal.INK, false, maxf(_radius * 0.06, 1.0))
-			if bool(data.get("commander", false)):
-				draw_circle(center + Vector2(0, -unit_radius * 0.42), unit_radius * 0.16, PaletteLocal.GOLD_BRIGHT)
+			if not has_sprite:
+				draw_circle(center, unit_radius + 2.0, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.55))
+				draw_circle(center, unit_radius, color)
+				draw_circle(center, unit_radius, PaletteLocal.INK, false, maxf(_radius * 0.06, 1.0))
+				if bool(data.get("commander", false)):
+					draw_circle(center + Vector2(0, -unit_radius * 0.42), unit_radius * 0.16, PaletteLocal.GOLD_BRIGHT)
 			var font := ThemeBuilderLocal.get_font()
 			var count_text := TSBGameLocal.short_number(int(data.get("size", 0)))
 			var font_size := int(clampf(_radius * 0.42, 9.0, 15.0))
 			var text_size := font.get_string_size(count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-			draw_string(font, center + Vector2(-text_size.x * 0.5, font_size * 0.35), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, PaletteLocal.PARCHMENT_LIGHT)
+			var label_center := _unit_foot(center) + Vector2(0, font_size + 5.0) if has_sprite else center
+			draw_string(font, label_center + Vector2(-text_size.x * 0.5 + 1.0, font_size * 0.35 + 1.0), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.8))
+			draw_string(font, label_center + Vector2(-text_size.x * 0.5, font_size * 0.35), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, PaletteLocal.PARCHMENT_LIGHT)
 			if is_selected:
-				draw_arc(center, _radius * 0.86, 0.0, TAU, 36, PaletteLocal.GOLD_BRIGHT, maxf(_radius * 0.09, 2.0), true)
+				draw_arc(_unit_foot(center) if has_sprite else center, _radius * 0.86, 0.0, TAU, 36, PaletteLocal.GOLD_BRIGHT, maxf(_radius * 0.09, 2.0), true)
+			if has_sprite:
+				# Banderín de faccion bajo los pies para no perder el bando con sprites.
+				var flag_rect := Rect2(_unit_foot(center) + Vector2(-3.0, 2.0), Vector2(6.0, 10.0))
+				draw_rect(flag_rect, color)
+				draw_rect(flag_rect, PaletteLocal.INK, false, 1.0)
 
 	func _draw_selected_ring() -> void:
 		if selected_unit.is_empty():
