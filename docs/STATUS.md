@@ -576,3 +576,24 @@ y sin material con copyright.
 - **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.3`**. Se avisa al usuario
   para la verificación de Kimi contra GDD v1.8.1 + directiva v2; tras ella se decidirá Fase 4 (reanudar
   1402/1453, Paquete A y ampliación de contenido).
+
+---
+
+## 19. Fase 4 — Profundidad GK2: mercancías/comercio, ejércitos, familia, Manual y Consejero (EN CURSO)
+
+**Directiva del usuario (2026-11-23, verificada por Kimi):** tras probar el MVP falta «la profundidad de GK2». GDD **v1.9**. **Restricciones:** 1402/1453 congelados (D-066), sin arte externo (sprites existentes + generación por código), REA legal §3 (sin `.EXE`, sin texto transcrito, sin copiar assets), sin mecánicas fuera de esta lista.
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| REA economía/menús (D-069 preliminar) | AG-REA | `docs/rea/gk2_economy_military_family.md` (≤2 páginas) + `notes_economy.md`: estructuras de economía/mercancías/mercaderes y UX de menús Economía/Militar/Familia, checklist para las pantallas | ⏳ |
+| Mercancías/comercio (D-069) | AG-1/AG-2/AG-3 | 10 bienes en `trade_goods.json` + schema/fuentes; producción por terreno/edificios; inventario; comerciantes obligatorios; mercado/precios; expedición; pantalla Mercado | ⏳ |
+| Ejércitos (D-070) | AG-2/AG-3 | pantalla global con sprite `march_1`, conteos, fuerza/moral/experiencia; Reclutar/Entrenar/Disolver; reclutamiento con caballos/armas | ⏳ |
+| Familia (D-071) | AG-2/AG-3 | «Pasar tiempo con la consorte» (2-3 PG, 1/trimestre, fertilidad 2-4 trimestres, rechazo claro sin consorte) | ⏳ |
+| Manual del Jugador (D-072) | AG-1 | `docs/MANUAL_DEL_JUGADOR.md` (10 secciones) + acceso desde el juego + «Ayuda» | ⏳ |
+| Tutorial y dificultad (D-073) | AG-1/AG-2/AG-3 | `tutorial_script.json`; Consejero con avatar por código, resaltado y salto; Principiante/Normal; estado serializable | ⏳ |
+| QA Fase 4 (C1-C12) | AG-4 | tests, capturas, auditoría REA/licencias/UX y `docs/qa/fase4_report.md` | ⏳ |
+| Gobernanza/cierre | AG-0 | GDD v1.9, D-069…D-073, STATUS, tag `fase-4`, push y aviso a Kimi | ⏳ |
+
+**Criterios de aceptación (C1-C12):** REA legal y consumible; trade_goods validado con fuentes; comercio operativo solo con comerciantes, precios fluctuantes y 10 años sin inflación; pantalla ejércitos con imágenes/conteos y acciones efectivas; reclutamiento consume caballos/armas; consorte con fertilidad/cooldown/estados íntegros; Manual completo y accesible; tutorial con guion/resaltes/salto y dificultad; save/load con inventario/tutorial; sin regresión (run_all ≥1742/0, validate 0, editor 0, F1/F2/F3/MVP/anim/tiles); 1402/1453 diff 0 y sin arte externo; UX sin botones muertos y capturas 1920×1080.
+
+**Cierre previsto:** `docs/qa/fase4_report.md` APROBADO 12/12 → commits por agente + `[AG-0]`, tag anotado **`fase-4`**, push y aviso para verificación de Kimi contra GDD v1.9 + directiva.
