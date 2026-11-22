@@ -36,7 +36,8 @@
         "children": [
           "eduardo_el_principe_negro"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/edward_iii_plantagenet.png"
     },
     {
       "id": "philippa_de_hainault",
@@ -312,7 +313,8 @@
           "jean_ii_de_france",
           "philippe_d_orleans"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/philippe_vi_de_valois.png"
     },
     {
       "id": "jeanne_de_bourgogne",
@@ -551,7 +553,8 @@
         "children": [
           "ludwig_v_de_baviera"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/ludwig_iv_wittelsbach.png"
     },
     {
       "id": "margareta_de_hainaut",
@@ -739,7 +742,8 @@
           "margarethe_de_luxembourg",
           "jan_jindrich_luxembourg"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/jan_lucembursky.png"
     },
     {
       "id": "elisabeth_de_bohemia",
@@ -982,7 +986,8 @@
           "lajos_i_anjou",
           "andras_anjou"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/karoly_robert_anjou.png"
     },
     {
       "id": "erzsebet_lengyel",
@@ -1169,7 +1174,8 @@
           "pedro_i_de_castilla",
           "enrique_ii_de_castilla"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/alfonso_xi_borgona.png"
     },
     {
       "id": "constanza_de_portugal",
@@ -1441,7 +1447,8 @@
         "mother": null,
         "spouse": null,
         "children": []
-      }
+      },
+      "portrait": "res://assets/art/portraits/pere_iv_d_arago.png"
     },
     {
       "id": "alfons_iv_d_arago",
@@ -1590,7 +1597,8 @@
         "mother": null,
         "spouse": "aldona_de_lituania",
         "children": []
-      }
+      },
+      "portrait": "res://assets/art/portraits/kazimierz_iii_piast.png"
     },
     {
       "id": "aldona_de_lituania",
@@ -1736,7 +1744,8 @@
         "mother": null,
         "spouse": "joan_of_england",
         "children": []
-      }
+      },
+      "portrait": "res://assets/art/portraits/david_ii_bruce.png"
     },
     {
       "id": "joan_of_england",
@@ -1912,7 +1921,8 @@
         "mother": null,
         "spouse": null,
         "children": []
-      }
+      },
+      "portrait": "res://assets/art/portraits/benedict_xii.png"
     },
     {
       "id": "clemente_vi",
@@ -2031,7 +2041,8 @@
         "children": [
           "muhammad_v_nazari"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/yusuf_i_nazari.png"
     },
     {
       "id": "ismail_i_nazari",
@@ -2152,7 +2163,8 @@
           "abu_bakr_al_mansur",
           "ahmad_al_nasir"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/an_nasir_muhammad.png"
     },
     {
       "id": "abu_bakr_al_mansur",
@@ -2302,7 +2314,8 @@
           "jani_beg",
           "tinibeg_khan"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/oz_beg.png"
     },
     {
       "id": "taidula_katun",
@@ -2485,7 +2498,8 @@
         "children": [
           "john_v_palaiologos"
         ]
-      }
+      },
+      "portrait": "res://assets/art/portraits/andronikos_iii_palaiologos.png"
     },
     {
       "id": "anna_de_saboya",

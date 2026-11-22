@@ -363,16 +363,25 @@ atribuye la autoría CC BY-SA de las dos obras usadas (Petolaszlo) aunque no se 
   fronteras políticas son jugables, no catastrales. El mapa no incluye Escandinavia, Irlanda,
   Magreb occidental, Arabia ni Cáucaso como tierra (quedan fuera del mundo jugable).
 
-## 10. Retratos de soberanos (Fase 2 — GDD §10.2, D-027)
+## 10. Retratos de soberanos (GDD v1.5 §10.2, D-027)
 
-- `data/schema/characters.schema.json` añade la propiedad **opcional** `"portrait"` (`string` con id
-  de asset snake_case, o `null`). No se añaden valores a `characters.json`: en Fase 2 todos los
-  personajes usan el **fallback heráldico** de `portrait_frame.gd` (escudo generativo de la casa +
-  silueta genérica), nunca un hueco vacío.
-- Los assets finales (`assets/art/portraits/<portrait_id>.png`, 256×256) son de Fase 3 (AG-5); este
-  repositorio no contiene binarios de retrato todavía.
-- Patrón de id previsto: `^[a-z][a-z0-9_]*$` (p. ej. `edward_iii_plantagenet`), reutilizando el id
-  del personaje si el retrato es único.
+- **14 retratos finales** de los gobernantes de 1337 en `assets/art/portraits/<character_id>.png`
+  (256×256, PNG, fondo pergamino plano). Diseñados por **Kimi** por encargo del usuario, integrante
+  del equipo del proyecto: obra propia del proyecto, sin material de terceros.
+- `data/characters.json` añade `"portrait": "res://assets/art/portraits/<character_id>.png"` **solo
+  a los 14 personajes con `role: "ruler"`** (14/14 verificados contra los ficheros de disco):
+  `edward_iii_plantagenet`, `philippe_vi_de_valois`, `ludwig_iv_wittelsbach`, `jan_lucembursky`,
+  `karoly_robert_anjou`, `alfonso_xi_borgona`, `pere_iv_d_arago`, `kazimierz_iii_piast`,
+  `david_ii_bruce`, `benedict_xii`, `yusuf_i_nazari`, `an_nasir_muhammad`, `oz_beg`,
+  `andronikos_iii_palaiologos`.
+- Los **72 personajes restantes no llevan `portrait`** y usan el **fallback heráldico** de
+  `portrait_frame.gd` (escudo generativo de la casa + silueta genérica), nunca un hueco vacío.
+- `data/schema/characters.schema.json` mantiene `portrait` como propiedad **opcional**; el `pattern`
+  admite la ruta `res://assets/art/portraits/<id>.png`, un id de asset simple
+  (`^[a-z][a-z0-9_]*$`) o `null`.
+- Hoja de contacto del set final: `docs/screenshots/portraits_contact_sheet_final.png`.
+- Atribución: retratos por Kimi (encargo del usuario, proyecto propio); no se usa material de Koei
+  ni de terceros. Coherente con GDD §10 y §1.2.
 
 ---
 

@@ -251,7 +251,7 @@
             "oneOf": [
               {
                 "type": "string",
-                "pattern": "^[a-z][a-z0-9_]*$"
+                "pattern": "^(res://assets/art/portraits/[a-z][a-z0-9_]*\\.png|[a-z][a-z0-9_]*)$"
               },
               {
                 "type": "null"
