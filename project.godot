@@ -14,7 +14,11 @@ config/name="The Sovereign's Blood"
 config/description="Gran estrategia por turnos basada en dinastías (1337-1453)."
 config/version="0.1.0"
 config/features=PackedStringArray("4.7")
-; run/main_scene se añadirá en Fase 1 (AG-3). En Fase 0 no hay escena principal.
+run/main_scene="res://scenes/main/main_menu.tscn"
+
+[gui]
+
+theme/custom="res://assets/art/theme/tsb_global_theme.tres"
 
 [autoload]
 
