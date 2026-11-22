@@ -543,9 +543,103 @@ usa `region_croacia` (Dalmacia veneciana); no existen regiones de Liguria/Veneci
    menciona a Venecia/Génova en 1402, pero el mapa de contratos no les asigna región: se excluyen
    de `scenario_1402` para no inventar territorios.
 
+## 12. Auditoría MVP-1337 (D-066) — eventos y balance
+
+Auditoría de solo lectura de `data/events_1337.json`, `data/regions.json` (year_data 1337),
+`data/characters.json` y `data/scenarios/scenario_1337.json` (2026-11-23). **No se modificaron
+datos de 1337 en esta auditoría**; no fue necesaria ninguna decisión D-067. Se documentan aquí
+los resultados para AG-4/AG-0.
+
+### 12.1 Eventos 1337: 18/18 válidos
+
+Todos los eventos tienen `year` en 1337-1399, `source` https, tipos de efecto soportados por
+`EventResolver` y objetivos (facción/región/scope) existentes. Las pruebas `[SUITE] events` pasan
+(12/12) y la Peste Negra se aplica una sola vez.
+
+| Evento | Año | Trigger | Efectos (resumen) |
+|---|---|---|---|
+| `guerra_cien_anos_1337` | 1337 | year_reached | casus_belli England→France; relación -60 |
+| `batalla_sluys_1340` | 1340 | war England/France | prestige England +15; relación -10 |
+| `batalla_crecy_1346` | 1346 | war England/France | army_loss France 15 %; prestige England +25; relación -20 |
+| `sitio_calais_1347` | 1347 | war England/France | prestige England +20; gold France -30 |
+| `peste_negra_1348` | 1348 | year_reached | población -35 % (europe_west); apoyo -10 (europe) |
+| `peste_negra_rebrote_1350` | 1350 | year_reached | población -10 % (europe_west) |
+| `batalla_poitiers_1356` | 1356 | war England/France | army_loss France 20 %; prestige England +25; gold France -40 |
+| `jacquerie_1358` | 1358 | year_reached | apoyo France -20; población France -5 %; gold France -20 |
+| `paz_bretigny_1360` | 1360 | war England/France | paz England/France; prestige England +20; relación +20 |
+| `guerra_civil_castellana_1366` | 1366 | year_reached | apoyo Castile -15; army_loss Castile 5 % |
+| `batalla_najera_1367` | 1367 | war Castile/England | army_loss Castile 10 %; prestige England +10 |
+| `guerra_cien_anos_reanuda_1369` | 1369 | year_reached | casus_belli England→France; relación -30 |
+| `batalla_maritsa_1371` | 1371 | year_reached | apoyo Balkans -15; prestige Byzantium -10 |
+| `cisma_occidente_1378` | 1378 | year_reached | prestige Papacy -100; relación Papacy/France -40; apoyo Europe_west -10 |
+| `revuelta_ciompi_1378` | 1378 | year_reached | apoyo Toscana -20; gold Toscana -20 |
+| `revuelta_campesina_1381` | 1381 | year_reached | apoyo England -20; gold England -15 |
+| `batalla_kosovo_1389` | 1389 | year_reached | apoyo Balkans -20; prestige Hungary -10 |
+| `cruzada_nicopolis_1396` | 1396 | year_reached | army_loss Hungary 20 %; prestige Hungary -20 |
+
+**Verificado:** la Peste Negra 1348 aplica `population_modifier -0.35` a las regiones de las
+facciones `europe_west` (población, mano de obra y pool de reclutas se escalan; suelo de 1.000
+habitantes y 4 trabajadores), y `stability_modifier -10`; el ingreso bruto cae ~35 % y el neto
+sigue siendo positivo con los ejércitos iniciales. No se repite (`fired_events`).
+**Limitaciones detectadas:** (a) el evento no tiene efecto dinástico específico — `DynastySystem`
+solo aplica enfermedad aleatoria (2 %/año a mayores de 50), no mortalidad de Peste Negra; (b) los
+8 eventos con trigger `war` solo disparan si England/France o Castile/England están en guerra
+declarada; el evento de 1337 crea casus belli y tensión (-60) pero no declara la guerra, así que
+Sluys/Crécy/Calais/Poitiers/Brétigny/Nájera dependen de que el jugador o la IA declaren la guerra
+(existe test de Sluys/Crécy con guerra forzada). Recomendación a AG-2: añadir efecto/estado inicial
+de guerra anglo-francesa o garantizar que la IA la declare en 1338-1340.
+
+### 12.2 Balance económico 1337 (40 trimestres sin órdenes, cosecha media 1,0)
+
+| Facción jugable | Tesoro inicial | Ingreso bruto/q | Mantenimiento/q | Neto/q | Tesoro a 10 años |
+|---|---:|---:|---:|---:|---:|
+| Aragón | 7.000 | 1.356,7 | 13 | +1.343,7 | 60.804 |
+| Bohemia | 9.000 | 863,9 | 14 | +849,9 | 43.000 |
+| Castilla | 6.500 | 1.664,3 | 21 | +1.643,3 | 72.464 |
+| Inglaterra | 8.000 | 1.311,3 | 24 | +1.287,3 | 59.520 |
+| Francia | 12.000 | 3.935,0 | 30 | +3.905,0 | 168.536 |
+| Sacro Imperio | 6.000 | 3.661,5 | 16 | +3.645,5 | 152.320 |
+| Hungría | 7.000 | 931,7 | 17 | +914,7 | 43.536 |
+| Polonia | 5.000 | 612,5 | 16 | +596,5 | 28.920 |
+
+**Hallazgo crítico (inflación trivial):** con los ejércitos iniciales el mantenimiento es
+13-30 oro/trimestre frente a 597-3.935 de ingreso; todas las jugables multiplican su tesoro por
+5-14 en 10 años sin gastar. El reclutamiento de era I es igualmente trivial: pools iniciales de
+47.000-267.000 hombres y 11 unidades disponibles (coste 20-130 oro por bloque de 200), mientras
+el ingreso permite reclutar decenas de bloques por trimestre. **No es un bug de datos**: los
+valores de región son estimaciones coherentes; el desequilibrio está en constantes de diseño de
+`utils/game_constants.gd` (mantenimiento 2 oro/200 hombres/trimestre, divisor fiscal 100.000).
+Recomendación a AG-2 (fuera de mi scope): subir `ARMY_UPKEEP_PER_200_MEN` a ~20-40 y/o bajar
+ingresos fiscales/comerciales; simular 10 años × 8 facciones con AG-4. No se tocaron
+`regions.json` ni `events_1337.json`.
+
+### 12.3 Apoyo popular: descontento estructural en montaña
+
+Simulación por región (sin revueltas) de los 40 trimestres: Austria (HRE), Transilvania y Croacia
+(Hungría) tienen `terrain=mountain`, riqueza 35-55 y delta de apoyo **-2/trimestre** (déficit de
+comida con el reparto inicial 55 % granjeros + sin bonus de riqueza); tras 4-5 años su apoyo llega
+a 0 y provocan revueltas recurrentes (la Peste Negra -10 acelera el proceso). Las demás jugables
+se mantienen en 60-100. Es un problema de la fórmula de apoyo/terreno (código), no de un valor
+puntual de dato; cambiarlo a `forest` o subir la riqueza falsearía la geografía histórica.
+Recomendación a AG-2: revisar `TERRAIN_FOOD`/`FOOD_NEED_PER_WORKER`/bonus de apoyo para montaña.
+
+### 12.4 Coherencia de personajes, herencias y capitales (8 jugables)
+
+- Los 8 gobernantes seleccionados para 1337 son los correctos (Edward III, Philip VI, Louis IV,
+  John of Bohemia, Charles Robert, Alfonso XI, Peter IV, Casimir III); las 8 capitales existen.
+  7/8 capitales son propias; Praga (HRE) pertenece a Bohemia (D-010, documentado).
+- Sin referencias familiares rotas en las 8 casas; herederos seleccionados correctamente salvo
+  **Polonia**: no hay ficha `role=heir` viva en 1337 y el fallback de `GameState._find_heir` elige
+  a la esposa `aldona_de_lituania` (rol `spouse`) en lugar de un pariente varón; conviene que
+  AG-2 excluya `spouse` del fallback o que se añada un heredero explícito en Fase 4 (cambio de
+  `characters.json`, fuera del scope de esta auditoría).
+- `validate_data` sin errores; suite completa `1469 pasados, 0 fallidos, 1 omitido` (incluye
+  `[SUITE] events` 12/12).
+
 ---
 
 *Generado por AG-1. Fase 0: Escenario 1. Fase 2: `map_borders.json` (§9) y `portrait` (§10).
 Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11).
-Cualquier corrección de dato debe mantener la URL de fuente o marcar `"estimate": true`; las
-reglas de validación están en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en GDD §12-§13.*
+Fase 3.3 MVP-1337: auditoría de eventos/balance (§12), sin cambios de datos. Cualquier corrección
+de dato debe mantener la URL de fuente o marcar `"estimate": true`; las reglas de validación están
+en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en GDD §12-§13.*
