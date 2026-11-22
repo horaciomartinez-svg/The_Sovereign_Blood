@@ -2,20 +2,22 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 ✅ QA APROBADO 7/7; restan escenarios 1402/1453, retratos/animaciones y QA final de fase |
+| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; QA final ✅ **APROBADO CON OBSERVACIONES** (arte externo Kimi pendiente) |
 | **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
-| **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3`) |
-| **GDD** | **v1.7** — `GDD_The_Sovereign's_Blood.md` (§10.3 sprites 17/17, §10.4 tiles N3) |
-| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites: assets, `sprite_sheet`, lógica N2/N3, render, QA) |
+| **Siguiente fase** | Fase 4 — no definida (contenido/arte final y pulido) |
+| **GDD** | **v1.7** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17, §10.4 tiles N3) |
+| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
 | **Fecha de cierre Fase 2** | 2026-11-22 |
+| **Fecha de cierre Fase 3** | 2026-11-22 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
 | **QA Sprites Fase 3** | **APROBADO 6/6 (17/17 unidades)** — `docs/qa/fase3_sprites_report.md` |
 | **QA Tiles Fase 3** | **APROBADO 7/7** — `docs/qa/fase3_tiles_report.md` |
+| **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; pendiente arte externo Kimi (69 retratos + 184 animaciones) |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -414,9 +416,27 @@ y `docs/architecture_contracts_fase3_tiles.md` (tiles §10.4).
 (17 unidades, id bombarda, fuentes raw, formatos, proyectiles, capturas), D-051…D-056 (GDD v1.7, reparto
 tiles, `battle_tiles`, render/rotación, generador N3, capturas de tiles).
 
-**Próximo tramo de Fase 3:** escenarios 1402/1453 (AG-1 datos+eventos: Ankara 1402, locura de Carlos VI,
-caída de Constantinopla 1453, Guerra de las Dos Rosas; evolución tecnológica), retratos de herederos y de
-los escenarios nuevos (AG-5, hoja de estilo Kimi; petición de generación a Kimi si hace falta) y cuadros
-idle/ataque/impacto/muerte de las 17 unidades (D-049). Después: relieve del mapa, música CC, efectos,
-balance y QA final de Fase 3 (3 escenarios completos, victoria/derrota §4.5, partida automatizada de 10
-años) → tag `fase-3`, reporte y verificación externa de Kimi contra GDD v1.7.
+**Cierre de Fase 3 — aceptación (QA final 7/7 PASS, APROBADO CON OBSERVACIONES):**
+- **3 escenarios completos:** 1337 "Dos Coronas" (→1399), 1402 "El Choque de Imperios" (→1460) y 1453
+  "El Ocaso y el Alba" (→1480); arranque desde selección UI con 8 facciones jugables por escenario; mapa
+  y HUD con año/era; final automático. Datos: 23 facciones (9 nuevas), 175 personajes, 47 regiones × 3
+  años, 18 eventos históricos con fuentes; `validate_data` 11 datasets/7 schemas, **11.069 comprobaciones,
+  0 WARN/0 errores**.
+- **Tecnología por era:** I (<1350) / II (1350-1399) / III (≥1400); reclutamiento e IA limitados a la era;
+  era visible en UI. **Victoria/derrota §4.5:** Prestigio Real sostenido, conquista ≥70%, supervivencia al
+  año final, extinción de la casa o pérdida total; reloj congelado tras el fin.
+- **QA final:** `tests/qa_acceptance_fase3_final.gd` **7/7** (3 escenarios recorridos hasta su año final
+  sin crash; 10 años ×2 deterministas; gobernantes por año correctos: Enrique IV/Bayaceto I en 1402,
+  Enrique VI/Mehmed II/Constantino XI en 1453; save/load exacto). Batería: `run_all` **1250/0/1**, F1 6/6,
+  F2 6/6, sprites 6/6, tiles 7/7, editor/headless 0 ERROR/WARNING.
+- **Arte:** sprites 17/17 (§10.3) y tiles 12/12 (§10.4) integrados; retratos nuevos y animaciones de
+  combate **pendientes de entrega externa de Kimi** (petición `docs/art/requests/kimi_phase3_assets.md`:
+  69 retratos 256×256 + 184 PNG idle/ataque/impacto/muerte). El fallback heráldico y la marcha actual
+  garantizan que no haya huecos; se documenta como observación no bloqueante (D-062).
+- **Observaciones menores:** `scenario_1337` aún deriva sus 8 jugables de flags globales (efecto correcto);
+  REA §3.2 mantiene la limitación de observación aceptada (D-038); simulación de 10 años no duplica los
+  recorridos completos (el harness C1 sí los recorre).
+- **Cierre:** commits por agente + cierre `[AG-0]`, push a `origin/main` y tag anotado **`fase-3`**.
+  Deuda externa abierta: entrega de arte de Kimi (retratos/animaciones) para Fase 4; música CC, relieve y
+  balance fino quedan para el siguiente ciclo. Verificación externa de Kimi contra GDD v1.7 pendiente de
+  su informe.
