@@ -641,7 +641,8 @@ func _set_view_year(year_value: int) -> void:
 		var suffix := ""
 		if TSBGame.has_game() and year_value != TSBGame.start_year():
 			suffix = " · histórica"
-		_year_label.text = "AÑO %d%s" % [year_value, suffix]
+		var era_text := TSBGame.current_era() if TSBGame.has_game() else TSBGame.era_for_year(year_value)
+		_year_label.text = "AÑO %d · ERA %s%s" % [year_value, era_text, suffix]
 	_refresh_map_layers()
 	_refresh_view_banner()
 
@@ -702,7 +703,11 @@ func _refresh_info_sidebar() -> void:
 	var fid := TSBGame.player_faction()
 	var has_game := TSBGame.has_game()
 	_info_faction.text = TSBGame.faction_name(fid) if not fid.is_empty() else "Sin partida"
-	_info_date.text = "%s · %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()]
+	_info_date.text = "%s · %d · Era %s" % [
+		QUARTER_NAMES[TSBGame.current_quarter() - 1],
+		TSBGame.current_year(),
+		TSBGame.current_era(),
+	]
 	var info_ruler := _display_ruler(fid)
 	if _info_portrait != null:
 		_info_portrait.call("setup", str(info_ruler.get("id", "")))

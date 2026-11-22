@@ -1,7 +1,9 @@
 extends Control
-## Seleccion de escenario y faccion (GDD §9.2).
-## Tres tarjetas: la de 1337 es jugable (datos completos); 1402/1453 llegan en Fase 3.
-## Arranca con GameState.new_game("scenario_1337", fid) + TurnManager.begin_turn(fid).
+## Selección de escenario y casa (GDD v1.7 §4.3-§4.5, contrato escenarios §3).
+## 3 escenarios jugables (1337/1402/1453) con título, descripción, año y era;
+## al elegir escenario se listan sus 8 playable_factions. Los datos son la
+## fuente de verdad; si un escenario aún no está cargado, su tarjeta queda
+## deshabilitada con "datos en preparación", sin promesa de disponibilidad futura.
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
@@ -12,6 +14,29 @@ const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 const WORLD_MAP_SCENE := "res://scenes/map/world_map.tscn"
 
+const SCENARIO_DEFAULTS := [
+	{
+		"id": "scenario_1337",
+		"year": 1337,
+		"title": "Dos Coronas",
+		"description": "Eduardo III de Inglaterra reivindica la corona francesa: comienza la Guerra de los Cien Años.",
+	},
+	{
+		"id": "scenario_1402",
+		"year": 1402,
+		"end_year": 1460,
+		"title": "El Choque de Imperios",
+		"description": "Timur desafía a los otomanos y Francia y Borgoña se desangran en la Guerra de los Cien Años.",
+	},
+	{
+		"id": "scenario_1453",
+		"year": 1453,
+		"end_year": 1480,
+		"title": "El Ocaso y el Alba",
+		"description": "Constantinopla cae, estalla la Guerra de las Dos Rosas y la pólvora cambia la faz de Europa.",
+	},
+]
+
 const FACTION_LABELS := {
 	"england": "Inglaterra",
 	"france": "Francia",
@@ -21,6 +46,21 @@ const FACTION_LABELS := {
 	"castile": "Castilla",
 	"aragon": "Aragón",
 	"poland": "Polonia",
+	"scotland": "Escocia",
+	"papacy": "Papado",
+	"granada": "Granada",
+	"mamluks": "Mamelucos",
+	"byzantium": "Bizancio",
+	"golden_horde": "Horda de Oro",
+	"brittany": "Bretaña",
+	"burgundy": "Borgoña",
+	"florence": "Florencia",
+	"genoa": "Génova",
+	"milan": "Milán",
+	"naples": "Nápoles",
+	"ottoman": "Otomanos",
+	"tamerlane": "Timúridas",
+	"venice": "Venecia",
 }
 
 const GOVERNMENT_LABELS := {
@@ -30,6 +70,7 @@ const GOVERNMENT_LABELS := {
 	"sultanate": "Sultanato",
 	"khanate": "Kanato",
 	"empire": "Imperio",
+	"republic": "República",
 }
 
 const PROFILE_LABELS := {
@@ -40,8 +81,13 @@ const PROFILE_LABELS := {
 	"balanced": "Equilibrado",
 }
 
+var _selected_scenario_id: String = ""
 var _selected_faction: String = ""
+var _scenario_buttons: Dictionary = {}
 var _faction_buttons: Dictionary = {}
+var _scenario_subtitle: Label = null
+var _faction_title: Label = null
+var _faction_box: VBoxContainer = null
 var _detail_box: VBoxContainer = null
 var _start_button: Button = null
 var _status_label: Label = null
@@ -52,7 +98,13 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	TSBGame.ensure_data()
 	_build()
-	_select_faction("england")
+	var initial := "scenario_1337"
+	if not _scenario_available(initial):
+		for meta: Dictionary in SCENARIO_DEFAULTS:
+			if _scenario_available(str(meta.get("id", ""))):
+				initial = str(meta.get("id", ""))
+				break
+	_select_scenario(initial)
 
 
 func _build() -> void:
@@ -60,28 +112,24 @@ func _build() -> void:
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(backdrop)
 
-	var margin := UIKit.margin(self, 40, 26, 40, 24)
+	var margin := UIKit.margin(self, 34, 22, 34, 20)
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var page := UIKit.vbox(margin, 16)
+	var page := UIKit.vbox(margin, 12)
 
-	# Cabecera.
 	var header := UIKit.hbox(page, 18)
 	var back := UIKit.button(header, "<  VOLVER", "SmallButton", "Volver al menú principal")
 	back.custom_minimum_size = Vector2(150, 46)
 	back.pressed.connect(_on_back)
-
 	var titles := UIKit.vbox(header, 0)
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var title := UIKit.label(titles, "ELIGE TU CORONA", "TitleLabel")
-	title.add_theme_font_size_override("font_size", 46)
-	var subtitle := UIKit.label(titles, "Escenario «Dos Coronas» · 1337 — selecciona la casa que gobernarás", "SmallLabel")
-	subtitle.add_theme_font_size_override("font_size", 19)
-
+	var title := UIKit.label(titles, "ELIGE TU ESCENARIO", "TitleLabel")
+	title.add_theme_font_size_override("font_size", 42)
+	_scenario_subtitle = UIKit.label(titles, "Tres escenarios jugables · selecciona una casa para comenzar", "SmallLabel")
+	_scenario_subtitle.add_theme_font_size_override("font_size", 18)
 	var data_summary := UIKit.label(
 		header,
-		"%d facciones · %d jugables · %d regiones · %d personajes" % [
+		"%d facciones · %d regiones · %d personajes" % [
 			TSBGame.faction_ids().size(),
-			TSBGame.playable_factions().size(),
 			TSBGame.region_ids().size(),
 			TSBGame.all_characters().size(),
 		],
@@ -90,23 +138,42 @@ func _build() -> void:
 	data_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	UIKit.hsep(page)
 
-	# Contenido: tarjetas + detalle de faccion.
-	var content := UIKit.hbox(page, 20)
+	var cards_row := UIKit.hbox(page, 14)
+	cards_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for meta: Dictionary in SCENARIO_DEFAULTS:
+		_build_scenario_card(cards_row, meta)
+	UIKit.hsep(page)
+
+	var content := UIKit.hbox(page, 18)
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	var cards := UIKit.hbox(content, 18)
-	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_build_current_scenario_card(cards)
-	_build_future_card(cards, "1402", "El Choque de Imperios", "Timur desafía a los otomanos;\nFrancia y Borgoña se desangran en la\nGuerra de los Cien Años.")
-	_build_future_card(cards, "1453", "El Ocaso y el Alba", "Constantinopla cae, la Guerra de las\nDos Rosas estalla y la pólvora cambia\nla faz de Europa.")
+	var faction_panel := UIKit.panel(content, "ParchmentPanel")
+	faction_panel.custom_minimum_size = Vector2(480, 0)
+	var faction_margin := UIKit.margin(faction_panel, 16, 14, 16, 14)
+	var faction_column := UIKit.vbox(faction_margin, 6)
+	_faction_title = UIKit.label(faction_column, "CASAS JUGABLES", "InkLabel")
+	_faction_title.add_theme_font_size_override("font_size", 20)
+	_faction_title.add_theme_color_override("font_color", Palette.CRIMSON)
+	_faction_box = UIKit.vbox(faction_column, 6)
+	_faction_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var faction_hint := UIKit.label(
+		faction_column,
+		"Cada escenario declara sus 8 facciones jugables en los datos (playable_factions).",
+		"InkLabel")
+	faction_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	faction_hint.add_theme_font_size_override("font_size", 12)
+	faction_hint.add_theme_color_override("font_color", Palette.MUTED)
 
 	var detail_panel := UIKit.panel(content, "ParchmentPanel")
-	detail_panel.custom_minimum_size = Vector2(470, 0)
-	var detail_margin := UIKit.margin(detail_panel, 18, 16, 18, 16)
-	_detail_box = UIKit.vbox(detail_margin, 8)
-	_detail_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	detail_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_panel.add_child(scroll)
+	var detail_margin := UIKit.margin(scroll, 16, 14, 16, 14)
+	detail_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detail_box = UIKit.vbox(detail_margin, 7)
+	_detail_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	# Pie.
 	UIKit.hsep(page)
 	var footer := UIKit.hbox(page, 16)
 	_status_label = UIKit.label(footer, "", "SmallLabel", HORIZONTAL_ALIGNMENT_LEFT)
@@ -116,81 +183,97 @@ func _build() -> void:
 	_start_button.pressed.connect(_on_start)
 
 
-func _build_current_scenario_card(parent: Node) -> void:
-	var card := UIKit.panel(parent, "ParchmentPanel")
+func _build_scenario_card(parent: Node, meta: Dictionary) -> void:
+	var scenario_id := str(meta.get("id", ""))
+	var available := _scenario_available(scenario_id)
+	var card := UIKit.panel(parent, "ParchmentPanel" if available else "InkPanel")
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var margin := UIKit.margin(card, 20, 16, 20, 16)
-	var column := UIKit.vbox(margin, 8)
-
-	var year := UIKit.label(column, "1337", "InkLabel")
-	year.add_theme_font_size_override("font_size", 44)
-	year.add_theme_color_override("font_color", Palette.CRIMSON)
-
-	var title := UIKit.label(column, TSBGame.scenario_title(), "InkLabel")
-	title.add_theme_font_size_override("font_size", 32)
-	title.add_theme_color_override("font_color", Palette.INK_TEXT)
-
-	var description := UIKit.label(
-		column,
-		str(TSBGame.scenario().get("description", "Eduardo III de Inglaterra reivindica la corona francesa.")),
-		"InkLabel")
+	if not available:
+		card.modulate = Color(1, 1, 1, 0.72)
+	var margin := UIKit.margin(card, 16, 12, 16, 12)
+	var column := UIKit.vbox(margin, 5)
+	var year_value := TSBGame.scenario_start_year(scenario_id) if available else int(meta.get("year", 1337))
+	var year_label := UIKit.label(column, str(year_value), "InkLabel")
+	year_label.add_theme_font_size_override("font_size", 36)
+	year_label.add_theme_color_override("font_color", Palette.CRIMSON if available else Palette.MUTED)
+	var title_text := str(TSBGame.scenario(scenario_id).get("title", meta.get("title", ""))) if available else str(meta.get("title", ""))
+	var title_label := UIKit.label(column, title_text, "InkLabel")
+	title_label.add_theme_font_size_override("font_size", 23)
+	title_label.add_theme_color_override("font_color", Palette.INK_TEXT if available else Palette.MUTED)
+	var era_text := "ERA %s" % TSBGame.era_for_year(year_value)
+	var end_year := TSBGame.scenario_end_year_for(scenario_id) if available else int(meta.get("end_year", year_value + 62))
+	var era_label := UIKit.label(column, "%s · %d–%d" % [era_text, year_value, end_year], "InkLabel")
+	era_label.add_theme_font_size_override("font_size", 13)
+	era_label.add_theme_color_override("font_color", Palette.GOLD_DIM if available else Palette.MUTED)
+	var description_text := str(TSBGame.scenario(scenario_id).get("description", meta.get("description", ""))) if available else str(meta.get("description", ""))
+	var description := UIKit.label(column, description_text, "InkLabel")
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.add_theme_font_size_override("font_size", 16)
-	description.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.1))
-	description.custom_minimum_size = Vector2(0, 64)
+	description.add_theme_font_size_override("font_size", 14)
+	description.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.1) if available else Palette.MUTED)
+	description.custom_minimum_size = Vector2(0, 52)
+	UIKit.spacer(column, 2)
+	var button_text := "ELEGIR ESCENARIO" if available else "DATOS EN PREPARACIÓN"
+	var button := UIKit.button(column, button_text, "SmallButton" if available else "CardButton")
+	button.disabled = not available
+	button.toggle_mode = true
+	button.custom_minimum_size = Vector2(0, 36)
+	button.pressed.connect(func() -> void: _select_scenario(scenario_id))
+	_scenario_buttons[scenario_id] = button
 
-	var minimap := ScenarioMinimap.new()
-	minimap.custom_minimum_size = Vector2(0, 250)
-	minimap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	column.add_child(minimap)
 
-	var notice := UIKit.label(column, "Facciones jugables", "InkLabel")
-	notice.add_theme_font_size_override("font_size", 20)
-	notice.add_theme_color_override("font_color", Palette.CRIMSON)
+func _scenario_available(scenario_id: String) -> bool:
+	return TSBGame.scenario_available(scenario_id) and not TSBGame.playable_factions(scenario_id).is_empty()
 
-	var grid := UIKit.grid(column, 2, 8, 6)
+
+func _select_scenario(scenario_id: String) -> void:
+	if not _scenario_available(scenario_id):
+		if _status_label != null:
+			_status_label.text = "Escenario aún no disponible en los datos; se habilitará al cargarse."
+		return
+	_selected_scenario_id = scenario_id
+	for key: Variant in _scenario_buttons.keys():
+		var button: Button = _scenario_buttons[key]
+		button.button_pressed = str(key) == scenario_id
+	if _scenario_subtitle != null:
+		_scenario_subtitle.text = "%s · %d–%d · ERA %s" % [
+			str(TSBGame.scenario(scenario_id).get("title", "")),
+			TSBGame.scenario_start_year(scenario_id),
+			TSBGame.scenario_end_year_for(scenario_id),
+			TSBGame.era_for_year(TSBGame.scenario_start_year(scenario_id)),
+		]
+	_rebuild_factions()
+
+
+func _rebuild_factions() -> void:
+	if _faction_box == null:
+		return
+	UIKit.clear(_faction_box)
+	_faction_buttons.clear()
+	var playable := TSBGame.playable_factions(_selected_scenario_id)
+	if _faction_title != null:
+		_faction_title.text = "CASAS JUGABLES · %s" % _scenario_short_title(_selected_scenario_id)
+	if playable.is_empty():
+		var empty := UIKit.label(_faction_box, "Datos del escenario en preparación: no hay facciones jugables cargadas.", "InkLabel")
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty.add_theme_font_size_override("font_size", 15)
+		empty.add_theme_color_override("font_color", Palette.MUTED)
+		if _start_button != null:
+			_start_button.disabled = true
+		return
+	var grid := UIKit.grid(_faction_box, 2, 8, 6)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var group := ButtonGroup.new()
-	var playable := TSBGame.playable_factions()
 	for faction_id: Variant in playable:
 		var fid := str(faction_id)
 		var button := UIKit.button(grid, str(FACTION_LABELS.get(fid, TSBGame.faction_name(fid))), "CardButton")
 		button.toggle_mode = true
 		button.button_group = group
-		button.custom_minimum_size = Vector2(0, 42)
+		button.custom_minimum_size = Vector2(0, 40)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.tooltip_text = TSBGame.faction_name(fid)
 		button.pressed.connect(func() -> void: _select_faction(fid))
 		_faction_buttons[fid] = button
-
-	UIKit.spacer(column, 4)
-	var chips := UIKit.hbox(column, 6)
-	UIKit.chip(chips, "47 regiones", Palette.PARCHMENT_DARK, Palette.INK_TEXT)
-	UIKit.chip(chips, "14 potencias", Palette.PARCHMENT_DARK, Palette.INK_TEXT)
-	UIKit.chip(chips, "1337–1399", Palette.PARCHMENT_DARK, Palette.INK_TEXT)
-
-
-func _build_future_card(parent: Node, year_text: String, title_text: String, description_text: String) -> void:
-	var card := UIKit.panel(parent, "InkPanel")
-	card.custom_minimum_size = Vector2(250, 0)
-	var margin := UIKit.margin(card, 16, 16, 16, 16)
-	var column := UIKit.vbox(margin, 10)
-
-	var year := UIKit.label(column, year_text, "TitleLabel")
-	year.add_theme_font_size_override("font_size", 40)
-	var title := UIKit.label(column, title_text, "SectionHeader")
-	title.add_theme_font_size_override("font_size", 22)
-	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var description := UIKit.label(column, description_text, "SmallLabel")
-	description.add_theme_font_size_override("font_size", 15)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	UIKit.spacer(column, 8)
-	var lock_label := UIKit.label(column, "PRÓXIMAMENTE", "GoldLabel")
-	lock_label.add_theme_font_size_override("font_size", 18)
-	var phase := UIKit.label(column, "Fase 3 · datos y eventos históricos\n1402 y 1453 (AG-1 + AG-2)", "TinyLabel")
-	phase.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-	card.modulate = Color(1, 1, 1, 0.78)
+	_select_faction(str(playable[0]))
 
 
 func _select_faction(faction_id: String) -> void:
@@ -205,116 +288,167 @@ func _select_faction(faction_id: String) -> void:
 		_start_button.text = "COMENZAR REINADO CON %s" % str(FACTION_LABELS.get(faction_id, TSBGame.faction_name(faction_id))).to_upper()
 		_start_button.disabled = false
 	if _status_label != null:
-		_status_label.text = "Al comenzar se creará la partida y se abrirá el mapa de Europa."
+		_status_label.text = "Al comenzar se creará la partida y se abrirá el mapa en el año del escenario."
 
 
 func _rebuild_detail() -> void:
-	if _detail_box == null:
+	if _detail_box == null or _selected_faction.is_empty():
 		return
 	UIKit.clear(_detail_box)
 	var fid := _selected_faction
 	var faction_data := TSBGame.faction(fid)
 	var color := TSBGame.faction_color(fid)
 	var header := UIKit.hbox(_detail_box, 14)
-
 	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(118, 140)
+	shield.custom_minimum_size = Vector2(96, 116)
 	shield.set("house", _house_of_faction(fid))
 	shield.set("field_color", color)
 	header.add_child(shield)
-
 	var header_text := UIKit.vbox(header, 2)
 	header_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := UIKit.label(header_text, TSBGame.faction_name(fid), "InkLabel")
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_label.add_theme_font_size_override("font_size", 26)
+	name_label.add_theme_font_size_override("font_size", 25)
 	name_label.add_theme_color_override("font_color", Palette.INK_TEXT)
 	var gov := UIKit.label(header_text, str(GOVERNMENT_LABELS.get(str(faction_data.get("government", "")), "Monarquía")), "InkLabel")
-	gov.add_theme_font_size_override("font_size", 17)
+	gov.add_theme_font_size_override("font_size", 16)
 	gov.add_theme_color_override("font_color", Palette.CRIMSON)
 	var profile := UIKit.label(header_text, "Perfil: %s" % str(PROFILE_LABELS.get(TSBGame.faction_profile(fid), "Equilibrado")), "InkLabel")
-	profile.add_theme_font_size_override("font_size", 16)
+	profile.add_theme_font_size_override("font_size", 15)
 	profile.add_theme_color_override("font_color", Palette.INK_TEXT)
-
 	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.8))
 
-	var ruler := TSBGame.ruler(fid)
-	var heir := TSBGame.heir(fid)
+	var ruler := _current_or_preview_ruler(fid, "ruler")
+	var heir := _current_or_preview_ruler(fid, "heir")
 	var capital := str(faction_data.get("capital", ""))
-	var regions_count := TSBGame.regions_owned_by(fid).size()
-	var armies := 0
-	for army: Variant in TSBGame.armies().values():
-		if army is Dictionary and str((army as Dictionary).get("faction_id", "")) == fid:
-			armies += 1
-
 	_detail_row("Gobernante", str(ruler.get("name", "—")), _age_text(ruler))
 	_detail_row("Heredero", str(heir.get("name", "—")), "")
 	_detail_row("Capital", TSBGame.region_name(capital), "")
-	_detail_row("Tesoro inicial", "%d oro" % TSBGame.gold(fid), "")
+	_detail_row("Tesoro inicial", "%d oro" % _preview_treasury(fid), "")
 	_detail_row("Prestigio", str(TSBGame.prestige(fid)), "")
-	_detail_row("Regiones", str(regions_count), "")
-	_detail_row("Ejércitos", str(armies), "")
-
-	UIKit.spacer(_detail_box, 6)
-	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.8))
-
-	var traits := UIKit.vbox(_detail_box, 3)
-	var ruler_traits: Variant = ruler.get("traits", [])
-	if ruler_traits is Array and not (ruler_traits as Array).is_empty():
-		var traits_title := UIKit.label(traits, "Rasgos del gobernante", "InkLabel")
-		traits_title.add_theme_font_size_override("font_size", 18)
-		traits_title.add_theme_color_override("font_color", Palette.CRIMSON)
-		for trait_value: Variant in (ruler_traits as Array):
-			var trait_label := UIKit.label(traits, "· " + str(trait_value).replace("_", " "), "InkLabel")
-			trait_label.add_theme_font_size_override("font_size", 15)
-			trait_label.add_theme_color_override("font_color", Palette.INK_TEXT)
-
-	var hint := UIKit.label(
-		_detail_box,
-		"La partida se juega por trimestres: 4 turnos = 1 año. El objetivo es sostener dos coronas durante una década y alcanzar 500 de prestigio (§4.5).",
-		"InkLabel")
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint.add_theme_font_size_override("font_size", 14)
-	hint.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.15))
+	_detail_row("Regiones", str(_preview_regions(fid)), "")
+	_detail_row("Ejércitos", str(_preview_armies(fid)), "")
 
 	UIKit.spacer(_detail_box, 4)
 	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.8))
-	var goals_title := UIKit.label(_detail_box, "OBJETIVOS DE VICTORIA", "InkLabel")
+	var scenario_data := TSBGame.scenario(_selected_scenario_id)
+	var victory_value: Variant = scenario_data.get("victory", {})
+	var victory: Dictionary = victory_value if victory_value is Dictionary else {}
+	var goals_title := UIKit.label(_detail_box, "OBJETIVOS DE VICTORIA · %s" % _scenario_short_title(_selected_scenario_id), "InkLabel")
 	goals_title.add_theme_font_size_override("font_size", 17)
 	goals_title.add_theme_color_override("font_color", Palette.CRIMSON)
-	var victory: Variant = TSBGame.scenario().get("victory", {})
-	var victory_dict: Dictionary = victory if victory is Dictionary else {}
 	var goals := [
-		"Sostener %d coronas bajo tu casa" % int(victory_dict.get("crowns", 2)),
-		"Alcanzar %d puntos de prestigio" % int(victory_dict.get("prestige", 500)),
-		"Mantener el trono durante %d años" % int(victory_dict.get("years_held", 10)),
+		"Alcanzar %d puntos de prestigio" % int(victory.get("prestige", 500)),
+		"Controlar el %d%% de las regiones" % int(victory.get("control_pct", 70)),
+		"Sobrevivir hasta %d" % TSBGame.scenario_end_year_for(_selected_scenario_id),
 	]
 	for goal_text: String in goals:
 		var goal_label := UIKit.label(_detail_box, "· " + goal_text, "InkLabel")
-		goal_label.add_theme_font_size_override("font_size", 14)
+		goal_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		goal_label.add_theme_font_size_override("font_size", 13)
 		goal_label.add_theme_color_override("font_color", Palette.INK_TEXT)
-	var end_label := UIKit.label(
-		_detail_box,
-		"Escenario %d–%d · guardado automático al final de cada año." % [TSBGame.start_year(), TSBGame.scenario_end_year()],
-		"InkLabel")
-	end_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	end_label.add_theme_font_size_override("font_size", 12)
-	end_label.add_theme_color_override("font_color", Palette.MUTED)
+	var hint := UIKit.label(_detail_box, "La partida se juega por trimestres: 4 turnos = 1 año. El mapa arranca en la vista política del año del escenario.", "InkLabel")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_color_override("font_color", Palette.MUTED)
+
+
+func _scenario_short_title(scenario_id: String) -> String:
+	var sc := TSBGame.scenario(scenario_id)
+	var title := str(sc.get("title", ""))
+	if not title.is_empty():
+		return title
+	for meta: Dictionary in SCENARIO_DEFAULTS:
+		if str(meta.get("id", "")) == scenario_id:
+			return str(meta.get("title", ""))
+	return scenario_id
+
+
+func _current_or_preview_ruler(faction_id: String, role: String) -> Dictionary:
+	if TSBGame.has_game() and TSBGame.scenario_id() == _selected_scenario_id:
+		var current := TSBGame.ruler(faction_id) if role == "ruler" else TSBGame.heir(faction_id)
+		if not current.is_empty():
+			return current
+	var year := TSBGame.scenario_start_year(_selected_scenario_id)
+	var best: Dictionary = {}
+	var best_reign := -1
+	for entry: Variant in TSBGame.characters_of(faction_id):
+		if not (entry is Dictionary):
+			continue
+		var character := entry as Dictionary
+		if str(character.get("role", "")) != role:
+			continue
+		var born := int(character.get("born", 0))
+		var died_value: Variant = character.get("died", null)
+		if born > year or (died_value != null and int(died_value) < year):
+			continue
+		var reign_start := int(character.get("reign_start", 0))
+		if reign_start > 0 and reign_start > year:
+			continue
+		var reign_end := int(character.get("reign_end", 0))
+		if reign_end > 0 and reign_end < year:
+			continue
+		if reign_start >= best_reign:
+			best = character.duplicate(true)
+			best_reign = reign_start
+	if not best.is_empty():
+		best["age"] = maxi(year - int(best.get("born", year)), 0)
+	return best
+
+
+func _preview_treasury(faction_id: String) -> int:
+	if TSBGame.has_game() and TSBGame.scenario_id() == _selected_scenario_id:
+		return TSBGame.gold(faction_id)
+	var initial: Variant = TSBGame.scenario(_selected_scenario_id).get("initial_state", {})
+	if initial is Dictionary:
+		var treasuries: Variant = (initial as Dictionary).get("treasuries", {})
+		if treasuries is Dictionary and (treasuries as Dictionary).has(faction_id):
+			return int((treasuries as Dictionary).get(faction_id, 0))
+	return TSBGame.gold(faction_id)
+
+
+func _preview_regions(faction_id: String) -> int:
+	if TSBGame.has_game() and TSBGame.scenario_id() == _selected_scenario_id:
+		return TSBGame.regions_owned_by(faction_id).size()
+	var year := TSBGame.scenario_start_year(_selected_scenario_id)
+	var count := 0
+	for region_id: Variant in TSBGame.region_ids():
+		if TSBGame.map_owner_for(str(region_id), year) == faction_id:
+			count += 1
+	return count
+
+
+func _preview_armies(faction_id: String) -> int:
+	if TSBGame.has_game() and TSBGame.scenario_id() == _selected_scenario_id:
+		var count := 0
+		for army: Variant in TSBGame.armies().values():
+			if army is Dictionary and str((army as Dictionary).get("faction_id", "")) == faction_id:
+				count += 1
+		return count
+	var initial: Variant = TSBGame.scenario(_selected_scenario_id).get("initial_state", {})
+	if initial is Dictionary:
+		var armies: Variant = (initial as Dictionary).get("armies", {})
+		if armies is Dictionary:
+			var list: Variant = (armies as Dictionary).get(faction_id, [])
+			if list is Array:
+				return (list as Array).size()
+	return 0
 
 
 func _detail_row(label_text: String, value_text: String, suffix: String) -> void:
 	var row := UIKit.hbox(_detail_box, 8)
 	var key_label := UIKit.label(row, label_text, "InkLabel")
-	key_label.custom_minimum_size = Vector2(150, 0)
-	key_label.add_theme_font_size_override("font_size", 16)
+	key_label.custom_minimum_size = Vector2(130, 0)
+	key_label.add_theme_font_size_override("font_size", 15)
 	key_label.add_theme_color_override("font_color", Palette.CRIMSON.darkened(0.1))
 	var value_label := UIKit.label(row, value_text, "InkLabel")
 	value_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	value_label.add_theme_font_size_override("font_size", 17)
+	value_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	value_label.add_theme_font_size_override("font_size", 16)
 	value_label.add_theme_color_override("font_color", Palette.INK_TEXT)
 	if not suffix.is_empty():
 		var suffix_label := UIKit.label(row, suffix, "InkLabel")
-		suffix_label.add_theme_font_size_override("font_size", 16)
+		suffix_label.add_theme_font_size_override("font_size", 14)
 		suffix_label.add_theme_color_override("font_color", Palette.GOLD_DIM)
 
 
@@ -327,16 +461,20 @@ func _house_of_faction(faction_id: String) -> String:
 func _age_text(character_entry: Dictionary) -> String:
 	if character_entry.is_empty():
 		return ""
-	var age := TSBGame.character_age(character_entry)
+	var age := int(character_entry.get("age", 0))
+	if age <= 0:
+		age = TSBGame.character_age(character_entry)
 	return "%d años" % age if age > 0 else ""
 
 
 func _on_start() -> void:
-	if _selected_faction.is_empty():
+	if _selected_faction.is_empty() or _selected_scenario_id.is_empty():
 		return
-	var started := TSBGame.start_new_game(_selected_faction)
+	var started: bool = TSBGame.start_new_game_in_scenario(_selected_scenario_id, _selected_faction)
 	if not started:
-		_status_label.text = "Sistemas en integración (AG-2): se abre el mapa en vista previa de datos."
+		if _status_label != null:
+			_status_label.text = "No se pudo iniciar el escenario: datos del escenario todavía no cargados."
+		return
 	get_tree().change_scene_to_file(WORLD_MAP_SCENE)
 
 
@@ -348,54 +486,3 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_on_back()
 		get_viewport().set_input_as_handled()
-
-
-# ==========================================================================
-# Miniatura de mapa generada por codigo (thumbnail del escenario)
-# ==========================================================================
-class ScenarioMinimap extends Control:
-	const PaletteLocal = preload("res://scripts/ui/theme/tsb_palette.gd")
-	const TSBGameLocal = preload("res://scripts/ui/tsb_game.gd")
-
-	func _ready() -> void:
-		mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	func _notification(what: int) -> void:
-		if what == NOTIFICATION_RESIZED:
-			queue_redraw()
-
-	func _draw() -> void:
-		var canvas := size
-		if canvas.x < 8.0 or canvas.y < 8.0:
-			return
-		draw_rect(Rect2(Vector2.ZERO, canvas), PaletteLocal.SEA_DEEP)
-		var entries: Array = TSBGameLocal.map_borders_for_year(1337)
-		for entry: Variant in entries:
-			if not (entry is Dictionary):
-				continue
-			var data := entry as Dictionary
-			var raw_ring: Variant = data.get("ring", [])
-			if not (raw_ring is Array) or (raw_ring as Array).size() < 3:
-				continue
-			var points := PackedVector2Array()
-			for pair: Variant in (raw_ring as Array):
-				if pair is Array and (pair as Array).size() >= 2:
-					points.append(Vector2(float((pair as Array)[0]) * canvas.x, float((pair as Array)[1]) * canvas.y))
-			if points.size() < 3:
-				continue
-			var owner := str(data.get("owner", ""))
-			var color := TSBGameLocal.faction_color(owner) if not owner.is_empty() else PaletteLocal.MUTED
-			color.a = 0.72
-			draw_colored_polygon(points, color)
-			var closed := points.duplicate()
-			closed.append(points[0])
-			draw_polyline(closed, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.55), 0.7, true)
-		if entries.is_empty():
-			# Sin fronteras (AG-1 pendiente): puntos de centro como miniatura.
-			for region_id: Variant in TSBGameLocal.region_ids():
-				var data := TSBGameLocal.region(str(region_id))
-				var owner := str(data.get("owner", ""))
-				var color := TSBGameLocal.faction_color(owner) if not owner.is_empty() else PaletteLocal.MUTED
-				var center: Vector2 = TSBGameLocal.map_center(str(region_id), 1337)
-				draw_circle(center * canvas, 5.0, color)
-		draw_rect(Rect2(Vector2.ZERO, canvas), PaletteLocal.with_alpha(PaletteLocal.GOLD_DIM, 0.8), false, 1.0)

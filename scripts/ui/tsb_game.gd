@@ -211,20 +211,84 @@ static func scenario_id() -> String:
 	return sid if not sid.is_empty() else SCENARIO_ID
 
 
+static func scenario_ids() -> Array:
+	ensure_data()
+	var ids: Array = []
+	var dir := DirAccess.open("res://data/scenarios")
+	if dir != null:
+		dir.list_dir_begin()
+		var entry := dir.get_next()
+		while entry != "":
+			if not dir.current_is_dir() and entry.begins_with("scenario_") and entry.ends_with(".json"):
+				ids.append(entry.get_basename())
+			entry = dir.get_next()
+		dir.list_dir_end()
+	if ids.is_empty():
+		for id: Variant in _scenarios.keys():
+			ids.append(str(id))
+	ids.sort()
+	if not ids.has(SCENARIO_ID):
+		ids.insert(0, SCENARIO_ID)
+	return ids
+
+
+static func scenario_available(scenario_id_value: String) -> bool:
+	var sc := scenario(scenario_id_value)
+	return not sc.is_empty() and int(sc.get("start_year", 0)) > 0
+
+
+static func scenario_start_year(scenario_id_value: String) -> int:
+	return int(scenario(scenario_id_value).get("start_year", 1337))
+
+
+static func scenario_end_year_for(scenario_id_value: String) -> int:
+	return int(scenario(scenario_id_value).get("end_year", 1399))
+
+
+## Era I (<1350), II (1350-1399), III (>=1400) según D-059. La UI solo la pinta.
+static func era_for_year(year_value: int) -> String:
+	if year_value < 1350:
+		return "I"
+	if year_value < 1400:
+		return "II"
+	return "III"
+
+
+static func current_era() -> String:
+	var from_state: Variant = _call("GameState", "get_era", [])
+	if from_state is String and not str(from_state).is_empty():
+		return str(from_state)
+	var raw: Variant = _prop("GameState", "era")
+	if raw is String and not str(raw).is_empty():
+		return str(raw)
+	return era_for_year(current_year())
+
+
+static func game_over_reason() -> String:
+	var raw: Variant = _state_raw().get("game_over_reason", "")
+	if raw is String and not str(raw).is_empty():
+		return str(raw)
+	var from_state: Variant = _call("GameState", "get_game_over_reason", [])
+	return str(from_state) if from_state is String else ""
+
+
 # ==========================================================================
 # Datos historicos (DataLoader o vista previa)
 # ==========================================================================
-static func scenario(id: String = SCENARIO_ID) -> Dictionary:
+static func scenario(id: String = "") -> Dictionary:
 	ensure_data()
-	var from_loader: Variant = _call("DataLoader", "get_scenario", [id])
+	var scenario_key := id
+	if scenario_key.is_empty():
+		scenario_key = scenario_id()
+	var from_loader: Variant = _call("DataLoader", "get_scenario", [scenario_key])
 	if from_loader is Dictionary and not (from_loader as Dictionary).is_empty():
 		return (from_loader as Dictionary).duplicate(true)
-	var cached: Variant = _scenarios.get(id, {})
+	var cached: Variant = _scenarios.get(scenario_key, {})
 	if cached is Dictionary and not (cached as Dictionary).is_empty():
 		return (cached as Dictionary).duplicate(true)
-	var direct := _read_json("res://data/scenarios/%s.json" % id)
+	var direct := _read_json("res://data/scenarios/%s.json" % scenario_key)
 	if not direct.is_empty():
-		_scenarios[id] = direct
+		_scenarios[scenario_key] = direct
 	return direct.duplicate(true)
 
 
@@ -287,6 +351,14 @@ static func is_playable(faction_id: String) -> bool:
 
 static func playable_factions(scenario_id_value: String = SCENARIO_ID) -> Array:
 	var sc := scenario(scenario_id_value)
+	var configured: Variant = sc.get("playable_factions", null)
+	if configured is Array and not (configured as Array).is_empty():
+		var out: Array = []
+		for id: Variant in (configured as Array):
+			var fid := str(id)
+			if not fid.is_empty() and not out.has(fid):
+				out.append(fid)
+		return out
 	var listed: Variant = sc.get("factions")
 	var out: Array = []
 	if listed is Array and not (listed as Array).is_empty():
@@ -848,6 +920,15 @@ static func last_battle_report() -> Dictionary:
 # ==========================================================================
 static func start_new_game(faction_id: String, seed_value: int = 1337) -> bool:
 	_call("GameState", "new_game", [SCENARIO_ID, faction_id, seed_value])
+	_call("TurnManager", "begin_turn", [faction_id])
+	return has_game()
+
+
+## Arranque data-driven de cualquiera de los 3 escenarios (Fase 3 §3).
+static func start_new_game_in_scenario(scenario_id_value: String, faction_id: String, seed_value: int = 1337) -> bool:
+	if not scenario_available(scenario_id_value):
+		return false
+	_call("GameState", "new_game", [scenario_id_value, faction_id, seed_value])
 	_call("TurnManager", "begin_turn", [faction_id])
 	return has_game()
 

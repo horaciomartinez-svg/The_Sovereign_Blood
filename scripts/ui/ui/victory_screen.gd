@@ -43,7 +43,10 @@ func _rebuild() -> void:
 	UIKit.clear(_body)
 	var faction_id := str(_payload.get("faction_id", TSBGame.player_faction()))
 	var victory := bool(_payload.get("victory", false))
-	var reason := str(_payload.get("reason", ""))
+	var raw_reason := str(_payload.get("reason", ""))
+	if raw_reason.is_empty():
+		raw_reason = TSBGame.game_over_reason()
+	var reason := _reason_category(raw_reason, victory)
 	var banner_color := Palette.GREEN if victory else Palette.CRIMSON
 	var banner_text := "VICTORIA" if victory else "DERROTA"
 
@@ -58,10 +61,15 @@ func _rebuild() -> void:
 	faction_label.add_theme_font_size_override("font_size", 26)
 	faction_label.add_theme_color_override("font_color", Palette.INK_TEXT)
 	if not reason.is_empty():
-		var reason_label := UIKit.label(_body, reason, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		var reason_label := UIKit.label(_body, "Motivo: " + reason, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
 		reason_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		reason_label.add_theme_font_size_override("font_size", 17)
+		reason_label.add_theme_font_size_override("font_size", 18)
 		reason_label.add_theme_color_override("font_color", Palette.CRIMSON)
+		if not raw_reason.is_empty() and raw_reason != reason:
+			var detail_label := UIKit.label(_body, raw_reason, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+			detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			detail_label.add_theme_font_size_override("font_size", 14)
+			detail_label.add_theme_color_override("font_color", Palette.MUTED)
 
 	UIKit.hsep(_body, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
 	var stats_title := UIKit.label(_body, "Estadísticas del reinado", "InkLabel")
@@ -113,6 +121,23 @@ func _rebuild() -> void:
 	next.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	next.add_theme_font_size_override("font_size", 15)
 	next.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.15))
+
+
+func _reason_category(raw_reason: String, victory: bool) -> String:
+	var lowered := raw_reason.to_lower()
+	if lowered.contains("prestigio") or lowered.contains("prestige"):
+		return "Prestigio Real sostenido"
+	if lowered.contains("conquist") or lowered.contains("control"):
+		return "Conquista territorial (≥ 70 % de regiones)"
+	if lowered.contains("superviv") or lowered.contains("end_year") or lowered.contains("año final") or lowered.contains("final del escenario"):
+		return "Supervivencia hasta el final del escenario"
+	if lowered.contains("extint") or lowered.contains("dinast"):
+		return "Extinción dinástica"
+	if lowered.contains("perdido todas") or lowered.contains("pérdida total") or lowered.contains("perdida total") or lowered.contains("sin regiones"):
+		return "Pérdida total de regiones"
+	if not raw_reason.is_empty() and lowered.length() <= 32 and not lowered.contains(" "):
+		return raw_reason.capitalize()
+	return "Victoria" if victory else "Derrota"
 
 
 func _stat(parent: Node, key_text: String, value_text: String) -> void:
