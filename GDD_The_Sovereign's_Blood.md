@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vía DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.2 |
-| **Estado** | Aprobado para Fase 0 — entorno verificado + flujo GitHub |
+| **Versión del documento** | 1.4 |
+| **Estado** | Aprobado — v1.4 añade especificación de retratos de soberanos (§10.2, solicitud del usuario) |
 
 ---
 
@@ -479,7 +479,7 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 
 1. **Menú principal:** Nuevo juego / Cargar / Opciones / Salir. Arte placeholder (fondo mapa viejo estilizado).
 2. **Selección de escenario:** 3 tarjetas con año, mapa miniatura y lista de facciones jugables.
-3. **Mapa principal:** regiones poligonales coloreadas por facción; iconos de ejército (bandera + número); ciudad destacada; panel lateral con resumen (año/trimestre, PG, tesoro, alertas). Hover = tooltip de región. Click = panel de región (asignar mano de obra, edificios, reclutar).
+3. **Mapa principal:** mapa geográfico profesional de Europa, Norte de África y Oriente Próximo (especificación completa en §10.1): terreno de época estilizado, fronteras de los reinos por año, regiones clickeables que resaltan al pasar el cursor, iconos de ejército (bandera + número), panel lateral con resumen (año/trimestre, PG, tesoro, alertas) y **retrato del soberano jugador** (§10.2) en la esquina del mapa, al estilo de la referencia. Zoom/pan con cámara 2D. Click = panel de región (asignar mano de obra, edificios, reclutar).
 4. **Menú de Consejo (barra lateral clásica):** órdenes con coste PG visible: Consejo, Familia, Diplomacia, Militar, Economía, Terminar turno. Estilo visual: pergaminos/azul profundo/dorado, tipografía serif legible (Cinzel títulos, EB Garamond cuerpo — Google Fonts, OFL).
 5. **Árbol familiar:** diagrama con retratos placeholder, líneas de parentesco, estado (edad, heredero ★, enfermo, cautivo). Acciones: educar, concertar matrimonio, nombrar regente.
 6. **Diplomacia:** lista de facciones con barras de relación; modales de propuesta con éxito estimado.
@@ -497,6 +497,37 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 - **Assets MVP (Fase 1-2):** placeholders generados proceduralmente (Godot Shaders simples o formas vectoriales): regiones planas con borde tinta, banderas por facción, retratos = escudos heráldicos generados por código a partir de datos de casa (colores + divisa). Esto elimina la dependencia de arte para jugar.
 - **Fase 3:** retratos ilustrados (generación IA + retoque manual), tiles de batalla táctica, mapa con relieve, banda sonora (música renacentista de dominio público interpretada/fuentes libres, ej. música de consort CC), efectos (espadas, campanas, murmullo de corte).
 - **Heraldica generativa:** cada casa define `colors[2] + charge` en datos → escudo único automático. Sin assets raster por facción.
+
+### 10.1 Mapa geográfico profesional (v1.3 — solicitud del usuario)
+
+**Objetivo.** Sustituir el tablero de hexágonos coloreados (placeholder `map_layout.json`, D-017) por un mapa estilo *atlas histórico*: el terreno real de **Europa, Norte de África y Oriente Próximo** con la división política de los reinos de la época. Referencia: el mapa de GK2 (geografía real + bordes de territorio superpuestos); el objetivo lo supera con fronteras vectoriales nítidas, relieve sutil y legibilidad total a 1920×1080.
+
+**Arquitectura por capas (datos y render separados):**
+1. **Capa base de terreno (imagen única):** terreno estilizado "pergamino/acuarela de época", generado una vez: costas detalladas, relieve sutil, ríos principales, indicación de bosques y montañas. **Prohibido** estilo satélite o fantasía. Técnica: heightmap + materiales/shaders de Godot, o textura pintada a partir de fuentes libres; 4096×3072 px mínimo, versionada en `assets/art/map/`.
+2. **Capa de fronteras (vectorial, por año):** polígonos de cada región para **1337, 1402 y 1453**, dibujados como líneas de tinta sobre el terreno. Datos en nuevo dataset `data/map_borders.json` (AG-1): por `region_id`, `year` y anillo de puntos normalizados [0..1] sobre el lienzo del mapa; simplificación Douglas-Peucker con tolerancia fija; presupuesto ≤ 400 puntos por región, ≤ 150 KB el JSON.
+3. **Capa interactiva:** polígonos invisibles clickeables conectados a `region_id`; hover resalta la región (tinta dorada ~18% opacidad) y muestra tooltip; cobertura completa 47/47 contra `regions.json`.
+4. **Capa de entidades:** banderas de facción, ejércitos, iconos de ciudad, nombres de región con **elisión anti-solape por nivel de zoom** (3 niveles: región / país / mar); etiquetas de mar estilo carta náutica ("MARE SEPTENTRIONALE", "LEGUES"…).
+
+**Fuentes de fronteras (abiertas y citables):** atlas históricos de dominio público — William R. Shepherd, *Historical Atlas* (1923-26, PD); mapas anuales de Wikimedia Commons (licencia verificada una a una); catálogos de bibliotecas digitales europeas. Regla §7.8: toda frontera lleva `source` con URL en `data/sources.md`. Las fronteras son **aproximaciones jugables**, no cartografía catastral: la regla de validación es coherencia con las adyacencias de `regions.json`, no precisión métrica.
+
+**Plan de implementación (módulo "Mapa" dentro de la Fase 2):**
+- **AG-1:** produce `data/map_borders.json` (3 años × 47 regiones) + entradas en `sources.md`.
+- **AG-3:** integra las 4 capas en `scenes/map/world_map.tscn` con cámara 2D (zoom rueda/pinch, pan con límites del mundo); al completarse, `map_layout.json` queda **deprecado** (decisión D-024 a registrar).
+- **Criterios de aceptación del módulo:** 47/47 polígonos por año con `region_id` válido; 0 regiones huérfanas; hover/click correctos en las 3 vistas de año; coste de render del mapa < 8 ms CPU por frame (medido en CI); capturas comparativas 1920×1080 en `docs/screenshots/`, incluida una **comparativa lado a lado con el mapa de GK2** como referencia de calidad.
+
+### 10.2 Retratos de soberanos (v1.4 — solicitud del usuario)
+
+**Objetivo.** Como en la referencia (retratos del gobernante y su lugarteniente en la esquina del mapa), el juego muestra siempre **quién eres**: un retrato tipo avatar del soberano que se está jugando, con calidad superior a los sprites de 16 bits de GK2. Referencia visual: las miniaturas de la captura del usuario (Genghis Khan / Mugali); estética objetivo: **miniatura de manuscrito iluminado / óleo plano de época**, coherente con la dirección §10 (pergamino, tinta, dorado) — nada de fantasía.
+
+**Dónde aparece:** (1) esquina del mapa principal, junto al escudo de armas (jugador); (2) árbol familiar (cada miembro vivo); (3) pantalla de diplomacia (gobernante rival); (4) informe de batalla (líderes de ambos bandos); (5) pantalla de corte. Mismo asset en todos lados: un solo retrato por personaje.
+
+**Especificación técnica:**
+- `characters.json` añade campo opcional `"portrait": "<asset_id>"`. Resolución de trabajo: **256×256 px** (se muestra a 96-128 px; margen para zoom en detalle del personaje). Formato PNG con fondo plano color pergamino, marco dorado fino generado por código (no parte del asset).
+- **Fase 2 (placeholder funcional):** AG-3 implementa el *slot* de retrato en las 5 ubicaciones con fallback automático: si `portrait` no existe, se renderiza la heráldica generativa del personaje (escudo de su `house`) + silueta genérica por sexo/edad. Nunca un hueco vacío.
+- **Fase 3 (asset final):** AG-5 produce los retratos ilustrados — al menos los 14 gobernantes iniciales de 1337 y los herederos visibles en el árbol; estilo fijado por hoja de estilo (paleta §10, rasgos por región, indumentaria correcta por década). Generación IA + retoque manual; consistencia auditada comparando el set completo en una hoja de contacto (`docs/screenshots/portraits_contact_sheet.png`).
+- El retrato del soberano **cambia con la sucesión**: al morir el gobernante, el slot muestra al heredero (dinámica ya disponible en `DynastySystem`).
+
+**Criterios de aceptación:** slot presente en las 5 ubicaciones con fallback heráldico 100% funcional (Fase 2); set de retratos finales sin personaje roto/faltante (Fase 3); el cambio de retrato tras sucesión queda verificado en test; captura del mapa con retrato + escudo en `docs/screenshots/`.
 
 ---
 
@@ -607,13 +638,14 @@ C:\Proyectos\TSB\sovereigns-blood --script tests/run_all.gd
 - Loop completo de trimestre + año; economía con asignación por región; apoyo/revueltas; familia (nacimientos, educación, sucesión, matrimonios y pretensiones); diplomacia (las 7 acciones); batallas delegadas; IA de 13 facciones rivales; guardar/cargar; UI completa de la Sección 9.
 - **Aceptación jugable:** se puede jugar Inglaterra 1337 de principio a fin de año sin crash; la IA completa sus turnos <2 s; guardar/cargar preserva el estado exacto (test automatizado); batalla delegada produce informe coherente y captura regiones; evento de Peste Negra dispara en 1348.
 
-### Fase 2 — Profundidad militar (objetivo: 2 semanas)
+### Fase 2 — Profundidad militar (objetivo: 2-3 semanas)
 - Mapa táctico Nivel 2 (hex local) y combate cerrado Nivel 3 (órdenes/cartas); espionaje; fin de partidas por extinción dinástica.
-- **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente.
+- **Módulo Mapa (§10.1):** mapa geográfico profesional con fronteras por año; depreca `map_layout.json`.
+- **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente; módulo Mapa cumple sus criterios §10.1.
 
 ### Fase 3 — Contenido y remaster (objetivo: 2-3 semanas)
-- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos, tiles, música CC); balance general.
-- **Aceptación:** los 3 escenarios empiezan y llegan a su año final; victoria/derrota según Sección 4.5; partida completa de test automatizada de 10 años sin errores.
+- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2, tiles, música CC); balance general.
+- **Aceptación:** los 3 escenarios empiezan y llegan a su año final; victoria/derrota según Sección 4.5; partida completa de test automatizada de 10 años sin errores; set de retratos completo y slot de retrato funcional en las 5 ubicaciones §10.2.
 
 **Total estimado: 7-10 semanas de trabajo del equipo de agentes, revisado por ti en sesiones cortas.**
 
@@ -661,4 +693,4 @@ PG: Puntos de Gobernanza · Casus Belli: justificación de guerra · Devshirme: 
 
 ---
 
-*Fin del GDD v1.2 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2).*
+*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3.*
