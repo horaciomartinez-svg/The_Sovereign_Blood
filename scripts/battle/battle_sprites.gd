@@ -26,6 +26,32 @@ const FACING_BY_SIGN: Dictionary = {
 const MARCH_FPS_DEFAULT: float = 6.0
 const MARCH_FRAME_COUNT: int = 3
 
+## Fase 3.1 / D-064: estados de animación de combate y sus mapas en `anim`.
+const ANIM_STATES: Array[String] = ["idle", "march", "attack", "hit", "dead"]
+const STATE_ANIM_KEY: Dictionary = {
+	"idle": "idle",
+	"march": "march",
+	"attack": "attack",
+	"hit": "hit",
+	"dead": "death",
+}
+const STATE_FPS_KEY: Dictionary = {
+	"idle": "fps",
+	"march": "fps",
+	"attack": "fps_attack",
+	"hit": "fps_hit",
+	"dead": "fps_death",
+}
+const STATE_DEFAULT_FPS: Dictionary = {
+	"idle": 2.0,
+	"march": 6.0,
+	"attack": 9.0,
+	"hit": 8.0,
+	"dead": 6.0,
+}
+## `attack_2` es el cuadro de impacto (segundo del estado attack, D-064).
+const ATTACK_IMPACT_FRAME_OFFSET: int = 1
+
 ## Proyectiles D-042/D-048: por `unit_id`; virote/flecha/piedra con su sprite,
 ## duración y altura de arco. La trayectoria es paramétrica (sin RNG de combate).
 const PROJECTILE_BY_UNIT: Dictionary = {
@@ -136,6 +162,110 @@ static func march_frame(sprite_sheet: Dictionary, elapsed_ms: float, moving: boo
 	var fps: float = march_fps(sprite_sheet)
 	var index: int = int(floorf(maxf(0.0, elapsed_ms) * fps / 1000.0))
 	return posmod(index, cycle)
+
+
+# --- Fase 3.1 (D-064): estados idle/march/attack/hit/dead ------------------
+
+static func anim_data(sprite_sheet: Dictionary) -> Dictionary:
+	return SafeDict.as_dict(sprite_sheet.get("anim", null))
+
+
+## Índices de `frames` para un estado ([] si no hay mapa o fallback).
+static func state_frame_indices(sprite_sheet: Dictionary, state: String) -> Array[int]:
+	var result: Array[int] = []
+	var anim: Dictionary = anim_data(sprite_sheet)
+	var key: String = str(STATE_ANIM_KEY.get(state, "idle"))
+	for value in SafeDict.as_array(anim.get(key, null)):
+		result.append(SafeDict.as_int(value, 0))
+	return result
+
+
+static func state_fps(sprite_sheet: Dictionary, state: String) -> float:
+	var anim: Dictionary = anim_data(sprite_sheet)
+	var key: String = str(STATE_FPS_KEY.get(state, "fps"))
+	var fallback: float = SafeDict.as_float(STATE_DEFAULT_FPS.get(state, MARCH_FPS_DEFAULT), MARCH_FPS_DEFAULT)
+	return SafeDict.as_float(anim.get(key), fallback)
+
+
+static func state_is_loop(state: String) -> bool:
+	return state == "idle" or state == "march"
+
+
+static func state_is_oneshot(state: String) -> bool:
+	return state == "attack" or state == "hit"
+
+
+## Índice *dentro del estado* (0..n-1) para `elapsed_ms` desde su inicio.
+static func state_frame_index(sprite_sheet: Dictionary, state: String, elapsed_ms: float) -> int:
+	var indices: Array[int] = state_frame_indices(sprite_sheet, state)
+	if indices.is_empty():
+		return 0
+	var fps: float = state_fps(sprite_sheet, state)
+	var raw_index: int = int(floorf(maxf(0.0, elapsed_ms) * fps / 1000.0))
+	if state_is_loop(state):
+		return posmod(raw_index, indices.size())
+	return mini(raw_index, indices.size() - 1)
+
+
+## Ruta del cuadro actual de un estado ("" si fallback).
+static func state_frame_path(sprite_sheet: Dictionary, state: String, elapsed_ms: float) -> String:
+	var indices: Array[int] = state_frame_indices(sprite_sheet, state)
+	if indices.is_empty():
+		return ""
+	var index_in_state: int = state_frame_index(sprite_sheet, state, elapsed_ms)
+	return frame_path(sprite_sheet, indices[index_in_state])
+
+
+## Índice absoluto en `frames` del cuadro `attack_2` (impacto).
+static func attack_impact_index(sprite_sheet: Dictionary) -> int:
+	var indices: Array[int] = state_frame_indices(sprite_sheet, "attack")
+	if indices.is_empty():
+		return -1
+	return indices[mini(ATTACK_IMPACT_FRAME_OFFSET, indices.size() - 1)]
+
+
+## ms desde el inicio del ataque hasta `attack_2` (impacto), con fps_attack.
+static func attack_impact_ms(sprite_sheet: Dictionary) -> float:
+	var fps: float = maxf(1.0, state_fps(sprite_sheet, "attack"))
+	return roundf(float(ATTACK_IMPACT_FRAME_OFFSET) / fps * 1000.0 * 10.0) / 10.0
+
+
+## Duración de un estado una vez (o del ciclo completo si es loop).
+static func state_duration_ms(sprite_sheet: Dictionary, state: String) -> float:
+	var indices: Array[int] = state_frame_indices(sprite_sheet, state)
+	if indices.is_empty():
+		return 0.0
+	var fps: float = maxf(1.0, state_fps(sprite_sheet, state))
+	return roundf(float(indices.size()) / fps * 1000.0 * 10.0) / 10.0
+
+
+## Estado al que se pasa al agotar un one-shot (ataque/hit → idle).
+static func state_after_elapsed(sprite_sheet: Dictionary, state: String, elapsed_ms: float) -> String:
+	if state == "dead":
+		return "dead"
+	if state_is_oneshot(state):
+		var duration: float = state_duration_ms(sprite_sheet, state)
+		if duration > 0.0 and elapsed_ms >= duration:
+			return "idle"
+	return state
+
+
+## Fila de animación para el estado y `elapsed_ms` (frame_path ya resuelto).
+static func animation_frame_info(sprite_sheet: Dictionary, state: String, elapsed_ms: float) -> Dictionary:
+	var indices: Array[int] = state_frame_indices(sprite_sheet, state)
+	var index_in_state: int = state_frame_index(sprite_sheet, state, elapsed_ms)
+	var absolute_index: int = -1
+	if not indices.is_empty():
+		absolute_index = indices[index_in_state]
+	return {
+		"state": state,
+		"frame_index": index_in_state,
+		"absolute_frame": absolute_index,
+		"frame_path": frame_path(sprite_sheet, absolute_index) if absolute_index >= 0 else "",
+		"fps": state_fps(sprite_sheet, state),
+		"loop": state_is_loop(state),
+		"duration_ms": state_duration_ms(sprite_sheet, state),
+	}
 
 
 ## Especificación del proyectil de una unidad ({} si no dispara).

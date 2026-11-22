@@ -22,7 +22,17 @@
         "frames": [
           "res://assets/art/sprites/units/militia_spearman_march_1.png",
           "res://assets/art/sprites/units/militia_spearman_march_2.png",
-          "res://assets/art/sprites/units/militia_spearman_march_3.png"
+          "res://assets/art/sprites/units/militia_spearman_march_3.png",
+          "res://assets/art/sprites/units/militia_spearman_idle_1.png",
+          "res://assets/art/sprites/units/militia_spearman_idle_2.png",
+          "res://assets/art/sprites/units/militia_spearman_attack_1.png",
+          "res://assets/art/sprites/units/militia_spearman_attack_2.png",
+          "res://assets/art/sprites/units/militia_spearman_attack_3.png",
+          "res://assets/art/sprites/units/militia_spearman_attack_4.png",
+          "res://assets/art/sprites/units/militia_spearman_hit_1.png",
+          "res://assets/art/sprites/units/militia_spearman_hit_2.png",
+          "res://assets/art/sprites/units/militia_spearman_death_1.png",
+          "res://assets/art/sprites/units/militia_spearman_death_2.png"
         ],
         "anim": {
           "march": [
@@ -30,8 +40,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -66,7 +98,17 @@
         "frames": [
           "res://assets/art/sprites/units/scottish_schiltron_march_1.png",
           "res://assets/art/sprites/units/scottish_schiltron_march_2.png",
-          "res://assets/art/sprites/units/scottish_schiltron_march_3.png"
+          "res://assets/art/sprites/units/scottish_schiltron_march_3.png",
+          "res://assets/art/sprites/units/scottish_schiltron_idle_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_idle_2.png",
+          "res://assets/art/sprites/units/scottish_schiltron_attack_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_attack_2.png",
+          "res://assets/art/sprites/units/scottish_schiltron_attack_3.png",
+          "res://assets/art/sprites/units/scottish_schiltron_attack_4.png",
+          "res://assets/art/sprites/units/scottish_schiltron_hit_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_hit_2.png",
+          "res://assets/art/sprites/units/scottish_schiltron_death_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_death_2.png"
         ],
         "anim": {
           "march": [
@@ -74,8 +116,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -112,7 +176,17 @@
         "frames": [
           "res://assets/art/sprites/units/crossbowmen_march_1.png",
           "res://assets/art/sprites/units/crossbowmen_march_2.png",
-          "res://assets/art/sprites/units/crossbowmen_march_3.png"
+          "res://assets/art/sprites/units/crossbowmen_march_3.png",
+          "res://assets/art/sprites/units/crossbowmen_idle_1.png",
+          "res://assets/art/sprites/units/crossbowmen_idle_2.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_1.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_2.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_3.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_4.png",
+          "res://assets/art/sprites/units/crossbowmen_hit_1.png",
+          "res://assets/art/sprites/units/crossbowmen_hit_2.png",
+          "res://assets/art/sprites/units/crossbowmen_death_1.png",
+          "res://assets/art/sprites/units/crossbowmen_death_2.png"
         ],
         "anim": {
           "march": [
@@ -120,8 +194,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -156,7 +252,17 @@
         "frames": [
           "res://assets/art/sprites/units/longbowman_march_1.png",
           "res://assets/art/sprites/units/longbowman_march_2.png",
-          "res://assets/art/sprites/units/longbowman_march_3.png"
+          "res://assets/art/sprites/units/longbowman_march_3.png",
+          "res://assets/art/sprites/units/longbowman_idle_1.png",
+          "res://assets/art/sprites/units/longbowman_idle_2.png",
+          "res://assets/art/sprites/units/longbowman_attack_1.png",
+          "res://assets/art/sprites/units/longbowman_attack_2.png",
+          "res://assets/art/sprites/units/longbowman_attack_3.png",
+          "res://assets/art/sprites/units/longbowman_attack_4.png",
+          "res://assets/art/sprites/units/longbowman_hit_1.png",
+          "res://assets/art/sprites/units/longbowman_hit_2.png",
+          "res://assets/art/sprites/units/longbowman_death_1.png",
+          "res://assets/art/sprites/units/longbowman_death_2.png"
         ],
         "anim": {
           "march": [
@@ -164,8 +270,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -198,7 +326,17 @@
         "frames": [
           "res://assets/art/sprites/units/mounted_sergeants_march_1.png",
           "res://assets/art/sprites/units/mounted_sergeants_march_2.png",
-          "res://assets/art/sprites/units/mounted_sergeants_march_3.png"
+          "res://assets/art/sprites/units/mounted_sergeants_march_3.png",
+          "res://assets/art/sprites/units/mounted_sergeants_idle_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_idle_2.png",
+          "res://assets/art/sprites/units/mounted_sergeants_attack_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_attack_2.png",
+          "res://assets/art/sprites/units/mounted_sergeants_attack_3.png",
+          "res://assets/art/sprites/units/mounted_sergeants_attack_4.png",
+          "res://assets/art/sprites/units/mounted_sergeants_hit_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_hit_2.png",
+          "res://assets/art/sprites/units/mounted_sergeants_death_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_death_2.png"
         ],
         "anim": {
           "march": [
@@ -206,8 +344,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -249,7 +409,17 @@
         "frames": [
           "res://assets/art/sprites/units/men_at_arms_march_1.png",
           "res://assets/art/sprites/units/men_at_arms_march_2.png",
-          "res://assets/art/sprites/units/men_at_arms_march_3.png"
+          "res://assets/art/sprites/units/men_at_arms_march_3.png",
+          "res://assets/art/sprites/units/men_at_arms_idle_1.png",
+          "res://assets/art/sprites/units/men_at_arms_idle_2.png",
+          "res://assets/art/sprites/units/men_at_arms_attack_1.png",
+          "res://assets/art/sprites/units/men_at_arms_attack_2.png",
+          "res://assets/art/sprites/units/men_at_arms_attack_3.png",
+          "res://assets/art/sprites/units/men_at_arms_attack_4.png",
+          "res://assets/art/sprites/units/men_at_arms_hit_1.png",
+          "res://assets/art/sprites/units/men_at_arms_hit_2.png",
+          "res://assets/art/sprites/units/men_at_arms_death_1.png",
+          "res://assets/art/sprites/units/men_at_arms_death_2.png"
         ],
         "anim": {
           "march": [
@@ -257,8 +427,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -295,7 +487,17 @@
         "frames": [
           "res://assets/art/sprites/units/light_horseman_march_1.png",
           "res://assets/art/sprites/units/light_horseman_march_2.png",
-          "res://assets/art/sprites/units/light_horseman_march_3.png"
+          "res://assets/art/sprites/units/light_horseman_march_3.png",
+          "res://assets/art/sprites/units/light_horseman_idle_1.png",
+          "res://assets/art/sprites/units/light_horseman_idle_2.png",
+          "res://assets/art/sprites/units/light_horseman_attack_1.png",
+          "res://assets/art/sprites/units/light_horseman_attack_2.png",
+          "res://assets/art/sprites/units/light_horseman_attack_3.png",
+          "res://assets/art/sprites/units/light_horseman_attack_4.png",
+          "res://assets/art/sprites/units/light_horseman_hit_1.png",
+          "res://assets/art/sprites/units/light_horseman_hit_2.png",
+          "res://assets/art/sprites/units/light_horseman_death_1.png",
+          "res://assets/art/sprites/units/light_horseman_death_2.png"
         ],
         "anim": {
           "march": [
@@ -303,8 +505,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -339,7 +563,17 @@
         "frames": [
           "res://assets/art/sprites/units/steppe_cavalry_march_1.png",
           "res://assets/art/sprites/units/steppe_cavalry_march_2.png",
-          "res://assets/art/sprites/units/steppe_cavalry_march_3.png"
+          "res://assets/art/sprites/units/steppe_cavalry_march_3.png",
+          "res://assets/art/sprites/units/steppe_cavalry_idle_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_idle_2.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_2.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_3.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_4.png",
+          "res://assets/art/sprites/units/steppe_cavalry_hit_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_hit_2.png",
+          "res://assets/art/sprites/units/steppe_cavalry_death_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_death_2.png"
         ],
         "anim": {
           "march": [
@@ -347,8 +581,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -384,7 +640,17 @@
         "frames": [
           "res://assets/art/sprites/units/almogavar_march_1.png",
           "res://assets/art/sprites/units/almogavar_march_2.png",
-          "res://assets/art/sprites/units/almogavar_march_3.png"
+          "res://assets/art/sprites/units/almogavar_march_3.png",
+          "res://assets/art/sprites/units/almogavar_idle_1.png",
+          "res://assets/art/sprites/units/almogavar_idle_2.png",
+          "res://assets/art/sprites/units/almogavar_attack_1.png",
+          "res://assets/art/sprites/units/almogavar_attack_2.png",
+          "res://assets/art/sprites/units/almogavar_attack_3.png",
+          "res://assets/art/sprites/units/almogavar_attack_4.png",
+          "res://assets/art/sprites/units/almogavar_hit_1.png",
+          "res://assets/art/sprites/units/almogavar_hit_2.png",
+          "res://assets/art/sprites/units/almogavar_death_1.png",
+          "res://assets/art/sprites/units/almogavar_death_2.png"
         ],
         "anim": {
           "march": [
@@ -392,8 +658,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -429,7 +717,17 @@
         "frames": [
           "res://assets/art/sprites/units/mamluk_march_1.png",
           "res://assets/art/sprites/units/mamluk_march_2.png",
-          "res://assets/art/sprites/units/mamluk_march_3.png"
+          "res://assets/art/sprites/units/mamluk_march_3.png",
+          "res://assets/art/sprites/units/mamluk_idle_1.png",
+          "res://assets/art/sprites/units/mamluk_idle_2.png",
+          "res://assets/art/sprites/units/mamluk_attack_1.png",
+          "res://assets/art/sprites/units/mamluk_attack_2.png",
+          "res://assets/art/sprites/units/mamluk_attack_3.png",
+          "res://assets/art/sprites/units/mamluk_attack_4.png",
+          "res://assets/art/sprites/units/mamluk_hit_1.png",
+          "res://assets/art/sprites/units/mamluk_hit_2.png",
+          "res://assets/art/sprites/units/mamluk_death_1.png",
+          "res://assets/art/sprites/units/mamluk_death_2.png"
         ],
         "anim": {
           "march": [
@@ -437,8 +735,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -474,7 +794,17 @@
         "frames": [
           "res://assets/art/sprites/units/swiss_pikeman_march_1.png",
           "res://assets/art/sprites/units/swiss_pikeman_march_2.png",
-          "res://assets/art/sprites/units/swiss_pikeman_march_3.png"
+          "res://assets/art/sprites/units/swiss_pikeman_march_3.png",
+          "res://assets/art/sprites/units/swiss_pikeman_idle_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_idle_2.png",
+          "res://assets/art/sprites/units/swiss_pikeman_attack_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_attack_2.png",
+          "res://assets/art/sprites/units/swiss_pikeman_attack_3.png",
+          "res://assets/art/sprites/units/swiss_pikeman_attack_4.png",
+          "res://assets/art/sprites/units/swiss_pikeman_hit_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_hit_2.png",
+          "res://assets/art/sprites/units/swiss_pikeman_death_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_death_2.png"
         ],
         "anim": {
           "march": [
@@ -482,8 +812,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -520,7 +872,17 @@
         "frames": [
           "res://assets/art/sprites/units/dismounted_men_at_arms_march_1.png",
           "res://assets/art/sprites/units/dismounted_men_at_arms_march_2.png",
-          "res://assets/art/sprites/units/dismounted_men_at_arms_march_3.png"
+          "res://assets/art/sprites/units/dismounted_men_at_arms_march_3.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_idle_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_idle_2.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_attack_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_attack_2.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_attack_3.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_attack_4.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_hit_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_hit_2.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_death_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_death_2.png"
         ],
         "anim": {
           "march": [
@@ -528,8 +890,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -569,7 +953,17 @@
         "frames": [
           "res://assets/art/sprites/units/bombarda_march_1.png",
           "res://assets/art/sprites/units/bombarda_march_2.png",
-          "res://assets/art/sprites/units/bombarda_march_3.png"
+          "res://assets/art/sprites/units/bombarda_march_3.png",
+          "res://assets/art/sprites/units/bombarda_idle_1.png",
+          "res://assets/art/sprites/units/bombarda_idle_2.png",
+          "res://assets/art/sprites/units/bombarda_attack_1.png",
+          "res://assets/art/sprites/units/bombarda_attack_2.png",
+          "res://assets/art/sprites/units/bombarda_attack_3.png",
+          "res://assets/art/sprites/units/bombarda_attack_4.png",
+          "res://assets/art/sprites/units/bombarda_hit_1.png",
+          "res://assets/art/sprites/units/bombarda_hit_2.png",
+          "res://assets/art/sprites/units/bombarda_death_1.png",
+          "res://assets/art/sprites/units/bombarda_death_2.png"
         ],
         "anim": {
           "march": [
@@ -577,8 +971,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -616,7 +1032,17 @@
         "frames": [
           "res://assets/art/sprites/units/arquebusier_march_1.png",
           "res://assets/art/sprites/units/arquebusier_march_2.png",
-          "res://assets/art/sprites/units/arquebusier_march_3.png"
+          "res://assets/art/sprites/units/arquebusier_march_3.png",
+          "res://assets/art/sprites/units/arquebusier_idle_1.png",
+          "res://assets/art/sprites/units/arquebusier_idle_2.png",
+          "res://assets/art/sprites/units/arquebusier_attack_1.png",
+          "res://assets/art/sprites/units/arquebusier_attack_2.png",
+          "res://assets/art/sprites/units/arquebusier_attack_3.png",
+          "res://assets/art/sprites/units/arquebusier_attack_4.png",
+          "res://assets/art/sprites/units/arquebusier_hit_1.png",
+          "res://assets/art/sprites/units/arquebusier_hit_2.png",
+          "res://assets/art/sprites/units/arquebusier_death_1.png",
+          "res://assets/art/sprites/units/arquebusier_death_2.png"
         ],
         "anim": {
           "march": [
@@ -624,8 +1050,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -663,7 +1111,17 @@
         "frames": [
           "res://assets/art/sprites/units/hussite_war_wagon_march_1.png",
           "res://assets/art/sprites/units/hussite_war_wagon_march_2.png",
-          "res://assets/art/sprites/units/hussite_war_wagon_march_3.png"
+          "res://assets/art/sprites/units/hussite_war_wagon_march_3.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_idle_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_idle_2.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_2.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_3.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_4.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_hit_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_hit_2.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_death_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_death_2.png"
         ],
         "anim": {
           "march": [
@@ -671,8 +1129,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -706,7 +1186,17 @@
         "frames": [
           "res://assets/art/sprites/units/janissary_march_1.png",
           "res://assets/art/sprites/units/janissary_march_2.png",
-          "res://assets/art/sprites/units/janissary_march_3.png"
+          "res://assets/art/sprites/units/janissary_march_3.png",
+          "res://assets/art/sprites/units/janissary_idle_1.png",
+          "res://assets/art/sprites/units/janissary_idle_2.png",
+          "res://assets/art/sprites/units/janissary_attack_1.png",
+          "res://assets/art/sprites/units/janissary_attack_2.png",
+          "res://assets/art/sprites/units/janissary_attack_3.png",
+          "res://assets/art/sprites/units/janissary_attack_4.png",
+          "res://assets/art/sprites/units/janissary_hit_1.png",
+          "res://assets/art/sprites/units/janissary_hit_2.png",
+          "res://assets/art/sprites/units/janissary_death_1.png",
+          "res://assets/art/sprites/units/janissary_death_2.png"
         ],
         "anim": {
           "march": [
@@ -714,8 +1204,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,
@@ -749,7 +1261,17 @@
         "frames": [
           "res://assets/art/sprites/units/teutonic_knights_march_1.png",
           "res://assets/art/sprites/units/teutonic_knights_march_2.png",
-          "res://assets/art/sprites/units/teutonic_knights_march_3.png"
+          "res://assets/art/sprites/units/teutonic_knights_march_3.png",
+          "res://assets/art/sprites/units/teutonic_knights_idle_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_idle_2.png",
+          "res://assets/art/sprites/units/teutonic_knights_attack_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_attack_2.png",
+          "res://assets/art/sprites/units/teutonic_knights_attack_3.png",
+          "res://assets/art/sprites/units/teutonic_knights_attack_4.png",
+          "res://assets/art/sprites/units/teutonic_knights_hit_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_hit_2.png",
+          "res://assets/art/sprites/units/teutonic_knights_death_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_death_2.png"
         ],
         "anim": {
           "march": [
@@ -757,8 +1279,30 @@
             1,
             2
           ],
+          "idle": [
+            3,
+            4
+          ],
+          "attack": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "hit": [
+            9,
+            10
+          ],
+          "death": [
+            11,
+            12
+          ],
           "fps": 6,
-          "loop": true
+          "loop": true,
+          "fps_attack": 9,
+          "fps_hit": 8,
+          "fps_death": 6,
+          "death_hold": true
         },
         "size": [
           64,

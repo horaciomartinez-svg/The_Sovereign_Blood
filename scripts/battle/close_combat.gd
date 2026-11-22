@@ -126,8 +126,8 @@ func is_finished() -> bool:
 func get_state() -> Dictionary:
 	return {
 		"round": round,
-		"attacker": attacker.duplicate(true),
-		"defender": defender.duplicate(true),
+		"attacker": _public_unit(attacker),
+		"defender": _public_unit(defender),
 		"orders_left": orders_left.duplicate(true),
 		"hands": hands.duplicate(true),
 		"orders_per_round": _orders_per_round.duplicate(true),
@@ -143,9 +143,30 @@ func get_state() -> Dictionary:
 	}
 
 
+## Fase 3.1 (D-064): estado de animación de combate de un duelista.
+func get_animation_state(unit_id: String) -> Dictionary:
+	var unit: Dictionary = {}
+	if SafeDict.as_string(attacker.get("id"), "") == unit_id:
+		unit = attacker
+	elif SafeDict.as_string(defender.get("id"), "") == unit_id:
+		unit = defender
+	if unit.is_empty():
+		return {}
+	return _animation_view(unit)
+
+
+## ms desde el inicio del ataque hasta `attack_2` (impacto) del duelista.
+func get_attack_impact_ms(unit_id: String = "") -> float:
+	var unit: Dictionary = attacker
+	if unit_id != "" and SafeDict.as_string(defender.get("id"), "") == unit_id:
+		unit = defender
+	return BATTLE_SPRITES.attack_impact_ms(
+		SafeDict.as_dict(unit.get("sprite_sheet", null)))
+
+
 ## Unidades del duelo (aditivo, mismo formato que TacticalBattle.get_units()).
 func get_units() -> Array[Dictionary]:
-	return [attacker.duplicate(true), defender.duplicate(true)]
+	return [_public_unit(attacker), _public_unit(defender)]
 
 
 ## Avanza el reloj de animación/proyectiles (lo llama el render, sin RNG).
@@ -222,6 +243,11 @@ func auto_resolve() -> Dictionary:
 
 func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 	var rng: SeededRNGScript = _rng()
+	# D-064: ambos duelistas reproducen su ataque una vez al resolver la ronda.
+	attacker["anim_state"] = "attack"
+	attacker["anim_started_ms"] = _animation_ms
+	defender["anim_state"] = "attack"
+	defender["anim_started_ms"] = _animation_ms
 	var attacker_power: float = _unit_power(attacker)
 	var defender_power: float = _unit_power(defender)
 	var defender_type: String = SafeDict.as_string(defender.get("type"), "infantry")
@@ -297,6 +323,19 @@ func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 		_finish_with("defender")
 	elif attacker_destroyed and defender_destroyed:
 		_finish_with("defender")
+	# D-064: reacción hit o muerte (una vez; death_hold en el render).
+	if defender_destroyed:
+		defender["anim_state"] = "dead"
+		defender["anim_started_ms"] = _animation_ms
+	elif defender_losses > 0:
+		defender["anim_state"] = "hit"
+		defender["anim_started_ms"] = _animation_ms
+	if attacker_destroyed:
+		attacker["anim_state"] = "dead"
+		attacker["anim_started_ms"] = _animation_ms
+	elif attacker_losses > 0:
+		attacker["anim_state"] = "hit"
+		attacker["anim_started_ms"] = _animation_ms
 	result["finished"] = finished
 	result["winner"] = winner
 	_log("round", "Ronda %d: carta %s vs %s (bajas %d/%d)" % [round, attacker_card, defender_card, attacker_losses, defender_losses])
@@ -471,7 +510,6 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 	# Fase 3 (D-040/D-042): sprite/orientación; atacante mira a E y defensor a O
 	# (el render espeja el asset base que mira a E).
 	var sprite_sheet: Dictionary = SafeDict.as_dict(definition.get("sprite_sheet", null))
-	var frames: Array[String] = BATTLE_SPRITES.frames_of(sprite_sheet)
 	var facing: String = "E" if unit_side == "attacker" else "W"
 	var unit_terrain: String = SafeDict.as_string(unit.get("terrain"), "plains")
 	var tile_key: String = SafeDict.as_string(unit.get("tile"), "")
@@ -494,7 +532,9 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		"mirror": BATTLE_SPRITES.mirror_for(facing),
 		"moving": false,
 		"march_frame": 0,
-		"sprite_frame_path": frames[0] if not frames.is_empty() else "",
+		"anim_state": "idle",
+		"anim_started_ms": 0.0,
+		"sprite_frame_path": BATTLE_SPRITES.state_frame_path(sprite_sheet, "idle", 0.0),
 		"sprite_sheet": _sprite_or_null(sprite_sheet),
 	}
 
@@ -537,6 +577,45 @@ func is_tile_passable(key: String) -> bool:
 	return _battle_tiles.is_passable(key)
 
 
+## Copia pública de un duelista con su animación resuelta (D-064).
+func _public_unit(unit: Dictionary) -> Dictionary:
+	var copy: Dictionary = unit.duplicate(true)
+	var sprite_sheet: Dictionary = SafeDict.as_dict(copy.get("sprite_sheet", null))
+	var view: Dictionary = _animation_view(unit)
+	var state: String = SafeDict.as_string(view.get("state"), "idle")
+	var frame_info: Dictionary = SafeDict.as_dict(view.get("frame_info", null))
+	copy["anim_state"] = state
+	copy["anim_frame"] = SafeDict.as_int(frame_info.get("frame_index"), 0)
+	copy["anim_elapsed_ms"] = SafeDict.as_float(view.get("elapsed_ms"), 0.0)
+	copy["anim_fps"] = SafeDict.as_float(frame_info.get("fps"), 0.0)
+	copy["anim_loop"] = SafeDict.as_bool(frame_info.get("loop"), false)
+	copy["anim_duration_ms"] = SafeDict.as_float(frame_info.get("duration_ms"), 0.0)
+	copy["sprite_frame_path"] = SafeDict.as_string(frame_info.get("frame_path"), "")
+	copy["attack_impact_ms"] = BATTLE_SPRITES.attack_impact_ms(sprite_sheet)
+	copy["attack_impact_frame"] = BATTLE_SPRITES.attack_impact_index(sprite_sheet)
+	copy["sprite_sheet"] = _sprite_or_null(sprite_sheet)
+	return copy
+
+
+func _animation_view(unit: Dictionary) -> Dictionary:
+	var sprite_sheet: Dictionary = SafeDict.as_dict(unit.get("sprite_sheet", null))
+	var state: String = SafeDict.as_string(unit.get("anim_state"), "idle")
+	if not BATTLE_SPRITES.ANIM_STATES.has(state):
+		state = "idle"
+	var started_ms: float = SafeDict.as_float(unit.get("anim_started_ms"), 0.0)
+	var elapsed_ms: float = maxf(0.0, _animation_ms - started_ms)
+	var resolved: String = BATTLE_SPRITES.state_after_elapsed(sprite_sheet, state, elapsed_ms)
+	if resolved != state:
+		state = resolved
+		elapsed_ms = 0.0
+	return {
+		"unit_id": SafeDict.as_string(unit.get("id"), ""),
+		"state": state,
+		"elapsed_ms": snappedf(elapsed_ms, 0.1),
+		"frame_info": BATTLE_SPRITES.animation_frame_info(sprite_sheet, state, elapsed_ms),
+	}
+
+
 ## Dict de sprite o null (fallback) como en TacticalBattle.
 func _sprite_or_null(sprite: Dictionary) -> Variant:
 	if sprite.is_empty():
@@ -564,6 +643,8 @@ func _fire_projectile(shooter: Dictionary, target: Dictionary, shooter_side: Str
 		"arc_height": SafeDict.as_float(spec.get("arc_height"), 0.0),
 		"ballistic": SafeDict.as_bool(spec.get("ballistic"), true),
 		"started_ms": _animation_ms,
+		"impact_ms": BATTLE_SPRITES.attack_impact_ms(
+			SafeDict.as_dict(shooter.get("sprite_sheet", null))),
 		"target_id": SafeDict.as_string(target.get("id"), ""),
 	}
 	_projectiles.append(payload)

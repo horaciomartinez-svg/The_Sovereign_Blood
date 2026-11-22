@@ -64,6 +64,8 @@ var _applied: bool = false
 var _animation_ms: float = 0.0
 var _projectiles: Array[Dictionary] = []
 var _projectile_seq: int = 0
+## Fase 3.1 (D-064): cadáveres con animación `death` + `death_hold`.
+var _dead_units: Array[Dictionary] = []
 ## Fase 3 §10.4 (D-053): reglas de tiles (vacío → comportamiento legado).
 var _battle_tiles: BATTLE_TILES_SCRIPT = null
 
@@ -97,6 +99,7 @@ func setup(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, region: REGIO
 	_animation_ms = 0.0
 	_projectiles = []
 	_projectile_seq = 0
+	_dead_units = []
 	# Fase 3 §10.4: tabla de tiles del campo (si falta, se usa el legado).
 	_battle_tiles = BATTLE_TILES_SCRIPT.new(DataLoader.get_battle_tiles())
 	_commander_stat = {
@@ -138,6 +141,8 @@ func get_state() -> Dictionary:
 		# Fase 3 §3 (aditivo): animación/proyectiles para el render de AG-3.
 		"animation_ms": _animation_ms,
 		"projectiles": get_projectiles(),
+		# Fase 3.1 §10.3 (D-064): cadáveres con death_hold.
+		"dead_units": get_dead_units(),
 	}
 
 
@@ -160,6 +165,33 @@ func get_unit(unit_id: String) -> Dictionary:
 	if unit.is_empty():
 		return {}
 	return _public_unit(unit)
+
+
+## Fase 3.1 (D-064): estado de animación de combate de una unidad.
+func get_animation_state(unit_id: String) -> Dictionary:
+	var unit: Dictionary = _find_unit(unit_id)
+	if unit.is_empty():
+		return {}
+	return _animation_view(unit)
+
+
+## ms desde el inicio del ataque hasta `attack_2` (impacto), según fps_attack.
+func get_attack_impact_ms(unit_id: String = "") -> float:
+	var unit: Dictionary = _find_unit(unit_id)
+	if unit.is_empty():
+		unit = _first_unit_for_animation()
+	if unit.is_empty():
+		return 0.0
+	return BATTLE_SPRITES.attack_impact_ms(SafeDict.as_dict(unit.get("sprite_sheet", null)))
+
+
+## Cadáveres (death_hold) para que el render conserve el último cuadro.
+func get_dead_units() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for dead_value in _dead_units:
+		var dead: Dictionary = SafeDict.as_dict(dead_value)
+		result.append(_public_unit(dead))
+	return result
 
 
 ## Avanza el reloj de animación/proyectiles (lo llama el render). Determinista:
@@ -308,6 +340,8 @@ func move_unit(unit_id: String, q: int, r: int) -> bool:
 	unit["facing"] = facing
 	unit["mirror"] = BATTLE_SPRITES.mirror_for(facing)
 	unit["moving"] = true
+	unit["anim_state"] = "march"
+	unit["anim_started_ms"] = _animation_ms
 	_capture_objective_at(q, r, SafeDict.as_string(unit.get("faction"), ""))
 	_log_append("move", "%s se mueve de (%d,%d) a (%d,%d)" % [unit_id, origin_q, origin_r, q, r])
 	_check_finish()
@@ -339,6 +373,9 @@ func attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	attacker["facing"] = attack_facing
 	attacker["mirror"] = BATTLE_SPRITES.mirror_for(attack_facing)
 	attacker["moving"] = false
+	# D-064: el ataque se reproduce una vez; attack_2 es el impacto.
+	attacker["anim_state"] = "attack"
+	attacker["anim_started_ms"] = _animation_ms
 	var distance: int = _hex_distance(
 		SafeDict.as_int(attacker.get("q"), 0), SafeDict.as_int(attacker.get("r"), 0),
 		SafeDict.as_int(defender.get("q"), 0), SafeDict.as_int(defender.get("r"), 0))
@@ -370,11 +407,22 @@ func attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	result["attacker_losses"] = attacker_losses
 	result["defender_destroyed"] = _is_unit_destroyed(defender)
 	result["attacker_destroyed"] = _is_unit_destroyed(attacker)
+	# D-064: impacto de attack_2 y reacción hit/death (sin RNG).
+	result["attack_impact_ms"] = BATTLE_SPRITES.attack_impact_ms(
+		SafeDict.as_dict(attacker.get("sprite_sheet", null)))
+	result["attack_impact_frame"] = BATTLE_SPRITES.attack_impact_index(
+		SafeDict.as_dict(attacker.get("sprite_sheet", null)))
 	result["winner"] = _side_of_unit(attacker) if result["defender_destroyed"] else ""
 	_log_append("attack", "%s ataca a %s: -%d / -%d" % [attacker_id, defender_id, defender_losses, attacker_losses])
 	# Fase 3 §3 (D-042): proyectil visible en ataques a distancia (sin RNG).
 	if distance > 1:
 		_fire_projectile(attacker, defender)
+	if result["defender_destroyed"]:
+		_record_death(defender)
+	elif defender_losses > 0:
+		_begin_hit(defender)
+	if result["attacker_destroyed"]:
+		_record_death(attacker)
 	if result["defender_destroyed"]:
 		_remove_destroyed_unit(defender_id)
 	if result["attacker_destroyed"]:
@@ -406,6 +454,8 @@ func resolve_duel(attacker_unit_id: String, defender_unit_id: String, order_id: 
 	attacker["facing"] = duel_facing
 	attacker["mirror"] = BATTLE_SPRITES.mirror_for(duel_facing)
 	attacker["moving"] = false
+	attacker["anim_state"] = "attack"
+	attacker["anim_started_ms"] = _animation_ms
 	var duel: CLOSE_COMBAT_SCRIPT = CLOSE_COMBAT_SCRIPT.new()
 	var attacker_input: Dictionary = attacker.duplicate(true)
 	var defender_input: Dictionary = defender.duplicate(true)
@@ -435,7 +485,15 @@ func resolve_duel(attacker_unit_id: String, defender_unit_id: String, order_id: 
 	result["defender_losses"] = defender_losses
 	result["defender_destroyed"] = _is_unit_destroyed(defender)
 	result["attacker_destroyed"] = _is_unit_destroyed(attacker)
+	result["attack_impact_ms"] = BATTLE_SPRITES.attack_impact_ms(
+		SafeDict.as_dict(attacker.get("sprite_sheet", null)))
 	result["winner"] = _side_of_unit(attacker) if result["defender_destroyed"] else ""
+	if result["defender_destroyed"]:
+		_record_death(defender)
+	elif defender_losses > 0:
+		_begin_hit(defender)
+	if result["attacker_destroyed"]:
+		_record_death(attacker)
 	if result["defender_destroyed"]:
 		_remove_destroyed_unit(defender_unit_id)
 	if result["attacker_destroyed"]:
@@ -674,6 +732,9 @@ func _spawn_units(army: ARMY_SCRIPT, unit_side: String) -> void:
 			"mirror": false,
 			"moving": false,
 			"sprite_sheet": _sprite_or_null(sprite_sheet),
+			# Fase 3.1 (D-064): estado de animación de combate.
+			"anim_state": "idle",
+			"anim_started_ms": 0.0,
 		}
 		_units.append(unit)
 		_start_men[unit_id] = size
@@ -742,6 +803,8 @@ func _reset_units_for_round() -> void:
 		unit["moves_left"] = SafeDict.as_int(unit.get("max_moves"), Constants.TACTICAL_DEFAULT_MOVES)
 		unit["orders_left"] = 1
 		unit["moving"] = false
+		unit["anim_state"] = "idle"
+		unit["anim_started_ms"] = _animation_ms
 
 
 func _run_ai_side(ai_side: String) -> void:
@@ -1104,12 +1167,64 @@ func is_tile_passable(key: String) -> bool:
 func _public_unit(unit: Dictionary) -> Dictionary:
 	var copy: Dictionary = unit.duplicate(true)
 	var sprite_sheet: Dictionary = SafeDict.as_dict(copy.get("sprite_sheet", null))
-	var moving: bool = SafeDict.as_bool(copy.get("moving"), false)
-	var march_frame: int = BATTLE_SPRITES.march_frame(sprite_sheet, _animation_ms, moving)
-	copy["march_frame"] = march_frame
-	copy["sprite_frame_path"] = BATTLE_SPRITES.frame_path(sprite_sheet, march_frame)
+	var view: Dictionary = _animation_view(unit)
+	var state: String = SafeDict.as_string(view.get("state"), "idle")
+	var frame_info: Dictionary = SafeDict.as_dict(view.get("frame_info", null))
+	var moving: bool = state == "march"
+	copy["moving"] = moving
+	copy["anim_state"] = state
+	copy["anim_frame"] = SafeDict.as_int(frame_info.get("frame_index"), 0)
+	copy["anim_elapsed_ms"] = SafeDict.as_float(view.get("elapsed_ms"), 0.0)
+	copy["anim_fps"] = SafeDict.as_float(frame_info.get("fps"), 0.0)
+	copy["anim_loop"] = SafeDict.as_bool(frame_info.get("loop"), false)
+	copy["anim_duration_ms"] = SafeDict.as_float(frame_info.get("duration_ms"), 0.0)
+	copy["sprite_frame_path"] = SafeDict.as_string(frame_info.get("frame_path"), "")
+	copy["march_frame"] = SafeDict.as_int(frame_info.get("frame_index"), 0) if moving else 0
+	copy["attack_impact_ms"] = BATTLE_SPRITES.attack_impact_ms(sprite_sheet)
+	copy["attack_impact_frame"] = BATTLE_SPRITES.attack_impact_index(sprite_sheet)
 	copy["sprite_sheet"] = _sprite_or_null(sprite_sheet)
 	return copy
+
+
+## Vista de animación resuelta (one-shot→idle; dead mantiene death_hold).
+func _animation_view(unit: Dictionary) -> Dictionary:
+	var sprite_sheet: Dictionary = SafeDict.as_dict(unit.get("sprite_sheet", null))
+	var state: String = SafeDict.as_string(unit.get("anim_state"), "idle")
+	if not BATTLE_SPRITES.ANIM_STATES.has(state):
+		state = "idle"
+	var started_ms: float = SafeDict.as_float(unit.get("anim_started_ms"), 0.0)
+	var elapsed_ms: float = maxf(0.0, _animation_ms - started_ms)
+	var resolved: String = BATTLE_SPRITES.state_after_elapsed(sprite_sheet, state, elapsed_ms)
+	if resolved != state:
+		state = resolved
+		elapsed_ms = 0.0
+	return {
+		"unit_id": SafeDict.as_string(unit.get("id"), ""),
+		"state": state,
+		"elapsed_ms": snappedf(elapsed_ms, 0.1),
+		"frame_info": BATTLE_SPRITES.animation_frame_info(sprite_sheet, state, elapsed_ms),
+	}
+
+
+## Marca a una unidad como golpeada (`hit`) sin RNG.
+func _begin_hit(unit: Dictionary) -> void:
+	unit["anim_state"] = "hit"
+	unit["anim_started_ms"] = _animation_ms
+
+
+## Guarda un cadáver para `death_hold` (la unidad sale de `_units`).
+func _record_death(unit: Dictionary) -> void:
+	var dead: Dictionary = unit.duplicate(true)
+	dead["size"] = 0
+	dead["anim_state"] = "dead"
+	dead["anim_started_ms"] = _animation_ms
+	_dead_units.append(dead)
+
+
+func _first_unit_for_animation() -> Dictionary:
+	if _units.is_empty():
+		return {}
+	return SafeDict.as_dict(_units[0])
 
 
 ## Dispara un proyectil estético/lógico del atacante al defensor (sin RNG).
@@ -1129,6 +1244,12 @@ func _fire_projectile(attacker: Dictionary, defender: Dictionary) -> void:
 		"arc_height": SafeDict.as_float(spec.get("arc_height"), 0.0),
 		"ballistic": SafeDict.as_bool(spec.get("ballistic"), true),
 		"started_ms": _animation_ms,
+		# D-064: `attack_2` es el momento del impacto; la UI puede lanzar el
+		# proyectil en `launch_ms` (inicio del ataque + impacto).
+		"impact_ms": BATTLE_SPRITES.attack_impact_ms(
+			SafeDict.as_dict(attacker.get("sprite_sheet", null))),
+		"launch_ms": _animation_ms + BATTLE_SPRITES.attack_impact_ms(
+			SafeDict.as_dict(attacker.get("sprite_sheet", null))),
 	}
 	_projectiles.append(payload)
 	emit_signal("projectile_fired", payload.duplicate(true))
