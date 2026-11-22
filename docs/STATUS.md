@@ -2,17 +2,18 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)** + **Fase 3.1 — Animación de combate (CERRADA)**; sprites §10.3 ✅ 17/17 QA 6/6; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; animación combate ✅ 170 sprites/13 frames QA 6/6; QA final Fase 3 ✅ APROBADO CON OBSERVACIONES (solo retratos ilustrados Kimi pendientes) |
+| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)** + **Fase 3.1 — Animación base (CERRADA)** + **Fase 3.2 — Delta a distancia/artillería (CERRADA)**; sprites §10.3 ✅ 17/17 QA 6/6; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; animación combate ✅ 235 frames (10×13 + 7×15) QA 6/6; QA final Fase 3 ✅ APROBADO CON OBSERVACIONES (solo retratos ilustrados Kimi pendientes) |
 | **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
 | **Siguiente fase** | Fase 4 — no definida (arte final: 69 retratos Kimi, música CC, balance y pulido) |
-| **GDD** | **v1.8** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 170, §10.4 tiles N3) |
-| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
+| **GDD** | **v1.8.1** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 235 frames, §10.4 tiles N3) |
+| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
 | **Fecha de cierre Fase 2** | 2026-11-22 |
 | **Fecha de cierre Fase 3** | 2026-11-22 |
 | **Fecha de cierre Fase 3.1** | 2026-11-22 |
+| **Fecha de cierre Fase 3.2** | 2026-11-23 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
@@ -20,6 +21,7 @@
 | **QA Tiles Fase 3** | **APROBADO 7/7** — `docs/qa/fase3_tiles_report.md` |
 | **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; solo retratos ilustrados Kimi pendientes |
 | **QA Animación Fase 3.1** | **APROBADO 6/6 (17×13 frames, 170 sprites)** — `docs/qa/fase3_anim_report.md` |
+| **QA Animación Fase 3.2** | **APROBADO 6/6 (235 frames; delta 76; attack_4/impact)** — `docs/qa/fase3_anim_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -476,3 +478,41 @@ comprobaciones, 0 WARN/0 errores**, editor/headless 0. Hashes de escenas/datos/c
 - **Cierre:** commits por agente + cierre `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.1`**.
   El alcance §10.3 (marcha + combate) queda completo; Fase 4 puede centrarse en retratos ilustrados,
   música CC y balance/pulido.
+
+---
+
+## 17. Fase 3.2 — Delta de animación a distancia/artillería (GDD v1.8.1, CERRADA)
+
+**Luz verde:** 2026-11-23 (Kimi verificó el cierre de Fase 3 y entregó el Paquete B completo).
+**Paquete:** `Anim_Combate_Rango_Artilleria_TSB.zip` (Kimi, 98 MB): **76 PNG** = 42 `attack_1..6` para las
+7 unidades a distancia/artillería (`janissary`, `arquebusier`, `crossbowmen`, `longbowman`,
+`steppe_cavalry`, `bombarda`, `hussite_war_wagon`) + 34 `impact_1/2` para las 17 unidades (mismos píxeles
+que los `hit_*`, renombrados) + 42 raws + hoja. **Decisión:** D-065 (la instrucción pedía D-064, ya usada).
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| Assets delta | AG-5 | 235 producción / 235 raws; 7×`attack_1..6`; 17×`impact_1/2`; `hit_*` eliminados; LANCZOS 64/80/43 | ✅ |
+| Datos/schema/motor | AG-2 | 10×13 + 7×15 frames; `impact`/`fps_impact`; `attack_4` índice 8 (333,3 ms); reacción 444,4 ms; proyectil en `attack_4`; ranged 6 cuadros | ✅ |
+| Render N3 | AG-3 | attack 4/6 cuadros, `attack_4` con proyectil, `impact`, `death_hold`; mirroring; tiles 12/12 | ✅ |
+| QA delta | AG-4 | Pillow ZIP, 235 frames headless, N3 real, capturas y veredicto | ✅ **APROBADO 6/6** |
+
+**Contrato aplicado (GDD v1.8.1 §10.3 líneas 561-563):** 10 unidades de choque con 13 frames
+(`attack [5..8]`, `impact [9,10]`, `death [11,12]`) y 7 a distancia/artillería con 15 frames
+(`attack [5..10]`, `impact [11,12]`, `death [13,14]`); `anim` con `impact`/`fps_impact:8`, `fps_attack:9`,
+`fps_death:6`, `death_hold:true`; esquema plano `frames`+`anim` (no `animations`). `attack_4` es el disparo:
+lanza el proyectil (virote/flecha/piedra) a t≈333,3 ms; `impact` del defensor a t≈444,4 ms; el ataque a
+distancia completa 6 cuadros (666,7 ms) con recoil/recarga; muerte con `death_hold`; mirroring oeste.
+
+**QA independiente (`docs/qa/fase3_anim_report.md`):** **APROBADO 6/6** — 235 frames producción + 235 raw
+(82 attack, 34 impact, 0 hit) con Texture2D; Pillow del ZIP: 76/76 RGBA con alfa, 512-wide
+(42×512×512, 18×512×640, 16×512×341); `attack_4` en 333,3 ms y reacción 444,4 ms; N3 real con proyectil
+`launch_ms` 333,3 y death_hold; dos secuencias deterministas; 4 capturas 1920×1080; sin regresión sprites
+6/6, tiles 7/7, QA final Fase 3 7/7, F1/F2 6/6. `run_all` **1469/0/1**, `validate_data` **11 datasets/7
+schemas, 11.641 comprobaciones, 0 WARN/0 errores**, editor/headless 0. Hashes en el informe.
+- **Observaciones:** `hit` desaparece del contrato (todo `impact`); borde de frame por `floor` en 333,3 ms
+  (ventana [333,3;444,4] validada con 334 ms + `impact_ms` exacto); offsets de ancla del arte original
+  (melee attack_2/3 aéreos, `death_2` 12–19 px) documentados para render futuro; retratos (69 PNG,
+  Paquete A) siguen pendientes de Kimi (D-062) y no bloquean.
+- **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.2`**. Animación de
+  combate completa (184 PNG de combate + 51 de marcha = 235 frames finales); lista para la verificación
+  de Kimi contra GDD v1.8.1 antes de abrir el Paquete A (retratos) o la siguiente línea.
