@@ -651,3 +651,5 @@ y sin material con copyright.
 **Criterios C1-C10:** HUD estación+año+tinte con capturas ×4; boletín ≥5 categorías/texto propio/0 botones muertos; crónica anual + histórico persistido (hash) y consultable; confirmación de órdenes con lista (incl. vacía), Corregir/Confirmar y log determinista; consejo comercial correcto sin RNG; «?» en todas las pantallas §9 (capturas ≥4); paneles N2/N3 con hombres/armas/apoyo/moral/experiencia y comandante; save/load con chronicle (3 puntos) y defaults; no regresión (run_all, validate 0 WARN, editor 0, IA<2 s, mapa<8 ms); congelamientos 1402/1453 diff 0, sin arte externo, GDD v1.9.2 + D-079…D-083 + tag `fase-5a`.
 
 **Cierre previsto:** QA APROBADO 10/10 → commits por agente + `[AG-0]`, tag anotado **`fase-5a`**, push y aviso para verificación de Kimi contra GDD v1.9.2 + esta directiva.
+
+**Actualización de la directiva (C11):** el Manual del Jugador (`docs/MANUAL_DEL_JUGADOR.md`) debe actualizarse con las cinco mejoras de Fase 5A y verificarse contra capturas; añadido como criterio **C11** del QA (task-80 y task-81).

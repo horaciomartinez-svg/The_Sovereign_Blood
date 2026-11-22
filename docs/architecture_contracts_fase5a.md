@@ -55,3 +55,9 @@ C1 HUD estación+año, tinte, capturas ×4; C2 boletín ≥5 categorías/texto p
 
 ## 6. Cierre
 Commits por agente + `[AG-0]`, push a `origin/main`, tag **`fase-5a`**, aviso a Kimi contra GDD v1.9.2 + directiva. No se publica nada del REA completo (D-078).
+
+### Addendum 5A.1 — C11 Manual del Jugador (prompt actualizado)
+C11 obligatorio: `docs/MANUAL_DEL_JUGADOR.md` debe actualizarse con las cinco mejoras de la fase
+(estaciones/HUD; boletín y Crónica/histórico; confirmar órdenes y exenciones; Consejero comercial y
+ayuda «?»; panel de unidad N2/N3), con párrafos coherentes con `context_help.json`/`legibility_texts.json`
+y el juego real. AG-4 lo verifica contra capturas; el manual no puede quedar desactualizado al cierre.
