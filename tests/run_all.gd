@@ -1,31 +1,60 @@
 extends SceneTree
-## Runner headless de CI (GDD §13; D-006). Sin plugin GUT en Fase 0 (GUT llega
-## en Fase 1): asserts nativos + validación de datos §13.
+## Runner headless de CI (GDD §13; D-006). Sin plugin GUT en Fase 0; en Fase 1
+## se amplía con asserts nativos por sistema (TurnManager, economía, dinastía,
+## diplomacia, militar, batalla, IA, eventos, GameState e integración).
 ##
 ## Uso:
 ##   godot --headless --path <repo> --script tests/run_all.gd
 ##
 ## Exit code 0 si todos los tests pasan y la validación de datos no reporta
-## errores. Si data/ aún no tiene datasets, la validación sale con aviso y no
-## rompe la CI (AG-1 trabaja en paralelo).
+## errores. Los tests acceden a los autoloads de forma dinámica (ver
+## tests/harness.gd) porque Godot compila el script de --script antes de
+## registrar los autoloads como identificadores globales.
 
 const TestRunnerScript = preload("res://tests/test_runner.gd")
 const TestScaffoldScript = preload("res://tests/test_scaffold.gd")
 const TestRngScript = preload("res://tests/test_rng.gd")
 const TestValidatorScript = preload("res://tests/test_validator.gd")
+const TestGameStateScript = preload("res://tests/test_game_state.gd")
+const TestTurnManagerScript = preload("res://tests/test_turn_manager.gd")
+const TestEconomyScript = preload("res://tests/test_economy.gd")
+const TestDynastyScript = preload("res://tests/test_dynasty.gd")
+const TestDiplomacyScript = preload("res://tests/test_diplomacy.gd")
+const TestMilitaryScript = preload("res://tests/test_military.gd")
+const TestBattleScript = preload("res://tests/test_battle.gd")
+const TestAiScript = preload("res://tests/test_ai.gd")
+const TestEventsScript = preload("res://tests/test_events.gd")
+const TestIntegrationScript = preload("res://tests/test_integration.gd")
+const HarnessScript = preload("res://tests/harness.gd")
 const ValidatorCore = preload("res://tools/validator_core.gd")
 
 
 func _initialize() -> void:
 	var version_info: Dictionary = Engine.get_version_info()
 	print("==============================================================")
-	print(" The Sovereign's Blood — CI headless Fase 0 (criterios A3/A5)")
+	print(" The Sovereign's Blood — CI headless (Fase 0 + Fase 1)")
 	print(" Godot %s" % str(version_info.get("string", "")))
 	print("==============================================================")
 	var runner: TestRunnerScript = TestRunnerScript.new()
 	TestScaffoldScript.new().run(runner, self)
 	TestRngScript.new().run(runner, self)
 	TestValidatorScript.new().run(runner, self)
+	var harness: HarnessScript = HarnessScript.new(root)
+	if not harness.available():
+		print("[FAIL] autoloads no disponibles: ", harness.missing)
+		quit(1)
+		return
+	# Sistemas Fase 1.
+	TestGameStateScript.new().run(runner, harness)
+	TestTurnManagerScript.new().run(runner, harness)
+	TestEconomyScript.new().run(runner, harness)
+	TestDynastyScript.new().run(runner, harness)
+	TestDiplomacyScript.new().run(runner, harness)
+	TestMilitaryScript.new().run(runner, harness)
+	TestBattleScript.new().run(runner, harness)
+	TestAiScript.new().run(runner, harness)
+	TestEventsScript.new().run(runner, harness)
+	TestIntegrationScript.new().run(runner, harness)
 	_run_data_validation(runner)
 
 	var summary: Dictionary = runner.summary()

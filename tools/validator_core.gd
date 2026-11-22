@@ -16,11 +16,19 @@ extends RefCounted
 ## events_1337.json ↔ events.schema.json; scenarios/scenario_1337.json ↔
 ## scenario.schema.json. Los schemas validan el documento COMPLETO.
 ##
+## Datos de PRESENTACIÓN (D-017): `data/map_layout.json` no es un dataset de
+## simulación (solo coordenadas para el mapa de la UI). Se excluye explícitamente
+## de la validación: no tiene schema ni reglas cruzadas de GDD §13.
+##
 ## No depende de autoloads: lo usan tools/validate_data.gd (CLI) y
 ## tests/run_all.gd (CI) con el mismo resultado.
 
 const DATA_DIR: String = "res://data"
 const SCHEMA_DIR: String = "res://data/schema"
+
+## Ficheros JSON de data/ que NO son datasets de simulación (solo presentación,
+## D-017): el validador los ignora por completo (ni schema ni reglas cruzadas).
+const NON_SIMULATION_DATASETS: Array[String] = ["map_layout.json"]
 
 ## Raíces efectivas de la validación. Por defecto res://data; los tests pueden
 ## pasar un directorio temporal a validate(base_dir).
@@ -141,7 +149,9 @@ func _scan_dir(dir_path: String) -> void:
 		if dir.current_is_dir():
 			_scan_dir(full_path)
 		elif entry_name.get_extension().to_lower() == "json":
-			if full_path.begins_with(_schema_root + "/"):
+			if NON_SIMULATION_DATASETS.has(entry_name.to_lower()):
+				infos.append("[INFO] excluido de la validación (solo presentación, D-017): %s" % _rel(full_path))
+			elif full_path.begins_with(_schema_root + "/"):
 				schema_paths.append(full_path)
 			else:
 				dataset_paths.append(full_path)

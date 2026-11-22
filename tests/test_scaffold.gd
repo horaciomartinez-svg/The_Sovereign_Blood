@@ -82,7 +82,10 @@ func _check_project_settings(runner: TestRunnerScript) -> void:
 	runner.check_eq("display/window/size/viewport_width", 1920, ProjectSettings.get_setting("display/window/size/viewport_width", 0))
 	runner.check_eq("display/window/size/viewport_height", 1080, ProjectSettings.get_setting("display/window/size/viewport_height", 0))
 	var main_scene := str(ProjectSettings.get_setting("application/run/main_scene", ""))
-	runner.check("sin main_scene en Fase 0 (se añade en Fase 1)", main_scene == "", "main_scene='%s'" % main_scene)
+	if main_scene == "":
+		runner.check("main_scene vacío (Fase 0) o escena existente (Fase 1)", true)
+	else:
+		runner.check("main_scene apunta a una escena existente", FileAccess.file_exists(main_scene), "main_scene='%s'" % main_scene)
 	var features: Variant = ProjectSettings.get_setting("application/config/features", PackedStringArray())
 	var has_feature := false
 	if features is PackedStringArray:

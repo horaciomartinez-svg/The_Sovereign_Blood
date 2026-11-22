@@ -103,11 +103,23 @@ func snapshot() -> Dictionary:
 	}
 
 
-## Restaura un snapshot creado con snapshot().
+## Restaura un snapshot creado con snapshot(). Acepta `state` como int o String:
+## 64 bits no caben en un double, así que al guardar en JSON se serializa como
+## texto para no perder precisión (ver GameState.to_dict).
 func restore(snap: Dictionary) -> void:
 	if snap.has("seed") and snap.has("state"):
-		_rng.seed = int(snap["seed"])
-		_rng.state = int(snap["state"])
+		_rng.seed = _to_int64(snap["seed"])
+		_rng.state = _to_int64(snap["state"])
+
+
+func _to_int64(value: Variant) -> int:
+	if value is int:
+		return value
+	if value is float:
+		return int(value)
+	if value is String:
+		return (value as String).to_int()
+	return 0
 
 
 ## Copia independiente que continúa exactamente el mismo flujo.
