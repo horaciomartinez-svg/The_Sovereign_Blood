@@ -6,6 +6,8 @@ extends SceneTree
 ##   godot --headless --path <repo> --script scripts/ui/dev/ui_smoke.gd
 ## Exit code 0 = todo compila/instancia; 1 = algun fallo.
 
+const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+
 var _failures: Array[String] = []
 var _scenes_checked := 0
 var _scripts_checked := 0
@@ -84,7 +86,7 @@ func _check_scene(path: String) -> void:
 	if not is_instance_valid(node):
 		_failures.append("%s: el nodo raiz dejo de ser valido" % path)
 		return
-	_validate_scene(path, node)
+	await _validate_scene(path, node)
 	node.queue_free()
 	await process_frame
 	print("  [OK] %s" % path)
@@ -104,17 +106,51 @@ func _validate_scene(path: String, node: Node) -> void:
 	if path.ends_with("options_menu.tscn") and button_count < 1:
 		_failures.append("%s: sin botones de opciones" % path)
 	if path.ends_with("world_map.tscn"):
-		var region_nodes: Variant = node.get("_region_nodes")
-		if not (region_nodes is Dictionary) or (region_nodes as Dictionary).size() < 47:
-			_failures.append("%s: se esperaban 47 nodos de region, hay %s" % [path, "no dict" if not (region_nodes is Dictionary) else str((region_nodes as Dictionary).size())])
+		var borders: Variant = node.get("_borders")
+		var camera: Variant = node.get("_camera")
+		if not (camera is Camera2D):
+			_failures.append("%s: sin Camera2D" % path)
+		if not (borders is Node2D):
+			_failures.append("%s: sin capa de fronteras" % path)
 		else:
-			node.call("_on_region_clicked", "region_londres")
-			var region_panel: Variant = node.get("_region_panel")
-			if region_panel is Control and not (region_panel as Control).visible:
-				_failures.append("%s: el panel de region no se abrio" % path)
-			node.call("_on_region_panel_closed")
+			var count := int(borders.call("region_count"))
+			var has_borders: bool = TSBGame.has_map_borders()
+			if has_borders and count < 47:
+				_failures.append("%s: se esperaban 47 poligonos, hay %d" % [path, count])
+			print("    [mapa] poligonos=%d (borders=%s)" % [count, str(has_borders)])
+			if has_borders:
+				node.call("_on_region_clicked", "region_londres")
+				var region_panel: Variant = node.get("_region_panel")
+				if region_panel is Control and not (region_panel as Control).visible:
+					_failures.append("%s: el panel de region no se abrio" % path)
+				node.call("_on_region_panel_closed")
+		var portrait: Variant = node.get("_sovereign_portrait")
+		if not (portrait is Control):
+			_failures.append("%s: sin retrato del soberano en el mapa" % path)
+		elif str(portrait.call("get_portrait_character_id")).is_empty():
+			_failures.append("%s: retrato del mapa sin personaje" % path)
 		if node.find_children("*", "VBoxContainer", true, false).size() < 1:
 			_failures.append("%s: sin contenedores construidos" % path)
+	if path.ends_with("tactical_map.tscn"):
+		node.call("setup", {
+			"attacker_army_id": "army_england_1",
+			"defender_army_id": "army_france_1",
+			"region_id": "region_normandia",
+		})
+		await process_frame
+		if node.find_children("*", "Button", true, false).size() < 3:
+			_failures.append("%s: selector de nivel sin 3 opciones" % path)
+	if path.ends_with("close_combat.tscn"):
+		node.call("setup", {
+			"id": "u_smoke_1", "faction": "england", "unit_id": "longbowman",
+			"size": 800, "strength": 9, "morale": 1.0, "experience": 0,
+		}, {
+			"id": "u_smoke_2", "faction": "france", "unit_id": "men_at_arms",
+			"size": 600, "strength": 12, "morale": 1.0, "experience": 0,
+		})
+		await process_frame
+		if node.find_children("*", "Button", true, false).size() < 2:
+			_failures.append("%s: sin interfaz de cartas" % path)
 	if path.ends_with("battle_report.tscn"):
 		node.call("setup", {
 			"attacker_faction": "england",

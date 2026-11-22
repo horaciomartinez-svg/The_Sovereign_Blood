@@ -3,7 +3,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## atributos, pretensiones y estado general del reino. Solo lecturas.
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
-const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 
 var _body: VBoxContainer = null
 
@@ -29,11 +29,10 @@ func _rebuild() -> void:
 	var faction_data := TSBGame.faction(fid)
 
 	var header := UIKit.hbox(_body, 16)
-	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(140, 168)
-	shield.set("house", str(TSBGame.ruler(fid).get("house", fid)))
-	shield.set("field_color", color)
-	header.add_child(shield)
+	# Slot §10.2 (5): retrato del soberano en La Corte.
+	var portrait: Control = PortraitFrame.make(str(TSBGame.ruler(fid).get("id", "")), Vector2(140, 168))
+	if portrait != null:
+		header.add_child(portrait)
 	var header_text := UIKit.vbox(header, 3)
 	header_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := UIKit.label(header_text, TSBGame.faction_name(fid), "InkLabel")
@@ -132,13 +131,12 @@ func _section(text: String) -> void:
 	title.add_theme_color_override("font_color", Palette.CRIMSON)
 
 
-func _character_block(member: Dictionary, color: Color, big: bool) -> void:
+func _character_block(member: Dictionary, _color: Color, big: bool) -> void:
 	var row := UIKit.hbox(_body, 12)
-	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(86, 104) if big else Vector2(64, 78)
-	shield.set("house", str(member.get("house", "")))
-	shield.set("field_color", color)
-	row.add_child(shield)
+	var portrait_size := Vector2(86, 104) if big else Vector2(64, 78)
+	var portrait: Control = PortraitFrame.make(str(member.get("id", "")), portrait_size)
+	if portrait != null:
+		row.add_child(portrait)
 	var text := UIKit.vbox(row, 2)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := UIKit.label(text, str(member.get("name", "—")), "InkLabel")

@@ -5,6 +5,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 
 var _faction_id: String = ""
 var _canvas: Control = null
@@ -93,11 +94,10 @@ func _rebuild_detail() -> void:
 		return
 	var alive := bool(member.get("alive", true))
 	var header := UIKit.hbox(_detail_box, 10)
-	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(96, 116)
-	shield.set("house", str(member.get("house", _faction_id)))
-	shield.set("field_color", TSBGame.faction_color(_faction_id))
-	header.add_child(shield)
+	# Slot §10.2 (2): retrato del miembro seleccionado (fallback siempre visible).
+	var portrait: Control = PortraitFrame.make(str(member.get("id", "")), Vector2(96, 116))
+	if portrait != null:
+		header.add_child(portrait)
 	var header_text := UIKit.vbox(header, 2)
 	header_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := UIKit.label(header_text, str(member.get("name", "—")), "InkLabel")
@@ -479,7 +479,32 @@ class FamilyTreeCanvas extends Control:
 					linked = true
 			if not linked and children_ids.has(child_id) and _rects.has(ruler_key):
 				_links.append([ruler_key, child_id])
+		_rebuild_portraits()
 		queue_redraw()
+
+	## Retratos §10.2: un PortraitFrame real por cada miembro VIVO del arbol.
+	func _rebuild_portraits() -> void:
+		for child in get_children():
+			if child is Control and (child as Control).get_meta("is_portrait_slot", false):
+				remove_child(child)
+				child.queue_free()
+		for card: Variant in _cards:
+			if not (card is Dictionary):
+				continue
+			var card_dict := card as Dictionary
+			var member: Dictionary = card_dict.get("member", {})
+			if not bool(member.get("alive", true)):
+				continue
+			var rect: Rect2 = card_dict.get("rect", Rect2())
+			var character_id := str(card_dict.get("id", ""))
+			var portrait: Control = PortraitFrame.make(character_id, Vector2(56, 70))
+			if portrait == null:
+				continue
+			portrait.set_meta("is_portrait_slot", true)
+			add_child(portrait)
+			portrait.position = rect.position + Vector2(10, 12)
+			portrait.size = Vector2(56, 70)
+			portrait.call("refresh")
 
 	func set_selected(character_id: String) -> void:
 		_selected = character_id
@@ -557,7 +582,11 @@ class FamilyTreeCanvas extends Control:
 		draw_rect(Rect2(rect.position + Vector2(4, 4), rect.size - Vector2(8, 8)), PaletteLocal.with_alpha(border, 0.25), false, 1.0)
 
 		var shield_rect := Rect2(rect.position + Vector2(10, 12), Vector2(56, 70))
-		HeraldryLocal.draw_shield(self, shield_rect, TSBGameLocal.faction_color(str(member.get("faction", ""))), str(member.get("house", "")))
+		if not alive:
+			# Los miembros vivos llevan PortraitFrame §10.2; los fallecidos conservan
+			# su escudo heraldico apagado.
+			HeraldryLocal.draw_shield(self, shield_rect, TSBGameLocal.faction_color(str(member.get("faction", ""))).darkened(0.35), str(member.get("house", "")))
+			draw_rect(shield_rect, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.35), true)
 
 		var name_color := PaletteLocal.PARCHMENT_LIGHT if alive else PaletteLocal.MUTED
 		draw_string(font, rect.position + Vector2(76, 30), _fit(str(member.get("name", "")), 22), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, name_color)

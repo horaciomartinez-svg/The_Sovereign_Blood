@@ -369,28 +369,33 @@ class ScenarioMinimap extends Control:
 		if canvas.x < 8.0 or canvas.y < 8.0:
 			return
 		draw_rect(Rect2(Vector2.ZERO, canvas), PaletteLocal.SEA_DEEP)
-		var layout: Dictionary = TSBGameLocal.map_layout()
-		var landmasses: Variant = layout.get("landmasses", [])
-		if landmasses is Array:
-			for mass: Variant in (landmasses as Array):
-				if not (mass is Array) or (mass as Array).size() < 3:
-					continue
-				var points := PackedVector2Array()
-				for pair: Variant in (mass as Array):
-					if pair is Array and (pair as Array).size() >= 2:
-						points.append(Vector2(float(pair[0]) * canvas.x, float(pair[1]) * canvas.y))
-				if points.size() >= 3:
-					draw_colored_polygon(points, PaletteLocal.LAND)
-		var regions: Variant = layout.get("regions", {})
-		if regions is Dictionary:
-			for region_id: Variant in (regions as Dictionary).keys():
-				var entry: Variant = (regions as Dictionary)[region_id]
-				if not (entry is Dictionary):
-					continue
+		var entries: Array = TSBGameLocal.map_borders_for_year(1337)
+		for entry: Variant in entries:
+			if not (entry is Dictionary):
+				continue
+			var data := entry as Dictionary
+			var raw_ring: Variant = data.get("ring", [])
+			if not (raw_ring is Array) or (raw_ring as Array).size() < 3:
+				continue
+			var points := PackedVector2Array()
+			for pair: Variant in (raw_ring as Array):
+				if pair is Array and (pair as Array).size() >= 2:
+					points.append(Vector2(float((pair as Array)[0]) * canvas.x, float((pair as Array)[1]) * canvas.y))
+			if points.size() < 3:
+				continue
+			var owner := str(data.get("owner", ""))
+			var color := TSBGameLocal.faction_color(owner) if not owner.is_empty() else PaletteLocal.MUTED
+			color.a = 0.72
+			draw_colored_polygon(points, color)
+			var closed := points.duplicate()
+			closed.append(points[0])
+			draw_polyline(closed, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.55), 0.7, true)
+		if entries.is_empty():
+			# Sin fronteras (AG-1 pendiente): puntos de centro como miniatura.
+			for region_id: Variant in TSBGameLocal.region_ids():
 				var data := TSBGameLocal.region(str(region_id))
 				var owner := str(data.get("owner", ""))
 				var color := TSBGameLocal.faction_color(owner) if not owner.is_empty() else PaletteLocal.MUTED
-				var pos := Vector2(float((entry as Dictionary).get("x", 0.5)) * canvas.x, float((entry as Dictionary).get("y", 0.5)) * canvas.y)
-				draw_circle(pos, 5.0, color)
-				draw_circle(pos, 5.0, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.8), false, 1.0)
+				var center: Vector2 = TSBGameLocal.map_center(str(region_id), 1337)
+				draw_circle(center * canvas, 5.0, color)
 		draw_rect(Rect2(Vector2.ZERO, canvas), PaletteLocal.with_alpha(PaletteLocal.GOLD_DIM, 0.8), false, 1.0)

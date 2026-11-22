@@ -4,7 +4,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## la UI solo llama a la API y muestra el resultado.
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
-const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 
 const ACTIONS: Array[String] = [
 	"alliance", "marriage", "trade_pact", "demand_tribute",
@@ -139,18 +139,17 @@ func _rebuild_detail() -> void:
 	var allied := TSBGame.are_allied(fid, _target_id)
 
 	var header := UIKit.hbox(_detail_box, 14)
-	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(104, 124)
-	shield.set("house", str(TSBGame.ruler(_target_id).get("house", _target_id)))
-	shield.set("field_color", TSBGame.faction_color(_target_id))
-	header.add_child(shield)
+	var ruler := TSBGame.ruler(_target_id)
+	# Slot §10.2 (3): retrato del gobernante rival (fallback heraldico si no hay asset).
+	var portrait: Control = PortraitFrame.make(str(ruler.get("id", "")), Vector2(118, 138))
+	if portrait != null:
+		header.add_child(portrait)
 	var header_text := UIKit.vbox(header, 2)
 	header_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var name_label := UIKit.label(header_text, TSBGame.faction_name(_target_id), "InkLabel")
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.add_theme_font_size_override("font_size", 27)
 	name_label.add_theme_color_override("font_color", Palette.INK_TEXT)
-	var ruler := TSBGame.ruler(_target_id)
 	var ruler_label := UIKit.label(header_text, "Gobernante: %s" % str(ruler.get("name", "—")), "InkLabel")
 	ruler_label.add_theme_font_size_override("font_size", 16)
 	var status_text := "En guerra" if at_war else ("Aliados" if allied else "Neutral")

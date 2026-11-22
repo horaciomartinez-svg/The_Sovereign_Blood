@@ -21,7 +21,6 @@ static var _characters: Dictionary = {}
 static var _units: Dictionary = {}
 static var _scenarios: Dictionary = {}
 static var _events: Dictionary = {}
-static var _layout: Dictionary = {}
 static var _preview_armies: Dictionary = {}
 static var _preview_ready := false
 
@@ -124,6 +123,12 @@ static func _call(node_name: String, method_name: String, args: Array = []) -> V
 # Estado canonico (solo lectura)
 # ==========================================================================
 static func state() -> Dictionary:
+	# Copia defensiva (D-022): la UI nunca recibe la referencia viva del estado.
+	return _state_raw().duplicate(true)
+
+
+## Acceso interno de la fachada al estado vivo (solo lecturas; nunca exponer).
+static func _state_raw() -> Dictionary:
 	var raw: Variant = _prop("GameState", "state")
 	if raw is Dictionary:
 		return raw
@@ -131,7 +136,7 @@ static func state() -> Dictionary:
 
 
 static func has_game() -> bool:
-	var s := state()
+	var s := _state_raw()
 	if s.is_empty():
 		return false
 	return s.has("regions") and s.has("factions")
@@ -142,7 +147,7 @@ static func is_preview_mode() -> bool:
 
 
 static func player_faction() -> String:
-	var s := state()
+	var s := _state_raw()
 	var fid := str(s.get("player_faction", ""))
 	if fid.is_empty():
 		fid = str(_prop("GameState", "current_faction_id"))
@@ -159,17 +164,17 @@ static func player_faction() -> String:
 
 
 static func faction_state(faction_id: String) -> Dictionary:
-	var s := state()
+	var s := _state_raw()
 	var factions: Variant = s.get("factions")
 	if factions is Dictionary:
 		var entry: Variant = (factions as Dictionary).get(faction_id, {})
 		if entry is Dictionary:
-			return entry
+			return (entry as Dictionary).duplicate(true)
 	return {}
 
 
 static func current_year() -> int:
-	var s := state()
+	var s := _state_raw()
 	var year := int(s.get("year", 0))
 	if year <= 0:
 		year = int(_prop("TurnManager", "current_year"))
@@ -179,7 +184,7 @@ static func current_year() -> int:
 
 
 static func current_quarter() -> int:
-	var s := state()
+	var s := _state_raw()
 	var quarter := int(s.get("quarter", 0))
 	if quarter <= 0:
 		quarter = int(_prop("TurnManager", "current_quarter"))
@@ -189,7 +194,7 @@ static func current_quarter() -> int:
 
 
 static func current_turn() -> int:
-	var s := state()
+	var s := _state_raw()
 	var turn := int(s.get("turn", 0))
 	if turn <= 0:
 		turn = (current_year() - start_year()) * 4 + current_quarter()
@@ -201,7 +206,7 @@ static func start_year() -> int:
 
 
 static func scenario_id() -> String:
-	var s := state()
+	var s := _state_raw()
 	var sid := str(s.get("scenario_id", ""))
 	return sid if not sid.is_empty() else SCENARIO_ID
 
@@ -213,14 +218,14 @@ static func scenario(id: String = SCENARIO_ID) -> Dictionary:
 	ensure_data()
 	var from_loader: Variant = _call("DataLoader", "get_scenario", [id])
 	if from_loader is Dictionary and not (from_loader as Dictionary).is_empty():
-		return from_loader
+		return (from_loader as Dictionary).duplicate(true)
 	var cached: Variant = _scenarios.get(id, {})
 	if cached is Dictionary and not (cached as Dictionary).is_empty():
-		return cached
+		return (cached as Dictionary).duplicate(true)
 	var direct := _read_json("res://data/scenarios/%s.json" % id)
 	if not direct.is_empty():
 		_scenarios[id] = direct
-	return direct
+	return direct.duplicate(true)
 
 
 static func all_factions() -> Array:
@@ -231,7 +236,7 @@ static func all_factions() -> Array:
 	for id: Variant in ids:
 		var entry: Variant = _factions[id]
 		if entry is Dictionary:
-			out.append(entry)
+			out.append((entry as Dictionary).duplicate(true))
 	return out
 
 
@@ -246,9 +251,9 @@ static func faction(faction_id: String) -> Dictionary:
 	ensure_data()
 	var from_loader: Variant = _call("DataLoader", "get_faction", [faction_id])
 	if from_loader is Dictionary and not (from_loader as Dictionary).is_empty():
-		return from_loader
+		return (from_loader as Dictionary).duplicate(true)
 	var entry: Variant = _factions.get(faction_id, {})
-	return entry if entry is Dictionary else {}
+	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
 
 
 static func faction_name(faction_id: String) -> String:
@@ -333,7 +338,7 @@ static func region(region_id: String) -> Dictionary:
 		"workers": {},
 	}
 	# El estado canonico manda sobre el dato historico cuando hay partida.
-	var s := state()
+	var s := _state_raw()
 	var live_regions: Variant = s.get("regions")
 	if live_regions is Dictionary:
 		var live: Variant = (live_regions as Dictionary).get(region_id, {})
@@ -350,7 +355,7 @@ static func region(region_id: String) -> Dictionary:
 				out["terrain"] = live_state["terrain"]
 			if live_state.has("has_city"):
 				out["has_city"] = live_state["has_city"]
-	return out
+	return out.duplicate(true)
 
 
 static func region_name(region_id: String) -> String:
@@ -378,9 +383,9 @@ static func character(character_id: String) -> Dictionary:
 	ensure_data()
 	var from_loader: Variant = _call("DataLoader", "get_character", [character_id])
 	if from_loader is Dictionary and not (from_loader as Dictionary).is_empty():
-		return from_loader
+		return (from_loader as Dictionary).duplicate(true)
 	var entry: Variant = _characters.get(character_id, {})
-	return entry if entry is Dictionary else {}
+	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
 
 
 static func characters_of(faction_id: String) -> Array:
@@ -390,7 +395,7 @@ static func characters_of(faction_id: String) -> Array:
 	for id: Variant in source.keys():
 		var entry: Variant = source[id]
 		if entry is Dictionary and str((entry as Dictionary).get("faction", "")) == faction_id:
-			out.append(entry)
+			out.append((entry as Dictionary).duplicate(true))
 	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return str(a.get("name", "")) < str(b.get("name", "")))
 	return out
@@ -402,7 +407,7 @@ static func all_characters() -> Array:
 	for id: Variant in _characters.keys():
 		var entry: Variant = _characters[id]
 		if entry is Dictionary:
-			out.append(entry)
+			out.append((entry as Dictionary).duplicate(true))
 	return out
 
 
@@ -437,10 +442,10 @@ static func ruler(faction_id: String) -> Dictionary:
 	if has_game():
 		var from_system: Variant = _call("DynastySystem", "get_ruler", [faction_id])
 		if from_system is Dictionary and not (from_system as Dictionary).is_empty():
-			return from_system
+			return (from_system as Dictionary).duplicate(true)
 	for entry: Variant in characters_of(faction_id):
 		if entry is Dictionary and str((entry as Dictionary).get("role", "")) == "ruler" and character_is_alive(entry):
-			return entry
+			return (entry as Dictionary).duplicate(true)
 	return {}
 
 
@@ -448,10 +453,10 @@ static func heir(faction_id: String) -> Dictionary:
 	if has_game():
 		var from_system: Variant = _call("DynastySystem", "get_heir", [faction_id])
 		if from_system is Dictionary and not (from_system as Dictionary).is_empty():
-			return from_system
+			return (from_system as Dictionary).duplicate(true)
 	for entry: Variant in characters_of(faction_id):
 		if entry is Dictionary and str((entry as Dictionary).get("role", "")) == "heir" and character_is_alive(entry):
-			return entry
+			return (entry as Dictionary).duplicate(true)
 	return {}
 
 
@@ -476,9 +481,9 @@ static func unit(unit_id: String) -> Dictionary:
 	ensure_data()
 	var from_loader: Variant = _call("DataLoader", "get_unit", [unit_id])
 	if from_loader is Dictionary and not (from_loader as Dictionary).is_empty():
-		return from_loader
+		return (from_loader as Dictionary).duplicate(true)
 	var entry: Variant = _units.get(unit_id, {})
-	return entry if entry is Dictionary else {}
+	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
 
 
 static func units_for_faction(faction_id: String) -> Array:
@@ -680,12 +685,12 @@ static func propose(actor: String, target: String, action: Dictionary) -> Dictio
 # Militar y batalla
 # ==========================================================================
 static func armies() -> Dictionary:
-	var s := state()
+	var s := _state_raw()
 	var raw: Variant = s.get("armies")
 	if raw is Dictionary and not (raw as Dictionary).is_empty():
-		return raw
+		return (raw as Dictionary).duplicate(true)
 	if not has_game():
-		return _build_preview_armies()
+		return _build_preview_armies().duplicate(true)
 	return {}
 
 
@@ -813,9 +818,9 @@ static func estimate_power(army_entry: Dictionary, region_id: String, is_attacke
 
 
 static func battle_reports() -> Array:
-	var s := state()
+	var s := _state_raw()
 	var reports: Variant = s.get("battle_reports", [])
-	return reports if reports is Array else []
+	return (reports as Array).duplicate(true) if reports is Array else []
 
 
 static func last_battle_report() -> Dictionary:
@@ -823,7 +828,7 @@ static func last_battle_report() -> Dictionary:
 	if reports.is_empty():
 		return {}
 	var last: Variant = reports[reports.size() - 1]
-	return last if last is Dictionary else {}
+	return (last as Dictionary).duplicate(true) if last is Dictionary else {}
 
 
 # ==========================================================================
@@ -861,9 +866,9 @@ static func has_save(slot: String = "autosave") -> bool:
 
 
 static func event_log() -> Array:
-	var s := state()
+	var s := _state_raw()
 	var log_entries: Variant = s.get("event_log", [])
-	return log_entries if log_entries is Array else []
+	return (log_entries as Array).duplicate(true) if log_entries is Array else []
 
 
 static func events_for_year(year_value: int) -> Array:
@@ -891,30 +896,184 @@ static func events_in_log_for_year(year_value: int) -> Array:
 
 
 # ==========================================================================
-# Presentacion: layout del mapa (D-017)
+# Mapa atlas §10.1: fronteras vectoriales por ano (data/map_borders.json)
 # ==========================================================================
-static func map_layout() -> Dictionary:
-	if _layout.is_empty():
-		var raw := _read_json("res://data/map_layout.json")
+static var _map_borders: Dictionary = {}
+
+
+static func map_borders() -> Dictionary:
+	if _map_borders.is_empty():
+		var raw := _read_json("res://data/map_borders.json")
 		if not raw.is_empty():
-			_layout = raw
-	return _layout
+			_map_borders = raw
+	return _map_borders
 
 
-static func layout_for(region_id: String) -> Dictionary:
-	var layout := map_layout()
-	var regions: Variant = layout.get("regions", {})
-	if regions is Dictionary:
-		var entry: Variant = (regions as Dictionary).get(region_id, {})
-		if entry is Dictionary:
-			return entry
+static func has_map_borders() -> bool:
+	return not map_borders().is_empty()
+
+
+static func map_border_years() -> Array:
+	var years: Variant = map_borders().get("years", {})
+	var out: Array = []
+	if years is Dictionary:
+		for key: Variant in (years as Dictionary).keys():
+			var year_value := int(str(key))
+			if year_value > 0 and not out.has(year_value):
+				out.append(year_value)
+	out.sort()
+	return out
+
+
+static func map_borders_for_year(year_value: int) -> Array:
+	var years: Variant = map_borders().get("years", {})
+	if not (years is Dictionary):
+		return []
+	var entries: Variant = (years as Dictionary).get(str(year_value), [])
+	if not (entries is Array):
+		return []
+	return (entries as Array).duplicate(true)
+
+
+static var _map_entries_cache: Dictionary = {}
+
+
+## Indice interno region_id -> entrada (referencias de datos de presentacion).
+static func _map_entries_by_region(year_value: int) -> Dictionary:
+	if _map_entries_cache.has(year_value):
+		return _map_entries_cache[year_value]
+	var by_region: Dictionary = {}
+	var years: Variant = map_borders().get("years", {})
+	if years is Dictionary:
+		var entries: Variant = (years as Dictionary).get(str(year_value), [])
+		if entries is Array:
+			for entry: Variant in (entries as Array):
+				if entry is Dictionary:
+					by_region[str((entry as Dictionary).get("region_id", ""))] = entry
+	_map_entries_cache[year_value] = by_region
+	return by_region
+
+
+static func map_border_entry(region_id: String, year_value: int) -> Dictionary:
+	var entry: Variant = _map_entries_by_region(year_value).get(region_id, {})
+	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
+
+
+static func map_owner_for(region_id: String, year_value: int) -> String:
+	return str(map_border_entry(region_id, year_value).get("owner", ""))
+
+
+## Centro de etiqueta/icono normalizado [0..1], desde map_borders.center
+## (o centroide del anillo si faltara). Sin datos de presentacion duplicados.
+static func map_center(region_id: String, year_value: int) -> Vector2:
+	var entry: Variant = _map_entries_by_region(year_value).get(region_id, {})
+	var center: Variant = (entry as Dictionary).get("center", null) if entry is Dictionary else null
+	if center is Array and (center as Array).size() >= 2:
+		return Vector2(float((center as Array)[0]), float((center as Array)[1]))
+	if entry is Dictionary:
+		var ring: Variant = (entry as Dictionary).get("ring", [])
+		if ring is Array and (ring as Array).size() >= 1:
+			var sum := Vector2.ZERO
+			var count := 0
+			for pair: Variant in (ring as Array):
+				if pair is Array and (pair as Array).size() >= 2:
+					sum += Vector2(float((pair as Array)[0]), float((pair as Array)[1]))
+					count += 1
+			if count > 0:
+				return sum / float(count)
+	return Vector2(0.5, 0.5)
+
+
+static func map_centers(year_value: int) -> Dictionary:
+	var out: Dictionary = {}
+	for region_id: Variant in region_ids():
+		out[str(region_id)] = map_center(str(region_id), year_value)
+	return out
+
+
+static func map_label_for(region_id: String, year_value: int) -> String:
+	var entry: Variant = _map_entries_by_region(year_value).get(region_id, {})
+	var label := str((entry as Dictionary).get("label", "")) if entry is Dictionary else ""
+	if not label.is_empty():
+		return label
+	return region_name(region_id)
+
+
+# ==========================================================================
+# Batallas Nivel 2/3 (Fase 2): fachada de la API de AG-2
+# ==========================================================================
+static func get_army_model(army_id: String) -> Object:
+	var result: Variant = _call("MilitarySystem", "get_army_model", [army_id])
+	return result as Object if result is Object else null
+
+
+static func get_region_model(region_id: String) -> Object:
+	var result: Variant = _call("MilitarySystem", "get_region_model", [region_id])
+	return result as Object if result is Object else null
+
+
+## Crea el nodo TacticalBattle ya configurado (el llamador lo anade al arbol).
+static func launch_tactical(attacker_army_id: String, defender_army_id: String, region_id: String) -> Node:
+	var attacker_model := get_army_model(attacker_army_id)
+	var defender_model := get_army_model(defender_army_id)
+	var region_model := get_region_model(region_id)
+	if attacker_model == null or defender_model == null or region_model == null:
+		return null
+	var result: Variant = _call("BattleManager", "launch_tactical", [attacker_model, defender_model, region_model])
+	return result as Node if result is Node else null
+
+
+## Crea el nodo CloseCombat ya configurado (el llamador lo anade al arbol).
+static func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -> Node:
+	var result: Variant = _call("BattleManager", "launch_close_combat", [attacker_unit, defender_unit])
+	return result as Node if result is Node else null
+
+
+## Nivel 1 desde la UI: delega en el movimiento/batalla ya probado de Fase 1.
+## Devuelve el informe ({} si no hubo choque o el movimiento fue rechazado).
+static func delegate_attack(attacker_army_id: String, region_id: String) -> Dictionary:
+	var before := battle_reports().size()
+	var moved := move_army(attacker_army_id, region_id)
+	if not moved:
+		return {}
+	var reports := battle_reports()
+	if reports.size() > before:
+		var last: Variant = reports[reports.size() - 1]
+		return (last as Dictionary).duplicate(true) if last is Dictionary else {}
 	return {}
 
 
-static func layout_landmasses() -> Array:
-	var layout := map_layout()
-	var land: Variant = layout.get("landmasses", [])
-	return land if land is Array else []
+## Primer ejercito defensor (de otra faccion) en la region, {} si no hay.
+static func defender_army_in(region_id: String, attacker_faction: String) -> Dictionary:
+	for army: Variant in armies_in(region_id):
+		if army is Dictionary and str((army as Dictionary).get("faction_id", "")) != attacker_faction:
+			return (army as Dictionary).duplicate(true)
+	return {}
+
+
+## Convierte la primera unidad de un ejercito en dict apto para launch_close_combat.
+static func first_unit_of_army(army_id: String) -> Dictionary:
+	var army := army(army_id)
+	var units: Variant = army.get("units", [])
+	if units is Array and not (units as Array).is_empty():
+		var unit: Variant = (units as Array)[0]
+		if unit is Dictionary:
+			var data := (unit as Dictionary).duplicate(true)
+			data["faction"] = str(army.get("faction_id", data.get("faction", "")))
+			data["id"] = str(data.get("id", "%s_u1" % army_id))
+			return data
+	return {}
+
+
+## Traslada el ejercito vencedor a la region capturada (si aun no esta alli).
+## Se hace por la API de movimiento para no mutar estado desde la UI.
+static func relocate_after_capture(army_id: String, region_id: String) -> void:
+	var army_data := army(army_id)
+	if army_data.is_empty():
+		return
+	if str(army_data.get("region_id", "")) == region_id:
+		return
+	move_army(army_id, region_id)
 
 
 # ==========================================================================

@@ -6,6 +6,7 @@ extends Control
 
 signal closed
 signal action_result(message: String, ok: bool)
+signal battle_requested(attacker_army_id: String, defender_army_id: String, region_id: String)
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
@@ -190,6 +191,7 @@ func _build_workers(data: Dictionary) -> void:
 		"TinyLabel")
 	total_label.add_theme_font_size_override("font_size", 13)
 	total_label.add_theme_color_override("font_color", Palette.MUTED)
+	total_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var cost_note := UIKit.label(section, "Cada reasignación cuesta 1 PG (GDD §5.2).", "TinyLabel")
 	cost_note.add_theme_font_size_override("font_size", 12)
 	cost_note.add_theme_color_override("font_color", Palette.GOLD_DIM)
@@ -245,6 +247,7 @@ func _build_armies(data: Dictionary) -> void:
 			var controls := UIKit.hbox(army_box, 6)
 			var adjacent: Array = TSBGame.region_adjacency(region_id)
 			var target_picker := OptionButton.new()
+			target_picker.fit_to_longest_item = false
 			target_picker.custom_minimum_size = Vector2(164, 34)
 			target_picker.add_theme_font_size_override("font_size", 14)
 			if adjacent.is_empty():
@@ -255,7 +258,7 @@ func _build_armies(data: Dictionary) -> void:
 					target_picker.add_item(TSBGame.region_name(str(adjacent_id)))
 					target_picker.set_item_metadata(target_picker.item_count - 1, str(adjacent_id))
 			controls.add_child(target_picker)
-			var move_button := UIKit.button(controls, "Mover", "SmallButton", "Cuesta 1 PG + coste de terreno (GDD §5.5)")
+			var move_button := UIKit.button(controls, "Avanzar", "SmallButton", "Mover 1 PG; si hay defensores enemigos se ofrece elegir Nivel 1/2/3 (GDD §6)")
 			move_button.disabled = not TSBGame.has_game() or adjacent.is_empty()
 			move_button.pressed.connect(func() -> void: _move_army(army, target_picker))
 			var disband := UIKit.button(controls, "Disolver", "SmallButton")
@@ -275,11 +278,14 @@ func _build_recruitment(data: Dictionary) -> void:
 	var pool_text := "Pool de reclutas: %d" % pool if pool >= 0 else "Pool de reclutas: — (sistemas en integración)"
 	var pool_label := UIKit.label(section, pool_text, "TinyLabel")
 	pool_label.add_theme_font_size_override("font_size", 14)
+	pool_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	var units := TSBGame.units_for_faction(fid)
-	var row := UIKit.hbox(section, 6)
+	var picker_row := UIKit.hbox(section, 6)
 	var unit_picker := OptionButton.new()
+	unit_picker.fit_to_longest_item = false
 	unit_picker.custom_minimum_size = Vector2(132, 36)
+	unit_picker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	unit_picker.add_theme_font_size_override("font_size", 13)
 	var selected_cost := ""
 	for unit_entry: Variant in units:
@@ -292,25 +298,28 @@ func _build_recruitment(data: Dictionary) -> void:
 			var cost: Variant = unit_data.get("cost", {})
 			if cost is Dictionary:
 				selected_cost = "%d oro, %d reclutas" % [int((cost as Dictionary).get("gold", 0)), int((cost as Dictionary).get("recruits", 0))]
-	row.add_child(unit_picker)
+	picker_row.add_child(unit_picker)
 
 	var amount_spin := SpinBox.new()
 	amount_spin.min_value = 100
 	amount_spin.max_value = 4000
 	amount_spin.step = 100
 	amount_spin.value = 200
-	amount_spin.custom_minimum_size = Vector2(80, 36)
+	amount_spin.custom_minimum_size = Vector2(86, 36)
 	amount_spin.add_theme_font_size_override("font_size", 13)
-	row.add_child(amount_spin)
+	picker_row.add_child(amount_spin)
 
-	var recruit_button := UIKit.button(row, "Reclutar", "SmallButton", "MilitarySystem.recruit()")
-	recruit_button.custom_minimum_size = Vector2(92, 36)
+	var action_row := UIKit.hbox(section, 6)
+	var recruit_button := UIKit.button(action_row, "Reclutar", "SmallButton", "MilitarySystem.recruit()")
+	recruit_button.custom_minimum_size = Vector2(120, 36)
+	recruit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	recruit_button.disabled = not TSBGame.has_game() or units.is_empty()
 	recruit_button.pressed.connect(func() -> void: _recruit(unit_picker, int(amount_spin.value)))
 
 	var cost_label := UIKit.label(section, "Coste por unidad: %s (se valida al reclutar)." % (selected_cost if not selected_cost.is_empty() else "—"), "TinyLabel")
 	cost_label.add_theme_font_size_override("font_size", 12)
 	cost_label.add_theme_color_override("font_color", Palette.MUTED)
+	cost_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	if units.is_empty():
 		var empty := UIKit.label(section, "No hay unidades disponibles para tu facción en este año.", "TinyLabel")
@@ -380,9 +389,21 @@ func _move_army(army: Dictionary, picker: OptionButton) -> void:
 	if target.is_empty():
 		return
 	var army_id := str(army.get("id", ""))
+	var fid := str(army.get("faction_id", TSBGame.player_faction()))
+	var target_owner := TSBGame.region_owner(target)
+	var target_data := TSBGame.region(target)
+	var defender := TSBGame.defender_army_in(target, fid)
+	if not target_owner.is_empty() and target_owner != fid and not defender.is_empty():
+		# Choque: el jugador elige Nivel 1/2/3 en la pantalla de batalla.
+		battle_requested.emit(army_id, str(defender.get("id", "")), target)
+		action_result.emit("Choque en %s: elige cómo resolver la batalla." % TSBGame.region_name(target), true)
+		return
 	var ok := TSBGame.move_army(army_id, target)
 	if ok:
-		action_result.emit("Ejército en marcha hacia %s." % TSBGame.region_name(target), true)
+		var notice := "Ejército en marcha hacia %s." % TSBGame.region_name(target)
+		if not target_owner.is_empty() and target_owner != fid:
+			notice = "La región %s no tenía defensores: ocupada." % TSBGame.region_name(target)
+		action_result.emit(notice, true)
 	else:
 		action_result.emit("Movimiento rechazado (PG, adyacencia o ejército no disponible).", false)
 	refresh()

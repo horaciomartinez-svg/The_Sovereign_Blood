@@ -1,16 +1,26 @@
-extends Control
-## Mapa principal (GDD §9.3): regiones coloreadas por faccion, ejercitos,
-## barra lateral de resumen, menu de Consejo, tooltip y panel de region.
+extends Node2D
+## Mapa principal (GDD v1.4 §9.3 + §10.1): atlas por capas con Camera2D.
 ##
-## Solo lee estado por la fachada TSBGame y se repinta con senales de EventBus /
-## autoloads. Nunca escribe `GameState.state` ni diccionarios de sistemas.
+## Capas (contrato Fase 2 §2):
+##   1. Terreno   assets/art/map/terrain_base.png (4096x3072, generado por tools/generate_map_terrain.py)
+##   2. Fronteras data/map_borders.json por ano (1337/1402/1453) + relleno de faccion
+##   3. Interactiva hit-test punto-en-poligono, hover dorado 18 %, tooltip y click
+##   4. Entidades banderas, ciudades, ejercitos, nombres con elision y etiquetas de mar
+## HUD del consejo/panel en CanvasLayer independiente de la camara.
+##
+## Regla de oro: solo lee por la fachada TSBGame y se repinta con senales; nunca
+## muta GameState.state ni diccionarios de sistemas. La vista de ano NO altera
+## la partida (solo la capa politica).
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
+const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
-const MapBackdrop = preload("res://scripts/ui/map/map_backdrop.gd")
+const MapBordersLayer = preload("res://scripts/ui/map/map_borders_layer.gd")
+const MapInteractiveLayer = preload("res://scripts/ui/map/map_interactive_layer.gd")
+const MapEntitiesLayer = preload("res://scripts/ui/map/map_entities_layer.gd")
+const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const CouncilScene = preload("res://scenes/council/council_menu.tscn")
-const RegionNodeScene = preload("res://scenes/map/region_node.tscn")
 const RegionPanelScene = preload("res://scenes/map/region_panel.tscn")
 const TooltipScene = preload("res://scenes/ui/tooltip.tscn")
 const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
@@ -22,35 +32,43 @@ const DiplomacyScene = preload("res://scenes/diplomacy/diplomacy_screen.tscn")
 const MilitaryScene = preload("res://scenes/military/military_screen.tscn")
 const EconomyScene = preload("res://scenes/economy/economy_screen.tscn")
 const CourtScene = preload("res://scenes/ui/court_overview.tscn")
-const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
 
+const TACTICAL_SCENE := "res://scenes/battle/tactical_map.tscn"
+const CLOSE_COMBAT_SCENE := "res://scenes/battle/close_combat.tscn"
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
+const TERRAIN_TEXTURE := "res://assets/art/map/terrain_base.png"
+
 const QUARTER_NAMES: Array[String] = ["INVIERNO", "PRIMAVERA", "VERANO", "OTOÑO"]
+const MAP_W := 2048.0
+const MAP_H := 1536.0
 const SIDEBAR_LEFT := 300.0
 const SIDEBAR_RIGHT := 440.0
+const ZOOM_MIN := 0.5
+const ZOOM_MAX := 3.0
+const DEFAULT_ZOOM := 0.7
 
-var _map_area: Control = null
-var _map_backdrop: Control = null
-var _region_layer: Control = null
+# Mundo y camara.
+var _world: Node2D = null
+var _terrain: Sprite2D = null
+var _borders: Node2D = null
+var _interactive: Node2D = null
+var _entities: Node2D = null
+var _camera: Camera2D = null
+var _view_year := 1337
+var _selected_region := ""
+var _hover_region := ""
+var _dragging := false
+var _drag_moved := false
+var _drag_button := 0
+var _drag_start_mouse := Vector2.ZERO
+var _drag_start_camera := Vector2.ZERO
+
+# HUD.
+var _hud_layer: CanvasLayer = null
+var _hud: Control = null
 var _council: Control = null
-var _region_panel: Control = null
-var _tooltip: Control = null
-var _overlay_layer: CanvasLayer = null
-var _notification_layer: CanvasLayer = null
-var _notification_box: VBoxContainer = null
-var _overlay: Node = null
-var _overlay_kind: String = ""
-var _turn_processing := false
-var _pending_battle_reports: Array = []
-var _deferred_battle_report: Dictionary = {}
-
-var _region_nodes: Dictionary = {}
-var _region_centers: Dictionary = {}
-var _selected_region: String = ""
-
-# Barra lateral de resumen.
 var _info_panel: PanelContainer = null
-var _info_shield: Control = null
+var _info_portrait: Control = null
 var _info_faction: Label = null
 var _info_date: Label = null
 var _info_pg: Label = null
@@ -65,108 +83,361 @@ var _alerts_box: VBoxContainer = null
 var _news_box: VBoxContainer = null
 var _info_save: Label = null
 
+var _sovereign_panel: PanelContainer = null
+var _sovereign_portrait: Control = null
+var _sovereign_name: Label = null
+var _sovereign_sub: Label = null
+var _sovereign_heir: Label = null
+var _year_buttons: Dictionary = {}
+var _year_label: Label = null
+var _borders_notice: PanelContainer = null
+var _zoom_label: Label = null
 var _map_hint: Label = null
 var _preview_banner: PanelContainer = null
-var _map_title: Label = null
+var _view_banner: PanelContainer = null
+
+var _region_panel: Control = null
+var _tooltip: Control = null
+var _overlay_layer: CanvasLayer = null
+var _notification_layer: CanvasLayer = null
+var _notification_box: VBoxContainer = null
+var _overlay: Node = null
+var _overlay_kind: String = ""
+var _turn_processing := false
+var _pending_battle_reports: Array = []
+var _deferred_battle_report: Dictionary = {}
+var _tactical_pending_report: Dictionary = {}
 
 
 func _ready() -> void:
-	UIKit.apply_theme(self)
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	TSBGame.ensure_data()
-	_build_layers()
-	_build_map()
+	_build_world()
+	_build_hud()
 	_build_council()
 	_build_info_sidebar()
+	_build_sovereign_panel()
+	_build_year_selector()
+	_build_zoom_controls()
+	_build_map_labels()
 	_build_region_panel()
 	_build_tooltip_and_overlays()
 	_build_notifications()
 	_connect_signals()
-	_relayout()
+	_view_year = _default_view_year()
+	_set_view_year(_view_year)
 	_refresh_all()
 	set_process(true)
 
 
 func _process(_delta: float) -> void:
+	# Coste minimo: solo clamp de camara y seguimiento de tooltip.
+	_clamp_camera()
 	if _tooltip != null and _tooltip.visible:
-		_tooltip.call("follow", get_global_mouse_position())
+		_tooltip.call("follow", get_viewport().get_mouse_position())
+		var mouse := get_viewport().get_mouse_position()
+		if _is_hud_position(mouse):
+			_tooltip.call("hide_tip")
+
+
+func _is_hud_position(screen_pos: Vector2) -> bool:
+	var view_size := get_viewport_rect().size
+	if screen_pos.x < SIDEBAR_LEFT or screen_pos.x > view_size.x - SIDEBAR_RIGHT:
+		return true
+	if screen_pos.y < 12.0:
+		return true
+	return false
 
 
 # ==========================================================================
-# Construccion de capas
+# Capa 1: mundo + camara
 # ==========================================================================
-func _build_layers() -> void:
-	_map_area = Control.new()
-	_map_area.anchor_left = 0.0
-	_map_area.anchor_top = 0.0
-	_map_area.anchor_right = 1.0
-	_map_area.anchor_bottom = 1.0
-	_map_area.offset_left = SIDEBAR_LEFT
-	_map_area.offset_right = -SIDEBAR_RIGHT
-	_map_area.clip_contents = true
-	add_child(_map_area)
+func _build_world() -> void:
+	_world = Node2D.new()
+	_world.name = "WorldLayers"
+	add_child(_world)
+
+	var table := Polygon2D.new()
+	table.polygon = PackedVector2Array([
+		Vector2(-6000, -6000), Vector2(MAP_W + 6000, -6000),
+		Vector2(MAP_W + 6000, MAP_H + 6000), Vector2(-6000, MAP_H + 6000),
+	])
+	table.color = Palette.INK_DEEP
+	table.z_index = -20
+	_world.add_child(table)
+
+	var shadow := Polygon2D.new()
+	shadow.polygon = PackedVector2Array([
+		Vector2(-10, 16), Vector2(MAP_W + 18, 16),
+		Vector2(MAP_W + 18, MAP_H + 24), Vector2(-10, MAP_H + 24),
+	])
+	shadow.color = Color(0.0, 0.0, 0.0, 0.45)
+	shadow.z_index = -10
+	_world.add_child(shadow)
+
+	_terrain = Sprite2D.new()
+	_terrain.name = "TerrainLayer"
+	if ResourceLoader.exists(TERRAIN_TEXTURE):
+		_terrain.texture = load(TERRAIN_TEXTURE)
+	else:
+		push_warning("Mapa: falta %s; se generara con tools/generate_map_terrain.py" % TERRAIN_TEXTURE)
+	_terrain.centered = false
+	_terrain.position = Vector2.ZERO
+	_terrain.scale = Vector2(0.5, 0.5)  # 4096x3072 -> 2048x1536 unidades de mundo
+	_terrain.z_index = 0
+	_world.add_child(_terrain)
+
+	_borders = MapBordersLayer.new()
+	_borders.name = "BordersLayer"
+	_borders.call("set_map_size", Vector2(MAP_W, MAP_H))
+	_world.add_child(_borders)
+
+	_interactive = MapInteractiveLayer.new()
+	_interactive.name = "InteractiveLayer"
+	_interactive.z_index = 2
+	_interactive.call("setup", _borders)
+	_world.add_child(_interactive)
+
+	_entities = MapEntitiesLayer.new()
+	_entities.name = "EntitiesLayer"
+	_entities.z_index = 3
+	_world.add_child(_entities)
+
+	_camera = Camera2D.new()
+	_camera.name = "MapCamera"
+	_camera.position = Vector2(MAP_W * 0.5, MAP_H * 0.5)
+	_camera.zoom = Vector2(DEFAULT_ZOOM, DEFAULT_ZOOM)
+	_camera.enabled = true
+	_camera.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
+	add_child(_camera)
 
 
-func _build_map() -> void:
-	_map_backdrop = MapBackdrop.new()
-	_map_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_map_area.add_child(_map_backdrop)
+func _clamp_camera() -> void:
+	if _camera == null:
+		return
+	var view_size := get_viewport_rect().size
+	var half := view_size * 0.5 / _camera.zoom
+	var target := _camera.position
+	if half.x >= MAP_W * 0.5:
+		target.x = MAP_W * 0.5
+	else:
+		target.x = clampf(target.x, half.x, MAP_W - half.x)
+	if half.y >= MAP_H * 0.5:
+		target.y = MAP_H * 0.5
+	else:
+		target.y = clampf(target.y, half.y, MAP_H - half.y)
+	_camera.position = target
 
-	_region_layer = Control.new()
-	_region_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_region_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_map_area.add_child(_region_layer)
 
-	_map_hint = UIKit.label(
-		_map_area,
-		"Click en una región para gobernar · Enter = terminar turno · Esc = opciones",
-		"TinyLabel",
-		HORIZONTAL_ALIGNMENT_CENTER)
-	_map_hint.add_theme_font_size_override("font_size", 14)
-	_map_hint.add_theme_color_override("font_color", Palette.with_alpha(Palette.PARCHMENT, 0.72))
+func _screen_to_world(screen_pos: Vector2) -> Vector2:
+	var canvas_transform := get_viewport().get_canvas_transform()
+	return canvas_transform.affine_inverse() * screen_pos
+
+
+func _set_zoom(new_zoom: float, focus_screen: Vector2 = Vector2.INF) -> void:
+	if _camera == null:
+		return
+	var clamped := clampf(new_zoom, ZOOM_MIN, ZOOM_MAX)
+	if is_equal_approx(clamped, _camera.zoom.x):
+		return
+	var focus := focus_screen
+	if focus == Vector2.INF:
+		focus = get_viewport_rect().size * 0.5
+	var world_before := _screen_to_world(focus)
+	_camera.zoom = Vector2(clamped, clamped)
+	var world_after := _screen_to_world(focus)
+	_camera.position += world_before - world_after
+	_clamp_camera()
+	_update_zoom_dependent()
+
+
+func _update_zoom_dependent() -> void:
+	if _camera == null:
+		return
+	var z := _camera.zoom.x
+	_borders.call("set_zoom", z)
+	_interactive.call("set_zoom", z)
+	_entities.call("set_zoom", z)
+	if _zoom_label != null:
+		_zoom_label.text = "%.2f×" % z
+	_refresh_view_banner()
+
+
+# ==========================================================================
+# HUD
+# ==========================================================================
+func _build_hud() -> void:
+	_hud_layer = CanvasLayer.new()
+	_hud_layer.name = "HUDLayer"
+	_hud_layer.layer = 10
+	add_child(_hud_layer)
+	_hud = Control.new()
+	_hud.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_hud.theme = ThemeBuilder.get_theme()
+	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud_layer.add_child(_hud)
+
+
+func _build_map_labels() -> void:
+	_map_hint = UIKit.label(_hud, "Rueda = zoom · arrastrar (botón derecho/central) = mover · click = región · Enter = terminar turno", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	_map_hint.add_theme_font_size_override("font_size", 13)
+	_map_hint.add_theme_color_override("font_color", Palette.with_alpha(Palette.PARCHMENT, 0.75))
 	_map_hint.anchor_left = 0.0
 	_map_hint.anchor_right = 1.0
 	_map_hint.anchor_top = 1.0
 	_map_hint.anchor_bottom = 1.0
 	_map_hint.offset_top = -30
 	_map_hint.offset_bottom = -8
+	_map_hint.offset_left = SIDEBAR_LEFT
+	_map_hint.offset_right = -SIDEBAR_RIGHT
 	_map_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_preview_banner = PanelContainer.new()
 	_preview_banner.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_DEEP, 0.88), Palette.GOLD, 1, 4, 14, 6))
 	_preview_banner.anchor_left = 0.5
 	_preview_banner.anchor_right = 0.5
-	_preview_banner.anchor_top = 0.0
-	_preview_banner.anchor_bottom = 0.0
-	_preview_banner.offset_left = -330
-	_preview_banner.offset_right = 330
-	_preview_banner.offset_top = 118
-	_preview_banner.offset_bottom = 158
+	_preview_banner.offset_left = -320
+	_preview_banner.offset_right = 320
+	_preview_banner.offset_top = 128
+	_preview_banner.offset_bottom = 166
 	_preview_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_map_area.add_child(_preview_banner)
-	var banner_label := UIKit.label(_preview_banner, "VISTA PREVIA · datos 1337 · sistemas de turno en integración (AG-2)", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
-	banner_label.add_theme_font_size_override("font_size", 15)
-	banner_label.add_theme_color_override("font_color", Palette.GOLD_BRIGHT)
+	_hud.add_child(_preview_banner)
+	var banner := UIKit.label(_preview_banner, "VISTA PREVIA · datos del escenario · sistemas en integración", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	banner.add_theme_font_size_override("font_size", 14)
+	banner.add_theme_color_override("font_color", Palette.GOLD_BRIGHT)
 	_preview_banner.visible = false
 
-	_create_region_nodes()
+	_view_banner = PanelContainer.new()
+	_view_banner.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_DEEP, 0.82), Palette.GOLD_DIM, 1, 4, 12, 4))
+	_view_banner.anchor_left = 0.5
+	_view_banner.anchor_right = 0.5
+	_view_banner.offset_left = -170
+	_view_banner.offset_right = 170
+	_view_banner.offset_top = 92
+	_view_banner.offset_bottom = 122
+	_view_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(_view_banner)
+	var view_label := UIKit.label(_view_banner, "", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	view_label.name = "ViewText"
+	view_label.add_theme_font_size_override("font_size", 13)
+	view_label.add_theme_color_override("font_color", Palette.PARCHMENT)
+	_view_banner.visible = false
+
+	_borders_notice = PanelContainer.new()
+	_borders_notice.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_DEEP, 0.86), Palette.CRIMSON_BRIGHT, 1, 4, 12, 5))
+	_borders_notice.anchor_left = 0.5
+	_borders_notice.anchor_right = 0.5
+	_borders_notice.offset_left = -350
+	_borders_notice.offset_right = 350
+	_borders_notice.offset_top = 128
+	_borders_notice.offset_bottom = 164
+	_borders_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(_borders_notice)
+	var notice := UIKit.label(_borders_notice, "Fronteras históricas pendientes (AG-1) · se muestra el terreno base", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	notice.add_theme_font_size_override("font_size", 13)
+	notice.add_theme_color_override("font_color", Palette.PARCHMENT_LIGHT)
+	_borders_notice.visible = false
 
 
-func _create_region_nodes() -> void:
-	var region_ids := TSBGame.region_ids()
-	for id: Variant in region_ids:
-		var region_id := str(id)
-		var node: Control = RegionNodeScene.instantiate()
-		_region_layer.add_child(node)
-		node.hovered.connect(_on_region_hovered)
-		node.unhovered.connect(_on_region_unhovered)
-		node.clicked.connect(_on_region_clicked)
-		_region_nodes[region_id] = node
+func _build_sovereign_panel() -> void:
+	_sovereign_panel = PanelContainer.new()
+	_sovereign_panel.add_theme_stylebox_override("panel", Palette.ink_style(10, Palette.GOLD_DIM, 2))
+	_sovereign_panel.position = Vector2(SIDEBAR_LEFT + 16.0, 16.0)
+	_sovereign_panel.custom_minimum_size = Vector2(360, 132)
+	_sovereign_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hud.add_child(_sovereign_panel)
+	var row := UIKit.hbox(_sovereign_panel, 10)
+	_sovereign_portrait = PortraitFrame.make("", Vector2(88, 108))
+	if _sovereign_portrait != null:
+		row.add_child(_sovereign_portrait)
+	var text := UIKit.vbox(row, 2)
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var title := UIKit.label(text, "SOBERANO", "TinyLabel")
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Palette.GOLD)
+	_sovereign_name = UIKit.label(text, "—", "ParchmentLabel")
+	_sovereign_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_sovereign_name.add_theme_font_size_override("font_size", 22)
+	_sovereign_sub = UIKit.label(text, "—", "TinyLabel")
+	_sovereign_sub.add_theme_font_size_override("font_size", 13)
+	_sovereign_heir = UIKit.label(text, "—", "TinyLabel")
+	_sovereign_heir.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_sovereign_heir.add_theme_font_size_override("font_size", 12)
+
+
+func _build_year_selector() -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", Palette.ink_style(8, Palette.GOLD_DIM, 1))
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.offset_left = -260
+	panel.offset_right = 260
+	panel.offset_top = 16
+	panel.offset_bottom = 84
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hud.add_child(panel)
+	var column := UIKit.vbox(panel, 3)
+	var header := UIKit.hbox(column, 6)
+	var caption := UIKit.label(header, "VISTA POLÍTICA", "TinyLabel")
+	caption.add_theme_font_size_override("font_size", 12)
+	caption.add_theme_color_override("font_color", Palette.GOLD)
+	_year_label = UIKit.label(header, "", "TinyLabel", HORIZONTAL_ALIGNMENT_RIGHT)
+	_year_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_year_label.add_theme_font_size_override("font_size", 12)
+	var buttons := UIKit.hbox(column, 6)
+	var group := ButtonGroup.new()
+	var years: Array = TSBGame.map_border_years()
+	if years.is_empty():
+		years = [1337, 1402, 1453]
+	for year_value: Variant in years:
+		var year_int := int(year_value)
+		var button := UIKit.button(buttons, str(year_int), "SmallButton", "Vista política del año %d (no altera la partida)" % year_int)
+		button.toggle_mode = true
+		button.button_group = group
+		button.custom_minimum_size = Vector2(0, 32)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(func() -> void: _set_view_year(year_int))
+		_year_buttons[year_int] = button
+
+
+func _build_zoom_controls() -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", Palette.ink_style(6, Palette.GOLD_DIM, 1))
+	panel.anchor_left = 1.0
+	panel.anchor_right = 1.0
+	panel.anchor_top = 1.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left = -SIDEBAR_RIGHT - 186
+	panel.offset_right = -SIDEBAR_RIGHT - 16
+	panel.offset_top = -64
+	panel.offset_bottom = -24
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hud.add_child(panel)
+	var row := UIKit.hbox(panel, 6)
+	var zoom_out := UIKit.button(row, "-", "SmallButton")
+	zoom_out.custom_minimum_size = Vector2(38, 30)
+	zoom_out.pressed.connect(func() -> void: _set_zoom(_camera.zoom.x / 1.2))
+	_zoom_label = UIKit.label(row, "%.2f×" % _camera.zoom.x, "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	_zoom_label.custom_minimum_size = Vector2(54, 0)
+	_zoom_label.add_theme_font_size_override("font_size", 13)
+	var zoom_in := UIKit.button(row, "+", "SmallButton")
+	zoom_in.custom_minimum_size = Vector2(38, 30)
+	zoom_in.pressed.connect(func() -> void: _set_zoom(_camera.zoom.x * 1.2))
+	var reset := UIKit.button(row, "AJUSTAR", "SmallButton")
+	reset.custom_minimum_size = Vector2(78, 30)
+	reset.pressed.connect(func() -> void: _set_zoom(DEFAULT_ZOOM))
 
 
 func _build_council() -> void:
 	_council = CouncilScene.instantiate()
-	add_child(_council)
+	_hud.add_child(_council)
+	_council.anchor_left = 0.0
+	_council.anchor_right = 0.0
+	_council.anchor_top = 0.0
+	_council.anchor_bottom = 1.0
+	_council.offset_left = 0.0
+	_council.offset_right = SIDEBAR_LEFT
+	_council.offset_top = 0.0
+	_council.offset_bottom = 0.0
 	if _council.has_signal("corte_requested"):
 		_council.connect("corte_requested", func() -> void: _open_overlay(CourtScene.resource_path, "court"))
 	if _council.has_signal("family_requested"):
@@ -192,15 +463,23 @@ func _build_info_sidebar() -> void:
 	_info_panel.anchor_bottom = 1.0
 	_info_panel.offset_left = -SIDEBAR_RIGHT
 	_info_panel.offset_right = 0.0
-	add_child(_info_panel)
+	_info_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_info_panel.clip_contents = true
+	_hud.add_child(_info_panel)
 
 	var margin := UIKit.margin(_info_panel, 6, 6, 6, 6)
-	var column := UIKit.vbox(margin, 7)
+	var info_scroll := ScrollContainer.new()
+	info_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	info_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	info_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_child(info_scroll)
+	var column := UIKit.vbox(info_scroll, 7)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var header := UIKit.hbox(column, 10)
-	_info_shield = ShieldScript.new()
-	_info_shield.custom_minimum_size = Vector2(84, 100)
-	header.add_child(_info_shield)
+	_info_portrait = PortraitFrame.make("", Vector2(84, 100))
+	if _info_portrait != null:
+		header.add_child(_info_portrait)
 	var header_text := UIKit.vbox(header, 1)
 	header_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_info_faction = UIKit.label(header_text, "—", "InkLabel")
@@ -233,9 +512,11 @@ func _build_info_sidebar() -> void:
 
 	var court := UIKit.vbox(column, 2)
 	_info_ruler = UIKit.label(court, "Gobernante: —", "InkLabel")
+	_info_ruler.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_info_ruler.add_theme_font_size_override("font_size", 15)
 	_info_ruler.add_theme_color_override("font_color", Palette.INK_TEXT)
 	_info_heir = UIKit.label(court, "Heredero: —", "InkLabel")
+	_info_heir.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_info_heir.add_theme_font_size_override("font_size", 15)
 	_info_heir.add_theme_color_override("font_color", Palette.INK_TEXT)
 
@@ -269,6 +550,7 @@ func _build_info_sidebar() -> void:
 	menu_button.pressed.connect(_on_return_to_menu)
 	_info_save = UIKit.label(column, "", "TinyLabel", HORIZONTAL_ALIGNMENT_CENTER)
 	_info_save.add_theme_font_size_override("font_size", 12)
+	_info_save.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 
 func _stat_pair(parent: Node, title_text: String) -> Label:
@@ -283,17 +565,25 @@ func _stat_pair(parent: Node, title_text: String) -> Label:
 
 func _build_region_panel() -> void:
 	_region_panel = RegionPanelScene.instantiate()
-	add_child(_region_panel)
+	_hud.add_child(_region_panel)
+	_region_panel.anchor_left = 1.0
+	_region_panel.anchor_right = 1.0
+	_region_panel.anchor_top = 0.0
+	_region_panel.anchor_bottom = 1.0
+	_region_panel.offset_left = -SIDEBAR_RIGHT
+	_region_panel.offset_right = 0.0
 	if _region_panel.has_signal("closed"):
 		_region_panel.connect("closed", _on_region_panel_closed)
 	if _region_panel.has_signal("action_result"):
 		_region_panel.connect("action_result", _on_action_result)
+	if _region_panel.has_signal("battle_requested"):
+		_region_panel.connect("battle_requested", _on_battle_requested)
 	_region_panel.visible = false
 
 
 func _build_tooltip_and_overlays() -> void:
 	_tooltip = TooltipScene.instantiate()
-	add_child(_tooltip)
+	_hud.add_child(_tooltip)
 	_tooltip.visible = false
 
 	_overlay_layer = CanvasLayer.new()
@@ -325,59 +615,85 @@ func _build_notifications() -> void:
 
 
 # ==========================================================================
-# Layout y refresco
+# Vista de ano (solo capa politica; nunca altera la partida)
 # ==========================================================================
-func _relayout() -> void:
-	if _map_area == null:
+func _default_view_year() -> int:
+	var years := TSBGame.map_border_years()
+	var scenario_year := TSBGame.start_year()
+	if years.has(scenario_year):
+		return scenario_year
+	if not years.is_empty():
+		return int(years[0])
+	return scenario_year
+
+
+## API publica para QA/benchmark: cambia la vista politica sin alterar la partida.
+func set_view_year(year_value: int) -> void:
+	_set_view_year(year_value)
+
+
+func _set_view_year(year_value: int) -> void:
+	_view_year = year_value
+	for key: Variant in _year_buttons.keys():
+		var button: Button = _year_buttons[key]
+		button.button_pressed = int(key) == year_value
+	if _year_label != null:
+		var suffix := ""
+		if TSBGame.has_game() and year_value != TSBGame.start_year():
+			suffix = " · histórica"
+		_year_label.text = "AÑO %d%s" % [year_value, suffix]
+	_refresh_map_layers()
+	_refresh_view_banner()
+
+
+func _refresh_view_banner() -> void:
+	if _view_banner == null:
 		return
-	var map_size := _map_area.size
-	if map_size.x < 100.0 or map_size.y < 100.0:
+	_view_banner.visible = TSBGame.has_game() and _view_year != TSBGame.start_year()
+	if _view_banner.visible:
+		var text_node: Variant = _view_banner.find_child("ViewText", true, false)
+		if text_node is Label:
+			(text_node as Label).text = "VISTA HISTÓRICA %d · no altera la partida" % _view_year
+
+
+func _refresh_map_layers() -> void:
+	if _borders == null or _entities == null or _camera == null:
 		return
-	var layout := TSBGame.map_layout()
-	var regions: Variant = layout.get("regions", {})
-	var centers: Dictionary = {}
-	if regions is Dictionary:
-		for region_id: Variant in (regions as Dictionary).keys():
-			var entry: Variant = (regions as Dictionary)[region_id]
-			if not (entry is Dictionary):
-				continue
-			var pos := Vector2(
-				float((entry as Dictionary).get("x", 0.5)) * map_size.x,
-				float((entry as Dictionary).get("y", 0.5)) * map_size.y)
-			centers[str(region_id)] = pos
-	_region_centers = centers
-	_map_backdrop.call("configure", layout, centers, TSBGame.current_year())
-	_refresh_regions()
+	var zoom := _camera.zoom.x
+	_borders.call("set_zoom", zoom)
+	_borders.call("set_year", _view_year)
+	_interactive.call("set_zoom", zoom)
+	_interactive.call("set_selected", _selected_region)
+	_interactive.call("set_hover", _hover_region)
+	_entities.call("configure", _view_year, Vector2(MAP_W, MAP_H), zoom, TSBGame.has_game())
+	if _borders_notice != null:
+		_borders_notice.visible = not TSBGame.has_map_borders() and TSBGame.has_game()
+	for key: Variant in _year_buttons.keys():
+		var button: Button = _year_buttons[key]
+		var available := TSBGame.map_border_years().has(int(key))
+		button.disabled = not available
+		if not available:
+			button.tooltip_text = "Fronteras del año %d pendientes (AG-1)" % int(key)
 
 
-func _refresh_regions() -> void:
-	if _region_centers.is_empty():
-		return
-	var map_size := _map_area.size
-	for region_id: Variant in _region_nodes.keys():
-		var id := str(region_id)
-		var node: Control = _region_nodes[region_id]
-		var center: Variant = _region_centers.get(id)
-		if not (center is Vector2):
-			continue
-		var layout_entry := TSBGame.layout_for(id)
-		var radius_pair: Variant = layout_entry.get("r", [0.0295, 0.0335])
-		var radius := Vector2(0.0295 * map_size.x, 0.0335 * map_size.y)
-		if radius_pair is Array and (radius_pair as Array).size() >= 2:
-			radius = Vector2(float((radius_pair as Array)[0]) * map_size.x, float((radius_pair as Array)[1]) * map_size.y)
-		var data := TSBGame.region(id)
-		data["label"] = str(layout_entry.get("label", TSBGame.region_name(id)))
-		var armies := TSBGame.armies_in(id)
-		node.call("configure", data, center, radius, armies)
-		node.call("set_selected", id == _selected_region)
-
-
+# ==========================================================================
+# Refresco de datos de juego
+# ==========================================================================
 func _refresh_all() -> void:
-	_refresh_regions()
+	if _world == null or _entities == null or _borders == null or _council == null:
+		# La escena se instancio pero aun no ha entrado en el arbol (QA/probes):
+		# el retrato y los datos se resuelven por API; no hay widgets que refrescar.
+		return
+	_entities.call("refresh")
 	_council.call("refresh")
 	_refresh_info_sidebar()
+	_refresh_sovereign_panel()
 	if _preview_banner != null:
 		_preview_banner.visible = not TSBGame.has_game()
+	if _borders_notice != null:
+		_borders_notice.visible = not TSBGame.has_map_borders() and TSBGame.has_game()
+	_refresh_view_banner()
+	_update_zoom_dependent()
 
 
 func _refresh_info_sidebar() -> void:
@@ -385,19 +701,19 @@ func _refresh_info_sidebar() -> void:
 		return
 	var fid := TSBGame.player_faction()
 	var has_game := TSBGame.has_game()
-	var faction_name := TSBGame.faction_name(fid) if not fid.is_empty() else "Sin partida"
-	_info_faction.text = faction_name
+	_info_faction.text = TSBGame.faction_name(fid) if not fid.is_empty() else "Sin partida"
 	_info_date.text = "%s · %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()]
-	var color := TSBGame.faction_color(fid) if not fid.is_empty() else Palette.MUTED
-	_info_shield.call("setup", _house_of(fid), color, true)
+	var info_ruler := _display_ruler(fid)
+	if _info_portrait != null:
+		_info_portrait.call("setup", str(info_ruler.get("id", "")))
 
 	_info_pg.text = "%d / %d" % [TSBGame.pg_remaining(), maxi(TSBGame.pg_max(), 1)] if has_game else "—"
 	_info_pg_bar.max_value = float(maxi(TSBGame.pg_max(), 1))
 	_info_pg_bar.value = float(TSBGame.pg_remaining()) if has_game else 0.0
 	_info_pg_bar.add_theme_stylebox_override("fill", Palette.stylebox(Palette.GOLD if TSBGame.pg_remaining() > 0 else Palette.CRIMSON, Color.TRANSPARENT, 0, 3))
 
-	_info_treasury.text = "%s oro" % TSBGame.short_number(TSBGame.gold(fid)) if has_game else "%s oro" % TSBGame.short_number(TSBGame.gold(fid))
-	_info_prestige.text = str(TSBGame.prestige(fid)) if has_game else "%d" % TSBGame.prestige(fid)
+	_info_treasury.text = "%s oro" % TSBGame.short_number(TSBGame.gold(fid))
+	_info_prestige.text = str(TSBGame.prestige(fid))
 	_info_regions.text = "%d de %d" % [TSBGame.regions_owned_by(fid).size(), TSBGame.region_ids().size()]
 	var army_count := 0
 	for army: Variant in TSBGame.armies().values():
@@ -405,7 +721,7 @@ func _refresh_info_sidebar() -> void:
 			army_count += 1
 	_info_armies.text = "%d ejércitos" % army_count
 
-	var ruler := TSBGame.ruler(fid)
+	var ruler := _display_ruler(fid)
 	var heir := TSBGame.heir(fid)
 	_info_ruler.text = "Gobernante: %s%s" % [str(ruler.get("name", "—")), _age_suffix(ruler)]
 	_info_heir.text = "Heredero: %s%s" % [str(heir.get("name", "Sin heredero")), _age_suffix(heir)]
@@ -415,11 +731,60 @@ func _refresh_info_sidebar() -> void:
 	_info_save.text = "Autoguardado: %s" % ("disponible" if TSBGame.has_save("autosave") else "—") if has_game else "Sin partida activa"
 
 
+## Slot §10.2 (1): retrato del soberano en la esquina del mapa; se refresca al
+## cambiar de gobernante (sucesion/muerte) sin recargar la partida.
+func _refresh_sovereign_panel() -> void:
+	if _sovereign_panel == null:
+		return
+	var fid := TSBGame.player_faction()
+	var ruler := _display_ruler(fid)
+	var heir := TSBGame.heir(fid)
+	if _sovereign_portrait != null:
+		_sovereign_portrait.call("setup", str(ruler.get("id", "")))
+	_sovereign_name.text = str(ruler.get("name", "Sin gobernante"))
+	_sovereign_sub.text = "%s · %s · %d años" % [
+		TSBGame.faction_name(fid) if not fid.is_empty() else "Vista previa",
+		QUARTER_NAMES[TSBGame.current_quarter() - 1].capitalize(),
+		TSBGame.character_age(ruler) if not ruler.is_empty() else 0,
+	]
+	_sovereign_heir.text = "Heredero: %s" % str(heir.get("name", "sin heredero"))
+
+
+## Gobernante mostrado: el ruler vivo; si la sucesión aún no ha fijado uno,
+## cae al heredero para que el slot nunca quede vacío (§10.2).
+func _display_ruler(fid: String) -> Dictionary:
+	var ruler := TSBGame.ruler(fid)
+	if ruler.is_empty():
+		ruler = TSBGame.heir(fid)
+	return ruler
+
+
+## API §10.2 del slot del mapa. Si la UI aun no se ha construido (p. ej. una
+## sonda que instancia la escena fuera del arbol), devuelve el gobernante actual
+## de la partida para que el slot nunca quede vacio.
+func get_portrait_character_id() -> String:
+	if _sovereign_portrait != null and is_instance_valid(_sovereign_portrait):
+		return str(_sovereign_portrait.call("get_portrait_character_id"))
+	var ruler := _display_ruler(TSBGame.player_faction())
+	return str(ruler.get("id", ""))
+
+
+func is_fallback() -> bool:
+	if _sovereign_portrait != null and is_instance_valid(_sovereign_portrait):
+		return bool(_sovereign_portrait.call("is_fallback"))
+	return true
+
+
+## Refresco completo para QA/automatizacion (sucesion, fin de turno, etc.).
+func refresh() -> void:
+	_refresh_all()
+
+
 func _rebuild_alerts(fid: String, has_game: bool) -> void:
 	UIKit.clear(_alerts_box)
 	if not has_game:
-		_alert_line("Sin partida activa: vista previa de datos 1337.", Palette.GOLD_DIM)
-		_alert_line("Sistemas de turno en integración (AG-2).", Palette.MUTED)
+		_alert_line("Sin partida activa: vista previa de datos.", Palette.GOLD_DIM)
+		_alert_line("Sistemas de turno en integración.", Palette.MUTED)
 		return
 	var alerts := 0
 	if TSBGame.pg_remaining() <= 0:
@@ -492,14 +857,6 @@ func _news_line(text: String) -> void:
 	label.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.1))
 
 
-func _house_of(fid: String) -> String:
-	if fid.is_empty():
-		return "sovereign"
-	var ruler := TSBGame.ruler(fid)
-	var house := str(ruler.get("house", ""))
-	return house if not house.is_empty() else fid
-
-
 func _age_suffix(character_entry: Dictionary) -> String:
 	if character_entry.is_empty():
 		return ""
@@ -508,10 +865,146 @@ func _age_suffix(character_entry: Dictionary) -> String:
 
 
 # ==========================================================================
+# Interaccion con el mapa (capa 3)
+# ==========================================================================
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		if _overlay != null and is_instance_valid(_overlay):
+			return
+		if _region_panel != null and _region_panel.visible:
+			_on_region_panel_closed()
+			get_viewport().set_input_as_handled()
+			return
+		_open_options()
+		get_viewport().set_input_as_handled()
+		return
+	if event is InputEventMouseButton:
+		var mouse := event as InputEventMouseButton
+		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_set_zoom(_camera.zoom.x * 1.12, mouse.position)
+			get_viewport().set_input_as_handled()
+			return
+		if mouse.pressed and mouse.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_set_zoom(_camera.zoom.x / 1.12, mouse.position)
+			get_viewport().set_input_as_handled()
+			return
+		if mouse.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+			if mouse.pressed:
+				_dragging = true
+				_drag_moved = false
+				_drag_button = mouse.button_index
+				_drag_start_mouse = mouse.position
+				_drag_start_camera = _camera.position
+			else:
+				if _dragging and not _drag_moved and mouse.button_index == MOUSE_BUTTON_LEFT:
+					_on_map_click(mouse.position)
+				_dragging = false
+			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseMotion:
+		var motion := event as InputEventMouseMotion
+		if _dragging:
+			if motion.position.distance_to(_drag_start_mouse) > 5.0:
+				_drag_moved = true
+			var delta := (_drag_start_mouse - motion.position) / _camera.zoom.x
+			_camera.position = _drag_start_camera + delta
+			_clamp_camera()
+			if _tooltip != null:
+				_tooltip.call("hide_tip")
+			get_viewport().set_input_as_handled()
+			return
+		_on_map_motion(motion.position)
+	if event is InputEventKey:
+		var key := event as InputEventKey
+		if key.pressed and not key.echo and (key.keycode == KEY_ENTER or key.keycode == KEY_KP_ENTER):
+			if _overlay == null:
+				_on_end_turn_requested()
+				get_viewport().set_input_as_handled()
+
+
+func _on_map_motion(screen_pos: Vector2) -> void:
+	if _is_hud_position(screen_pos):
+		_set_hover_region("")
+		return
+	var world_pos := _screen_to_world(screen_pos)
+	var region_id := str(_interactive.call("hit_test", world_pos))
+	_set_hover_region(region_id)
+	if region_id.is_empty():
+		if _tooltip != null:
+			_tooltip.call("hide_tip")
+		return
+	if _tooltip != null:
+		_tooltip.call("show_text", _region_tooltip_bbcode(region_id))
+		_tooltip.call("follow", screen_pos)
+
+
+func _set_hover_region(region_id: String) -> void:
+	if _hover_region == region_id:
+		return
+	_hover_region = region_id
+	_interactive.call("set_hover", region_id)
+	if region_id.is_empty() and _tooltip != null:
+		_tooltip.call("hide_tip")
+
+
+func _on_map_click(screen_pos: Vector2) -> void:
+	var world_pos := _screen_to_world(screen_pos)
+	var region_id := str(_interactive.call("hit_test", world_pos))
+	if region_id.is_empty():
+		return
+	_on_region_clicked(region_id)
+
+
+func _on_region_clicked(region_id: String) -> void:
+	_selected_region = region_id
+	_interactive.call("set_selected", region_id)
+	if _region_panel != null:
+		_region_panel.call("open", region_id)
+	if _tooltip != null:
+		_tooltip.call("hide_tip")
+
+
+func _region_tooltip_bbcode(region_id: String) -> String:
+	var data := TSBGame.region(region_id)
+	var view_owner := TSBGame.map_owner_for(region_id, _view_year)
+	if view_owner.is_empty():
+		view_owner = str(data.get("owner", ""))
+	var owner_name := TSBGame.faction_name(view_owner) if not view_owner.is_empty() else "Independiente"
+	var owner_color := TSBGame.faction_color(view_owner) if not view_owner.is_empty() else Palette.MUTED
+	var lines: Array[String] = []
+	lines.append("[b][color=#%s]%s[/color][/b]" % [owner_color.to_html(false), str(data.get("name", region_id))])
+	lines.append("[color=#6b5a3e]%s · %s · vista %d[/color]" % [owner_name, _terrain_label(str(data.get("terrain", ""))), _view_year])
+	if TSBGame.has_game() and _view_year == TSBGame.start_year():
+		var support := TSBGame.support(region_id)
+		lines.append("Población: %s   ·   Riqueza: %d" % [TSBGame.short_number(int(data.get("population", 0))), int(data.get("base_wealth", 0))])
+		lines.append("Apoyo: %d/100   ·   Edificios: %d" % [support, (data.get("buildings", []) as Array).size() if data.get("buildings") is Array else 0])
+		var armies := TSBGame.armies_in(region_id)
+		var soldiers := 0
+		for army: Variant in armies:
+			if army is Dictionary:
+				soldiers += TSBGame.army_soldiers(army)
+		lines.append("Ejércitos: %d (%s soldados)" % [armies.size(), TSBGame.short_number(soldiers)])
+	else:
+		lines.append("Vista política histórica: solo fronteras y dueño del año %d." % _view_year)
+	lines.append("[i][color=#7f1f26]Click para abrir el panel de la región[/color][/i]")
+	return "\n".join(lines)
+
+
+func _terrain_label(terrain: String) -> String:
+	var labels := {
+		"plains": "Llanura",
+		"forest": "Bosque",
+		"mountain": "Montaña",
+		"coast": "Costa",
+		"city": "Ciudad",
+	}
+	return str(labels.get(terrain, terrain.capitalize()))
+
+
+# ==========================================================================
 # Senales de gameplay
 # ==========================================================================
 func _connect_signals() -> void:
-	# EventBus (contrato GDD §8.2; la UI nunca se acopla a los sistemas).
 	_bus("turn_started", _on_turn_started)
 	_bus("turn_ended", _on_turn_ended)
 	_bus("year_advanced", _on_year_advanced_event)
@@ -540,8 +1033,11 @@ func _connect_signals() -> void:
 	_bus("game_over", _on_game_over_bus)
 	_bus("ui_notification", _on_ui_notification)
 	_bus("turn_phase_changed", _on_phase_changed)
+	_bus("tactical_battle_started", _on_tactical_started)
+	_bus("tactical_battle_finished", _on_tactical_finished)
+	_bus("close_combat_started", _on_close_combat_started)
+	_bus("close_combat_finished", _on_close_combat_finished)
 
-	# Senales propias de los autoloads (por si AG-2 emite ahi).
 	_system("TurnManager", "turn_started", _on_turn_started)
 	_system("TurnManager", "turn_ended", _on_turn_ended)
 	_system("TurnManager", "year_advanced", _on_year_advanced_one_arg)
@@ -584,7 +1080,6 @@ func _system(node_name: String, signal_name: String, handler: Callable) -> void:
 		node.connect(signal_name, handler)
 
 
-# Handlers: firma exacta de cada senal.
 func _on_turn_started(_quarter: int, _year: int) -> void:
 	_refresh_all()
 	_notify("Turno iniciado: %s de %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()])
@@ -683,8 +1178,11 @@ func _on_battle_resolved_bus(report: Variant) -> void:
 			TSBGame.faction_name(str(report_dict.get("winner_faction", ""))) if not str(report_dict.get("winner_faction", "")).is_empty() else "nadie",
 		])
 		return
+	if _overlay_kind == "tactical" or _overlay_kind == "close_combat":
+		# La escena táctica mostrará el informe al cerrarse.
+		_tactical_pending_report = report_dict.duplicate(true)
+		return
 	if _turn_processing:
-		# Durante el turno de la IA se encola y se muestra el ultimo al final.
 		_pending_battle_reports.append(report_dict)
 		_notify("Batalla en %s: victoria de %s." % [
 			TSBGame.region_name(str(report_dict.get("region_id", ""))),
@@ -694,7 +1192,6 @@ func _on_battle_resolved_bus(report: Variant) -> void:
 	_open_overlay(BattleReportScene.resource_path, "battle", report_dict)
 
 
-## Relevante para el jugador: su faccion lucha o su region esta en juego.
 func _battle_is_relevant(report: Dictionary) -> bool:
 	var fid := TSBGame.player_faction()
 	if str(report.get("attacker_faction", "")) == fid or str(report.get("defender_faction", "")) == fid:
@@ -799,62 +1296,22 @@ func _on_game_loaded(_slot: String) -> void:
 	_notify("Partida cargada.", 1)
 
 
-# ==========================================================================
-# Interaccion del mapa
-# ==========================================================================
-func _on_region_hovered(region_id: String) -> void:
-	if _tooltip == null:
-		return
-	_tooltip.call("show_text", _region_tooltip_bbcode(region_id))
-	_tooltip.call("follow", get_global_mouse_position())
+func _on_tactical_started(attacker: String, defender: String, region_id: String) -> void:
+	_notify("Batalla táctica: %s vs %s en %s." % [TSBGame.faction_name(attacker), TSBGame.faction_name(defender), TSBGame.region_name(region_id)], 1)
 
 
-func _on_region_unhovered(_region_id: String) -> void:
-	if _tooltip != null:
-		_tooltip.call("hide_tip")
+func _on_tactical_finished(winner: String, region_id: String) -> void:
+	_notify("Batalla táctica concluida en %s: victoria de %s." % [TSBGame.region_name(region_id), TSBGame.faction_name(winner)], 1)
+	_refresh_all()
 
 
-func _on_region_clicked(region_id: String) -> void:
-	_selected_region = region_id
-	for id: Variant in _region_nodes.keys():
-		var node: Control = _region_nodes[id]
-		node.call("set_selected", str(id) == region_id)
-	if _region_panel != null:
-		_region_panel.call("open", region_id)
-	if _tooltip != null:
-		_tooltip.call("hide_tip")
+func _on_close_combat_started(_attacker: String, _defender: String) -> void:
+	_notify("Combate cerrado iniciado.", 1)
 
 
-func _region_tooltip_bbcode(region_id: String) -> String:
-	var data := TSBGame.region(region_id)
-	var owner := str(data.get("owner", ""))
-	var owner_name := TSBGame.faction_name(owner) if not owner.is_empty() else "Independiente"
-	var owner_color := TSBGame.faction_color(owner) if not owner.is_empty() else Palette.MUTED
-	var lines: Array[String] = []
-	lines.append("[b][color=#%s]%s[/color][/b]" % [owner_color.to_html(false), str(data.get("name", region_id))])
-	lines.append("[color=#6b5a3e]%s · %s[/color]" % [owner_name, _terrain_label(str(data.get("terrain", "")))])
-	lines.append("Población: %s   ·   Riqueza: %d" % [TSBGame.short_number(int(data.get("population", 0))), int(data.get("base_wealth", 0))])
-	var support := TSBGame.support(region_id)
-	lines.append("Apoyo: %d/100   ·   Edificios: %d" % [support, (data.get("buildings", []) as Array).size() if data.get("buildings") is Array else 0])
-	var armies := TSBGame.armies_in(region_id)
-	var soldiers := 0
-	for army: Variant in armies:
-		if army is Dictionary:
-			soldiers += TSBGame.army_soldiers(army)
-	lines.append("Ejércitos: %d (%s soldados)" % [armies.size(), TSBGame.short_number(soldiers)])
-	lines.append("[i][color=#7f1f26]Click para abrir el panel de la región[/color][/i]")
-	return "\n".join(lines)
-
-
-func _terrain_label(terrain: String) -> String:
-	var labels := {
-		"plains": "Llanura",
-		"forest": "Bosque",
-		"mountain": "Montaña",
-		"coast": "Costa",
-		"city": "Ciudad",
-	}
-	return str(labels.get(terrain, terrain.capitalize()))
+func _on_close_combat_finished(winner: String) -> void:
+	_notify("Combate cerrado concluido: victoria de %s." % TSBGame.faction_name(winner), 1)
+	_refresh_all()
 
 
 # ==========================================================================
@@ -862,16 +1319,18 @@ func _terrain_label(terrain: String) -> String:
 # ==========================================================================
 func _on_region_panel_closed() -> void:
 	_selected_region = ""
+	_interactive.call("set_selected", "")
 	if _region_panel != null:
 		_region_panel.visible = false
-	for id: Variant in _region_nodes.keys():
-		var node: Control = _region_nodes[id]
-		node.call("set_selected", false)
 
 
 func _on_action_result(message: String, ok: bool) -> void:
 	_notify(message, 1 if ok else 2)
 	_refresh_all()
+
+
+func _on_battle_requested(attacker_army_id: String, defender_army_id: String, region_id: String) -> void:
+	_open_tactical_battle(attacker_army_id, defender_army_id, region_id)
 
 
 func _on_end_turn_requested() -> void:
@@ -910,6 +1369,9 @@ func _on_return_to_menu() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE)
 
 
+# ==========================================================================
+# Overlays
+# ==========================================================================
 func _open_options() -> void:
 	if _overlay != null and is_instance_valid(_overlay):
 		return
@@ -939,12 +1401,28 @@ func _open_overlay(scene_path: String, kind: String, setup_arg: Variant = null) 
 		_overlay.connect("closed", _on_overlay_closed)
 	if _overlay.has_signal("region_requested"):
 		_overlay.connect("region_requested", _on_overlay_region_requested)
+	if _overlay.has_signal("battle_report_ready"):
+		_overlay.connect("battle_report_ready", _on_overlay_battle_report_ready)
 	if _tooltip != null:
 		_tooltip.call("hide_tip")
 
 
 func _on_overlay_region_requested(region_id: String) -> void:
 	_on_region_clicked(region_id)
+
+
+func _on_overlay_battle_report_ready(report: Dictionary) -> void:
+	_tactical_pending_report = report.duplicate(true)
+
+
+func _open_tactical_battle(attacker_army_id: String, defender_army_id: String, region_id: String) -> void:
+	var context := {
+		"attacker_army_id": attacker_army_id,
+		"defender_army_id": defender_army_id,
+		"region_id": region_id,
+	}
+	_tactical_pending_report = {}
+	_open_overlay(TACTICAL_SCENE, "tactical", context)
 
 
 func _open_year_end(year: int) -> void:
@@ -963,6 +1441,11 @@ func _on_overlay_closed() -> void:
 	_overlay = null
 	_overlay_kind = ""
 	_refresh_all()
+	if not _tactical_pending_report.is_empty():
+		var report := _tactical_pending_report
+		_tactical_pending_report = {}
+		_open_overlay(BattleReportScene.resource_path, "battle", report)
+		return
 	if not _deferred_battle_report.is_empty() and (closed_kind == "year_end" or closed_kind == "victory"):
 		var report := _deferred_battle_report
 		_deferred_battle_report = {}
@@ -970,12 +1453,11 @@ func _on_overlay_closed() -> void:
 
 
 # ==========================================================================
-# Notificaciones y teclado
+# Notificaciones
 # ==========================================================================
 func _notify(message: String, level: int = 0) -> void:
 	if _notification_box == null or message.is_empty():
 		return
-	# Evita avalanchas de avisos: maximo 4 simultaneos y sin duplicar el ultimo.
 	if _notification_box.get_child_count() > 0:
 		var last_child := _notification_box.get_child(_notification_box.get_child_count() - 1)
 		var last_text := str(last_child.get_meta("message", ""))
@@ -1010,20 +1492,17 @@ func _notify(message: String, level: int = 0) -> void:
 			(alive_panel as Node).queue_free())
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		if _overlay != null and is_instance_valid(_overlay):
-			return
-		if _region_panel != null and _region_panel.visible:
-			_on_region_panel_closed()
-			get_viewport().set_input_as_handled()
-			return
-		_open_options()
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventKey:
-		var key := event as InputEventKey
-		if key.pressed and not key.echo and (key.keycode == KEY_ENTER or key.keycode == KEY_KP_ENTER):
-			if _overlay == null:
-				_on_end_turn_requested()
-				get_viewport().set_input_as_handled()
+# ==========================================================================
+# Benchmark de rendimiento del controlador del mapa (< 8 ms/frame)
+# ==========================================================================
+## Devuelve el coste medio en ms de `iterations` frames logicos con hit-test y
+## clamp de camara (lo usa AG-4/QA; headless mide CPU, no GPU).
+func benchmark_map_frame(iterations: int = 120) -> float:
+	var start := Time.get_ticks_usec()
+	for i in range(maxi(iterations, 1)):
+		var zone := float(i % 47) / 47.0
+		var world_point := Vector2(MAP_W * (0.08 + 0.84 * zone), MAP_H * (0.12 + 0.72 * fmod(float(i) / 47.0 * 13.0, 1.0)))
+		_interactive.call("hit_test", world_point)
+		_clamp_camera()
+	var elapsed := Time.get_ticks_usec() - start
+	return float(elapsed) / float(maxi(iterations, 1)) / 1000.0

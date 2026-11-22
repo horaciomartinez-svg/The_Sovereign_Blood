@@ -2,7 +2,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## Informe de batalla delegada (Nivel 1, GDD §9.7). Se abre al recibir
 ## BattleManager.battle_resolved (EventBus.battle_resolved). Sin deshacer.
 
-const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 
 var _report: Dictionary = {}
@@ -54,7 +54,7 @@ func _rebuild() -> void:
 	where.add_theme_color_override("font_color", Palette.CRIMSON)
 
 	var sides := UIKit.hbox(_body, 16)
-	_side_panel(sides, attacker, "ATACANTE", int(_report.get("attacker_losses", 0)))
+	_side_panel(sides, attacker, "ATACANTE", int(_report.get("attacker_losses", 0)), "attacker_army_id")
 	var middle := UIKit.vbox(sides, 2)
 	middle.custom_minimum_size = Vector2(180, 0)
 	var vs := UIKit.label(middle, "FRENTE", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
@@ -63,7 +63,7 @@ func _rebuild() -> void:
 	var region_label := UIKit.label(middle, TSBGame.region_name(region_id), "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
 	region_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	region_label.add_theme_font_size_override("font_size", 15)
-	_side_panel(sides, defender, "DEFENSOR", int(_report.get("defender_losses", 0)))
+	_side_panel(sides, defender, "DEFENSOR", int(_report.get("defender_losses", 0)), "defender_army_id")
 
 	UIKit.hsep(_body, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
 	var rounds_title := UIKit.label(_body, "Asaltos", "InkLabel")
@@ -143,20 +143,25 @@ func _format_power(value: Variant) -> String:
 	return str(value)
 
 
-func _side_panel(parent: Node, faction_id: String, role_text: String, losses: int) -> void:
+func _side_panel(parent: Node, faction_id: String, role_text: String, losses: int, army_key: String = "") -> void:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_SOFT, 0.16), Palette.with_alpha(Palette.GOLD_DIM, 0.6), 1, 4, 12, 8))
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(panel)
 	var row := UIKit.hbox(panel, 12)
-	var shield: Control = ShieldScript.new()
-	shield.custom_minimum_size = Vector2(78, 92)
-	var house := ""
-	var ruler := TSBGame.ruler(faction_id)
-	house = str(ruler.get("house", ""))
-	shield.set("house", house)
-	shield.set("field_color", TSBGame.faction_color(faction_id))
-	row.add_child(shield)
+	# Slot §10.2 (4): retrato del lider de cada bando.
+	var leader: Dictionary = {}
+	var army_id := str(_report.get(army_key, "")) if not army_key.is_empty() else ""
+	if not army_id.is_empty():
+		var army := TSBGame.army(army_id)
+		var leader_id := str(army.get("leader_id", ""))
+		if not leader_id.is_empty():
+			leader = TSBGame.character(leader_id)
+	if leader.is_empty():
+		leader = TSBGame.ruler(faction_id)
+	var portrait: Control = PortraitFrame.make(str(leader.get("id", "")), Vector2(84, 98))
+	if portrait != null:
+		row.add_child(portrait)
 	var text := UIKit.vbox(row, 3)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var role_label := UIKit.label(text, role_text, "InkLabel")
@@ -166,6 +171,11 @@ func _side_panel(parent: Node, faction_id: String, role_text: String, losses: in
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.add_theme_font_size_override("font_size", 20)
 	name_label.add_theme_color_override("font_color", Palette.INK_TEXT)
+	if not leader.is_empty():
+		var leader_label := UIKit.label(text, "Líder: %s" % str(leader.get("name", "—")), "InkLabel")
+		leader_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		leader_label.add_theme_font_size_override("font_size", 14)
+		leader_label.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.2))
 	var losses_label := UIKit.label(text, "Bajas: %s" % TSBGame.short_number(losses), "InkLabel")
 	losses_label.add_theme_font_size_override("font_size", 17)
 	losses_label.add_theme_color_override("font_color", Palette.CRIMSON)
