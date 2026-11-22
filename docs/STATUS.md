@@ -2,10 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3.3 — MVP-1337 (CERRADA)**; Fase 3 / 3.1 / 3.2 cerradas; **1402/1453 CONGELADOS** por D-066 (datos en main, UI «EN PAUSA»); arte externo suspendido; **QA MVP 11/11 APROBADO**; banda sonora de 6 pistas originales TSB integrada |
-| **Fase anterior** | **Fase 3.2 — Delta de animación v1.8.1 (CERRADA)**; QA APROBADO 6/6 |
-| **Siguiente fase** | Fase 4 — no definida (reanudar 1402/1453, Paquete A de retratos y ampliación de contenido es decisión del usuario) |
-| **GDD** | **v1.8.1** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 235 frames, §10.4 tiles N3) |
+| **Fase actual** | **Fase 4 — Profundidad GK2 (CERRADA)**; **QA Fase 4 14/14 APROBADO**; mercancías/comercio, ejércitos, consorte, Manual, tutorial/Consejero, acciones 1/turno y costes por tipo integrados; 1402/1453 siguen congelados (D-066); sin arte externo |
+| **Fase anterior** | **Fase 3.3 — MVP-1337 (CERRADA)**; QA 11/11 APROBADO |
+| **Siguiente fase** | Fase 5 — no definida (reanudar 1402/1453, Paquete A de retratos y ampliación de contenido es decisión del usuario) |
+| **GDD** | **v1.9.1** — `GDD_The_Sovereign's_Blood.md` (Fase 4 §5.2/§5.3/§5.5/§9/§12 + D-074/D-075; hereda §10.2-§10.4 y v1.8.1) |
+| **Contrato Fase 4** | `docs/architecture_contracts_fase4.md` (comercio, ejércitos, consorte, Manual, tutorial, acciones 1/turno, costes) |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
@@ -15,6 +16,7 @@
 | **Fecha de cierre Fase 3.1** | 2026-11-22 |
 | **Fecha de cierre Fase 3.2** | 2026-11-23 |
 | **Fecha de cierre Fase 3.3** | 2026-11-23 |
+| **Fecha de cierre Fase 4** | 2026-11-23 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
@@ -24,6 +26,7 @@
 | **QA Animación Fase 3.1** | **APROBADO 6/6 (17×13 frames, 170 sprites)** — `docs/qa/fase3_anim_report.md` |
 | **QA Animación Fase 3.2** | **APROBADO 6/6 (235 frames; delta 76; attack_4/impact)** — `docs/qa/fase3_anim_report.md` |
 | **QA MVP-1337 (Fase 3.3)** | **APROBADO 11/11** — `docs/qa/fase3_mvp_report.md` |
+| **QA Fase 4** | **APROBADO 14/14** — `docs/qa/fase4_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -579,21 +582,29 @@ y sin material con copyright.
 
 ---
 
-## 19. Fase 4 — Profundidad GK2: mercancías/comercio, ejércitos, familia, Manual y Consejero (EN CURSO)
+## 19. Fase 4 — Profundidad GK2: mercancías/comercio, ejércitos, familia, Manual y Consejero (CERRADA)
 
-**Directiva del usuario (2026-11-23, verificada por Kimi):** tras probar el MVP falta «la profundidad de GK2». GDD **v1.9**. **Restricciones:** 1402/1453 congelados (D-066), sin arte externo (sprites existentes + generación por código), REA legal §3 (sin `.EXE`, sin texto transcrito, sin copiar assets), sin mecánicas fuera de esta lista.
+**Directiva del usuario (2026-11-23, verificada por Kimi):** tras probar el MVP falta «la profundidad de GK2». GDD **v1.9.1**. **Restricciones:** 1402/1453 congelados (D-066), sin arte externo, REA legal §3, sin mecánicas fuera de esta lista.
 
 | Línea | Owner | Entregable | Estado |
 |---|---|---|---|
-| REA economía/menús (D-069 preliminar) | AG-REA | `docs/rea/gk2_economy_military_family.md` (≤2 páginas) + `notes_economy.md`: estructuras de economía/mercancías/mercaderes y UX de menús Economía/Militar/Familia, checklist para las pantallas | ⏳ |
-| Mercancías/comercio (D-069) | AG-1/AG-2/AG-3 | 10 bienes en `trade_goods.json` + schema/fuentes; producción por terreno/edificios; inventario; comerciantes obligatorios; mercado/precios; expedición; pantalla Mercado | ⏳ |
-| Ejércitos (D-070) | AG-2/AG-3 | pantalla global con sprite `march_1`, conteos, fuerza/moral/experiencia; Reclutar/Entrenar/Disolver; reclutamiento con caballos/armas | ⏳ |
-| Familia (D-071) | AG-2/AG-3 | «Pasar tiempo con la consorte» (2-3 PG, 1/trimestre, fertilidad 2-4 trimestres, rechazo claro sin consorte) | ⏳ |
-| Manual del Jugador (D-072) | AG-1 | `docs/MANUAL_DEL_JUGADOR.md` (10 secciones) + acceso desde el juego + «Ayuda» | ⏳ |
-| Tutorial y dificultad (D-073) | AG-1/AG-2/AG-3 | `tutorial_script.json`; Consejero con avatar por código, resaltado y salto; Principiante/Normal; estado serializable | ⏳ |
-| QA Fase 4 (C1-C12) | AG-4 | tests, capturas, auditoría REA/licencias/UX y `docs/qa/fase4_report.md` | ⏳ |
-| Gobernanza/cierre | AG-0 | GDD v1.9, D-069…D-073, STATUS, tag `fase-4`, push y aviso a Kimi | ⏳ |
+| REA economía/menús + addendum D-076 | AG-REA | `docs/rea/gk2_economy_military_family.md` (1.286 palabras) + `notes_economy.md`: estructuras, UX y checklist | ✅ |
+| Mercancías/comercio (D-069) | AG-1/AG-2/AG-3 | 10 bienes en `trade_goods.json` + schema/fuentes; producción por terreno/edificios; inventario; comerciantes obligatorios; mercado/precios; expedición; pantalla Mercado | ✅ |
+| Ejércitos (D-070) | AG-2/AG-3 | pantalla global con sprite `march_1`, conteos, fuerza/moral/experiencia; Reclutar/Entrenar/Disolver; reclutamiento con caballos/armas | ✅ |
+| Familia (D-071) | AG-2/AG-3 | «Pasar tiempo con la consorte» (3 PG, 1/trimestre, fertilidad 3 turnos, rechazo claro sin consorte) | ✅ |
+| Manual del Jugador (D-072) | AG-1 | `docs/MANUAL_DEL_JUGADOR.md` (10 secciones) + acceso desde el juego + «Ayuda» | ✅ |
+| Tutorial y dificultad (D-073) | AG-1/AG-2/AG-3 | `tutorial_script.json` (9 pasos); Consejero con avatar por código, resaltado y salto; Principiante/Normal; estado serializable | ✅ |
+| Acciones 1/turno (D-074) | AG-2/AG-3 | `actions_used` por facción/turno; gating diplomacia/familia/construcción/espionaje/expedición; exenciones militar/trabajadores/mercado; UI «USADO» | ✅ |
+| Costes por tipo (D-075) | AG-1/AG-2/AG-3 | `cost.gold` diferenciado (milicia 20 … caballería 65-160, hussite 170, bombarda 200), UI con oro+hombres+mercancías y deducción real | ✅ |
+| QA Fase 4 (C1-C14) | AG-4 | tests, capturas, auditoría REA/legal/UX y `docs/qa/fase4_report.md` | ✅ **APROBADO 14/14** |
 
-**Criterios de aceptación (C1-C12):** REA legal y consumible; trade_goods validado con fuentes; comercio operativo solo con comerciantes, precios fluctuantes y 10 años sin inflación; pantalla ejércitos con imágenes/conteos y acciones efectivas; reclutamiento consume caballos/armas; consorte con fertilidad/cooldown/estados íntegros; Manual completo y accesible; tutorial con guion/resaltes/salto y dificultad; save/load con inventario/tutorial; sin regresión (run_all ≥1742/0, validate 0, editor 0, F1/F2/F3/MVP/anim/tiles); 1402/1453 diff 0 y sin arte externo; UX sin botones muertos y capturas 1920×1080.
-
-**Cierre previsto:** `docs/qa/fase4_report.md` APROBADO 12/12 → commits por agente + `[AG-0]`, tag anotado **`fase-4`**, push y aviso para verificación de Kimi contra GDD v1.9 + directiva.
+**Cierre — Fase 4 CERRADA (QA 14/14 APROBADO):**
+- **Comercio (D-069):** 10 mercancías con `base_price`/`produced_by`/`used_by`; inventario de facción; producción trimestral; **sin Comerciantes no hay compra/venta**, volumen según ellos; precio dinámico (±35 %, clamp) verificado 10,0→10,35; expedición 2 PG/2 trimestres; grano/sal→apoyo, armas/caballos→reclutamiento; 10 años ×8 sin inflación (tesoros ×1,10-×1,94).
+- **Ejércitos (D-070):** pantalla global con sprites `march_1`, conteos/fuerza/moral/experiencia; Reclutar/Entrenar/Disolver; reclutamiento consume `recruit_goods` (caballos/armas/hierro/madera) y falla con motivo.
+- **Familia (D-071):** acción de consorte con 3 PG, 1/trimestre, fertilidad 3 turnos, +prestigio/lealtad y motivos claros.
+- **Manual (D-072):** `docs/MANUAL_DEL_JUGADOR.md` (10 secciones) + botón en menú + «Ayuda».
+- **Tutorial/dificultad (D-073):** Principiante (Consejero + IA×0.75) / Normal; 9 pasos en datos, resaltado, salto y estado serializable.
+- **Acciones/costes (D-074/D-075):** solo militar, asignación de trabajadores y mercado permiten múltiples por turno; el resto una vez (motor+UI, motivo `action_used`); costes por unidad visibles y deducidos (milicia 20 < arqueros 45-60 < caballería 65-160 < artillería 170-200). REA addendum D-076 documenta que no hay tablas GK2 utilizables y las lecciones UX (legal, sin `.EXE`/texto/assets).
+- **QA/estabilidad:** `run_all` **1968/0/2**, `validate_data` **14 datasets/10 schemas, 11.927 comprobaciones, 0 WARN**, editor/headless 0, F1/F2/F3/MVP/anim/tiles verdes; `ui_smoke` 55 scripts/21 escenas; 12 capturas 1920×1080; `git diff fase-3.3..HEAD` en datos 1402/1453 = 0 archivos.
+- **Observaciones no bloqueantes:** revisión visual de capturas sin click-through GUI completo; simulación headless no sustituye partida manual; addendum REA en notes para respetar ≤2 páginas; 1402/1453 y Paquete A siguen congelados por el usuario.
+- **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-4`**. Se avisa al usuario para la verificación de Kimi contra GDD v1.9.1 + directiva; después se decidirá Fase 5 (reanudar 1402/1453, Paquete A y ampliación).
