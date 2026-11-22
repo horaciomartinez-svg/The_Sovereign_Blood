@@ -2,22 +2,24 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; QA final ✅ **APROBADO CON OBSERVACIONES** (arte externo Kimi pendiente) |
+| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)** + **Fase 3.1 — Animación de combate (CERRADA)**; sprites §10.3 ✅ 17/17 QA 6/6; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; animación combate ✅ 170 sprites/13 frames QA 6/6; QA final Fase 3 ✅ APROBADO CON OBSERVACIONES (solo retratos ilustrados Kimi pendientes) |
 | **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
-| **Siguiente fase** | Fase 4 — no definida (contenido/arte final y pulido) |
-| **GDD** | **v1.7** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17, §10.4 tiles N3) |
-| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
+| **Siguiente fase** | Fase 4 — no definida (arte final: 69 retratos Kimi, música CC, balance y pulido) |
+| **GDD** | **v1.8** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 170, §10.4 tiles N3) |
+| **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
 | **Fecha de cierre Fase 2** | 2026-11-22 |
 | **Fecha de cierre Fase 3** | 2026-11-22 |
+| **Fecha de cierre Fase 3.1** | 2026-11-22 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
 | **QA Sprites Fase 3** | **APROBADO 6/6 (17/17 unidades)** — `docs/qa/fase3_sprites_report.md` |
 | **QA Tiles Fase 3** | **APROBADO 7/7** — `docs/qa/fase3_tiles_report.md` |
-| **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; pendiente arte externo Kimi (69 retratos + 184 animaciones) |
+| **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; solo retratos ilustrados Kimi pendientes |
+| **QA Animación Fase 3.1** | **APROBADO 6/6 (17×13 frames, 170 sprites)** — `docs/qa/fase3_anim_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -437,6 +439,40 @@ tiles, `battle_tiles`, render/rotación, generador N3, capturas de tiles).
   REA §3.2 mantiene la limitación de observación aceptada (D-038); simulación de 10 años no duplica los
   recorridos completos (el harness C1 sí los recorre).
 - **Cierre:** commits por agente + cierre `[AG-0]`, push a `origin/main` y tag anotado **`fase-3`**.
-  Deuda externa abierta: entrega de arte de Kimi (retratos/animaciones) para Fase 4; música CC, relieve y
+  Deuda externa abierta: entrega de arte de Kimi (retratos) para Fase 4; música CC, relieve y
   balance fino quedan para el siguiente ciclo. Verificación externa de Kimi contra GDD v1.7 pendiente de
   su informe.
+
+---
+
+## 16. Fase 3.1 — Animación de combate (D-049 v1.8, CERRADA)
+
+**Luz verde:** 2026-11-22, tras verificación de Kimi de sprites §10.3 + tiles §10.4. **GDD:** v1.8.
+**Paquete:** `Anim_Combate_TSB.zip` (Kimi): 170 PNG (17 unidades × idle2/attack4/hit2/death2) + 170
+originales `_raw` + hoja de contacto + README. **Decisión:** D-064 (la instrucción pedía D-057, ya usada).
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| Assets de animación | AG-5 | 170 PNG LANCZOS 64×64/64×80/64×43 + 170 raw en `src/`; hoja de contacto | ✅ |
+| Datos + estados de animación | AG-2 | `units.json` 13 frames/`anim` extendido + schema; estados idle/march/attack/hit/dead, timings y `death_hold`; tests | ✅ |
+| Render N3 | AG-3 | idle, attack con `attack_2` (111-222 ms) sincronizado con proyectil, hit, death+hold; mirroring | ✅ |
+| QA de animación | AG-4 | harness de animación, secuencias N3, capturas y veredicto | ✅ **APROBADO 6/6** |
+
+**Contrato aplicado:** 13 frames por unidad — 0-2 marcha, 3-4 idle, 5-8 ataque (`attack_2` = impacto),
+9-10 impacto, 11-12 muerte; `anim {march, idle, attack, hit, death, fps 6, loop, fps_attack 9, fps_hit 8,
+fps_death 6, death_hold}`; `death_hold` persiste el último cuadro. Render N3: idle en guardia, ataque una
+vez con impacto visual en `attack_2` y lanzamiento del proyectil en `launch_ms`/`attack_impact_ms`
+(111,1 ms), reacción hit/dead programada a 222,2 ms, cadáver persistente; mirroring oeste.
+
+**QA independiente (`docs/qa/fase3_anim_report.md`):** **APROBADO 6/6** — 17/17 × 13 frames = **221
+texturas** (170 de animación + 51 de marcha) + 170 raw; `attack_2` en índice 6 a 111,1 ms, reacción
+222,2 ms; sonda N3 real (idle→attack→attack_2→hit/dead + death_hold) y proyectil sincronizado; dos
+secuencias deterministas; 3 capturas 1920×1080 revisadas; sin regresión sprites 6/6, tiles 7/7, QA final
+Fase 3 7/7, F1/F2 6/6. `run_all` **1438/0/1**, `validate_data` **11 datasets/7 schemas, 11.545
+comprobaciones, 0 WARN/0 errores**, editor/headless 0. Hashes de escenas/datos/capturas en el informe.
+- **Observaciones no bloqueantes:** N3 expone `started_ms`+`impact_ms` (no un `launch_ms` único, equivalente
+  verificado); límite de 111,1 ms en borde de frame por `floor` (ventana [111,1;222,2] correcta); arte de
+  retratos (69 PNG) sigue pendiente de Kimi (D-062).
+- **Cierre:** commits por agente + cierre `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.1`**.
+  El alcance §10.3 (marcha + combate) queda completo; Fase 4 puede centrarse en retratos ilustrados,
+  música CC y balance/pulido.
