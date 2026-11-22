@@ -987,3 +987,54 @@ Riesgos actualizados en `docs/qa/fase3_plan.md` §4: R-F3-01 ruta de assets (res
 Cuando AG-5/AG-2/AG-3 cierren, **task-33** re-ejecutará el harness (debe 6/6 PASS exit 0), la batería completa, revisará capturas/legibilidad del arma (REA §6) y emitirá el veredicto final «QA Fase 3: APROBADO/RECHAZADO». Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 v2 — baseline 17/17 (task-32).*
+
+---
+
+## 14. Fase 3 — Verificación final sprites 17/17 (task-33, 2026-11-22)
+
+**Contexto:** integración completa del paquete v2 de Kimi (GDD v1.6 §10.3, D-044..D-050). HEAD verificado (código): **`131147a`** (`[AG-3] Fase 3 v2: render 17/17…`); el HEAD actual `09796a6` solo añade GDD v1.7/§10.4 y D-051..D-056 (docs). Informe completo: **`docs/qa/fase3_sprites_report.md`**.
+
+> **Veredicto: QA Sprites Fase 3 (17/17): APROBADO** — **6/6 criterios PASS**, 0 FAIL, 0 SKIP.
+
+### 14.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3.gd` (×2) | **0 / 0** | **6 PASS / 0 FAIL / 0 SKIP**; `ACEPTACIÓN FASE 3: OK` |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 4 | `--script tests/run_all.gd` | **0** | **1074 pasados / 0 fallidos / 1 omitido**; `CI: OK` |
+| 5 | `--script tools/validate_data.gd` | **0** | **5.570 comprobaciones**, 0 errores/WARN |
+| 6 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 7 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+| 8 | Sonda independiente 17 unidades | **0** | N2 17/17 texturizadas, mirror W, proyectiles N3 por unidad |
+
+Salida resumida del harness:
+```text
+  [PASS] F3-C1 — Sprites 17/17: 17/17 sprite_sheet; 51 PNG; 3 proyectiles; 51 texturas reales (64x64/64x80/64x43); anim fps=6 loop; anchor=bottom_center facing=E
+  [PASS] F3-C2 — Fallback: unidad sintética SIN sprite_sheet: frames_of=[]; frame_path=''; march_frame=0; camino vivo
+  [PASS] F3-C3 — Crécy N1/N2/N3: N1 england 703/724; N2 2/2 texturizadas, movido facing=SE, 5 proyectiles; N3 england 214/149
+  [PASS] F3-C4 — Determinismo: N1 hash=08cc7cee592e343b (2 ejecuciones)
+  [PASS] F3-C5 — 7/7 capturas: sprites_64_milicia/ballesteros/arqueros/almogavar/jenizaro, sprites_n2, sprites_n3
+  [PASS] F3-C6 — No regresión: 17 unidades; 18 escenas; 24 tests; scripts fallos=0
+RESULTADO QA ACEPTACIÓN FASE 3: 6 PASS, 0 FAIL, 0 SKIP
+ACEPTACIÓN FASE 3: OK — 6/6 criterios PASS (exit 0)
+```
+
+### 14.2 Evidencia independiente
+
+- **17/17** `sprite_sheet` válidos; **51/51 PNG** de producción; **0 incidencias** de frames/dims; reparto: infantería 18, ranged 9, cavalry 12, light_cavalry 6, artillery 3, special 3 = 51; `src/` 51 raw + `.gdignore` (no importado); 3 proyectiles.
+- **Sonda N2 con las 17 unidades:** `unidades=17/17`, `texturizadas=17/17`, `campos_ok=17/17`; movimiento oeste de `swiss_pikeman` → `facing=W`, `mirror=true`; `auto_resolve=true`.
+- **Proyectiles N3 reales:** `crossbowmen`→virote/350 ms/24 px; `longbowman`, `janissary`, `steppe_cavalry`→flecha/500 ms/40 px; `bombarda`→piedra/700 ms/56 px.
+- **Fallback sintético:** sin hoja → `frames_of=[]`, `frame_path=''`, `march_frame=0`, sin proyectil.
+- **Capturas 7/7 1920×1080**, revisión visual: lanza, ballesta, arco largo, espada+escudo, arco compuesto reconocibles a 64 px reales (con detalle 8×); N2 con sprites en hexes; N3 con bombarda/arquero y proyectil en vuelo.
+
+### 14.3 Observaciones
+
+- La cobertura **17 unidades en N2** se hizo con sonda independiente (el C3 del harness usa N1/N2 representativos y valida el mapeo D-048); documentado en el informe, **no es un fallo**.
+- **Idle/ataque/impacto/muerte** no forman parte del paquete v2 (solo marcha; D-049): pendiente de petición a Kimi, no criterio de esta P1.
+- `staging` conserva la entrega original; producción en `assets/art/sprites/` (51+3).
+
+**task-33 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 — verificación final sprites 17/17 (task-33).*
