@@ -1038,3 +1038,66 @@ ACEPTACIÓN FASE 3: OK — 6/6 criterios PASS (exit 0)
 **task-33 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 — verificación final sprites 17/17 (task-33).*
+
+---
+
+## 15. Fase 3 — Baseline tiles N3 §10.4 (task-36, 2026-11-22)
+
+**Contexto:** nuevo módulo **§10.4 "Tiles del campo de batalla táctica"** (GDD v1.7), contrato **`docs/architecture_contracts_fase3_tiles.md`** (addendum 3.1) y decisiones **D-051..D-056**. Snapshot HEAD `09796a6` + docs v1.7. Estado al ejecutar: **12 tiles ya copiados por AG-3 a `assets/art/battle/tiles/`** (512×512 + `src/` raw pendiente de verificar), pero **no existe** `data/battle_tiles.json`/schema (AG-2 pendiente), ni reglas tácticas de tiles, ni `battlefield_generator.gd`, ni capturas N3. Plan/matriz: **`docs/qa/fase3_tiles_plan.md`**. Harness: **`tests/qa_acceptance_tiles.gd`** (extends SceneTree, sin GUT; compila siempre).
+
+> **Estado baseline: PENDIENTE (no es rechazo).** Harness tiles **1 PASS / 0 FAIL / 6 SKIP** (exit 1; sale 0 solo con 7/7 PASS). La verificación final es **task-37**.
+
+### 15.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_tiles.gd` | **1** | **1 PASS / 0 FAIL / 6 SKIP**; `BASELINE TILES FASE 3: PENDIENTE` |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 4 | `--script tests/qa_acceptance_fase3.gd` (sprites) | **0** | **6/6 PASS** |
+| 5 | `--script tests/run_all.gd` | **0** | **1074 / 0 / 1**; `CI: OK` |
+| 6 | `--script tools/validate_data.gd` | **0** | **5.570 comprobaciones**, 0 errores/WARN |
+| 7 | `--editor --quit` | **0** | 6 `[DONE]`, 0 ERROR/WARNING |
+| 8 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+Salida resumida del harness tiles:
+```text
+[INFO] Fase 3 §10.4 — presencia de artefactos:
+  data/battle_tiles.json: false
+  data/schema/battle_tiles.schema.json: false
+  res://assets/art/battle/tiles: true (12 PNG)
+  scripts/battle/tiles*.gd o reglas: 0
+  scripts/ui/battle/battlefield_generator.gd: false
+  staging tiles: true
+  [SKIP] F3T-C1 — 12 tiles cargan en headless: data/battle_tiles.json ausente o vacío; tiles en staging/repo; AG-2/AG-3 en curso
+  [SKIP] F3T-C2 — battle_tiles: 12 claves con valores/flags D-053: data/battle_tiles.json ausente
+  [SKIP] F3T-C3 — Río/montaña intransitables: battle_tiles ausente
+  [SKIP] F3T-C4 — Bonus §6.4: battle_tiles ausente
+  [SKIP] F3T-C5 — Generador N3: battlefield_generator.gd ausente
+  [SKIP] F3T-C6 — Capturas tiles_n3_rio_puente_villa / tiles_n3_llanura / hoja de contacto: faltan
+  [PASS] F3T-C7 — No regresión: 18 escenas; 25 tests; F1/F2/F3 presentes; scripts fallos=0
+RESULTADO QA TILES FASE 3: 1 PASS, 0 FAIL, 6 SKIP (de 7 criterios)
+BASELINE TILES FASE 3: PENDIENTE — 6 criterio(s) a la espera de módulos en curso (no es rechazo)
+```
+
+### 15.2 Detalle
+
+| Criterio | Baseline | Motivo / evidencia |
+|---|---|---|
+| F3T-C1 12 tiles cargan | **SKIP** | `assets/art/battle/tiles/` ya tiene **12 PNG** (AG-3), pero falta `battle_tiles.json` y el harness aún no puede validar rutas/512×512; `src/` raw y `.gdignore` por confirmar en la integración. |
+| F3T-C2 battle_tiles | **SKIP** | `data/battle_tiles.json` y `schema` ausentes (AG-2 pendiente); valores/flags D-053 no evaluables aún. |
+| F3T-C3 Río/montaña | **SKIP** | Sin reglas de movimiento de tiles (AG-2) ni APIs en `scripts/battle/**`. |
+| F3T-C4 Bonus §6.4 | **SKIP** | Sin fórmulas `move_cost`/`defense`/`move_bonus` de tiles (AG-2). |
+| F3T-C5 Generador | **SKIP** | `battlefield_generator.gd` ausente (AG-3 pendiente). |
+| F3T-C6 Capturas | **SKIP** | Faltan `tiles_n3_rio_puente_villa.png`, `tiles_n3_llanura.png` y hoja de contacto; AG-3/AG-0 pendientes. |
+| F3T-C7 No regresión | **PASS** | 18 escenas; 25 tests; F1/F2/F3 presentes; artefactos F2/sprites; 0 scripts sin compilar; batería externa verde. |
+
+### 15.3 Riesgos y siguiente paso
+
+Riesgos en `docs/qa/fase3_tiles_plan.md` §4: R-T-01 rutas, R-T-02 import, R-T-03 flags/tabla, R-T-04 intransitabilidad, R-T-05 bonus/determinismo, R-T-06 generador regional, R-T-07 capturas, R-T-08 regresión de sprites/F2.
+
+**Snapshot concurrente:** AG-3 ya copió los 12 tiles de producción; AG-2/AG-3 continúan con `battle_tiles`, reglas, generador y capturas. El harness pasará a validar automáticamente C1/C2 en cuanto exista la tabla y C3-C6 al integrarse reglas/generador/capturas.
+
+Cuando AG-2/AG-3 cierren, **task-37** re-ejecutará el harness tiles (debe 7/7 PASS exit 0), la batería completa, revisará continuidad del río/puente y legibilidad a 128 px, y emitirá el veredicto **«QA Tiles Fase 3 (12/12): APROBADO/RECHAZADO»** en `docs/qa/fase3_tiles_report.md` + `docs/issues.md`. Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 §10.4 — baseline tiles N3 (task-36).*
