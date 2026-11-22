@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vía DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.4 |
-| **Estado** | Aprobado — v1.4 añade especificación de retratos de soberanos (§10.2, solicitud del usuario) |
+| **Versión del documento** | 1.5 |
+| **Estado** | Aprobado — v1.5: REA ampliado a mecármicas de batalla §3.2, retratos finales diseñados por Kimi §10.2, sprites de unidades §10.3 |
 
 ---
 
@@ -65,6 +65,18 @@
 **Entregable REA (Fase 0):** `docs/rea/gk2_data_lessons.md` — tabla de equivalencias conceptuales (ej. "GK2 modela generales con nombre/4 stats/lealtad → nuestro modelo de personajes tiene X campos"). Nada más. El equipo de desarrollo **no** lee los binarios ni los datos de Koei; consume solo este informe y el GDD.
 
 **Motivo legal:** uso personal y de estudio; el producto final no contiene material derivado medible de Koei.
+
+### 3.2 REA ampliado — batallas Nivel 2/3 y gráficos de unidades (autorización expresa del usuario, Fase 2)
+
+Además del alcance §3, AG-REA (reactivable solo para esto) producirá `docs/rea/gk2_battle_mechanics.md` con:
+
+| Permitido (REA ampliado) | Prohibido (sigue en vigor) |
+|---|---|
+| **Observación de comportamiento:** documentar jugando en DOSBox las batallas de Nivel 2 (mapa táctico) y Nivel 3 (combate cerrado): orden de fases, movimiento, iniciativa, resolución de choques, efectos de terreno, moral — *qué reglas se observan*, con capturas y notas de sesión | Decompilar/desensamblar ejecutables para reutilizar código o fórmulas literales |
+| **Estructura de datos gráficos:** documentar `SUNIT.DAT` (sprites de unidades: dimensiones, número de cuadros, paleta, disposición), `KPAT.DAT`, `GRPDATA.DAT` — formato y convenciones de animación como *referencia de legibilidad* | Copiar pixel data, paletas o assets de Koei al juego; transcribir texto del juego |
+| **Lecciones de diseño:** qué hace legible una unidad en batalla (silueta, arma visible, animación de ataque reconocible) | Especificación de reimplementación 1:1 con valores copiados |
+
+El informe alimenta el diseño de §10.3 (sprites) y el balance §6.2/§6.3, que se implementan con arte y código 100% originales.
 
 ### 3.1 Entorno de ejecución (máquina de desarrollo, Windows 11 x64)
 
@@ -524,10 +536,23 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 **Especificación técnica:**
 - `characters.json` añade campo opcional `"portrait": "<asset_id>"`. Resolución de trabajo: **256×256 px** (se muestra a 96-128 px; margen para zoom en detalle del personaje). Formato PNG con fondo plano color pergamino, marco dorado fino generado por código (no parte del asset).
 - **Fase 2 (placeholder funcional):** AG-3 implementa el *slot* de retrato en las 5 ubicaciones con fallback automático: si `portrait` no existe, se renderiza la heráldica generativa del personaje (escudo de su `house`) + silueta genérica por sexo/edad. Nunca un hueco vacío.
-- **Fase 3 (asset final):** AG-5 produce los retratos ilustrados — al menos los 14 gobernantes iniciales de 1337 y los herederos visibles en el árbol; estilo fijado por hoja de estilo (paleta §10, rasgos por región, indumentaria correcta por década). Generación IA + retoque manual; consistencia auditada comparando el set completo en una hoja de contacto (`docs/screenshots/portraits_contact_sheet.png`).
+- **Retratos finales (v1.5):** los 14 gobernantes iniciales de 1337 los diseña **Kimi** con investigación histórica (parecido a retratos/efigies reales cuando existen: Eduardo III según su efigie de Westminster, Casimiro III según su efigie de Cracovia, etc.; cuando no hay retrato, indumentaria, corona y rasgos correctos por región y década) + **escudo de armas heráldico exacto del reino** integrado en la imagen. Archivos: `assets/art/portraits/<character_id>.png` (256×256). Entregado como asset final, no placeholder. AG-5 (Fase 3) se encarga solo de los retratos restantes (herederos, escenarios 1402/1453) siguiendo la hoja de estilo fijada por el set de Kimi (paleta §10, rasgos por región, indumentaria por década), con hoja de contacto para auditar consistencia (`docs/screenshots/portraits_contact_sheet.png`).
 - El retrato del soberano **cambia con la sucesión**: al morir el gobernante, el slot muestra al heredero (dinámica ya disponible en `DynastySystem`).
 
-**Criterios de aceptación:** slot presente en las 5 ubicaciones con fallback heráldico 100% funcional (Fase 2); set de retratos finales sin personaje roto/faltante (Fase 3); el cambio de retrato tras sucesión queda verificado en test; captura del mapa con retrato + escudo en `docs/screenshots/`.
+**Criterios de aceptación:** slot presente en las 5 ubicaciones con fallback heráldico 100% funcional (Fase 2); los 14 retratos de Kimi integrados y referenciados por `portrait` en `characters.json` (Fase 2); set completo sin personaje roto/faltante (Fase 3); cambio de retrato tras sucesión verificado en test; captura del mapa con retrato + escudo en `docs/screenshots/`.
+
+### 10.3 Sprites de unidades y animación de combate (v1.5 — solicitud del usuario)
+
+**Objetivo.** En los Niveles 2/3 de batalla, cada tipo de unidad se reconoce **a simple vista por su arma y silueta**, con calidad de ilustración a pesar de su baja resolución (referencia de legibilidad: informe REA `gk2_battle_mechanics.md`, §3.2). Ejemplos exigidos: la milicia de lanza se ve con su lanza o alabarda de la época; los ballesteros se ven con su ballesta y, al atacar, **se ve volar el virote**; arqueros largos con arco y flecha visible.
+
+**Especificación técnica:**
+- **Tamaño:** sprites base 64×64 px (unidad a pie) y 64×80 (caballería); escalables ×2/×3 en pantalla. Estilo "miniatura pintada" coherente con los retratos §10.2 (trazo de ilustración, no pixel art digital genérico), fondo transparente PNG.
+- **Hojas de animación por unidad:** idle (2 cuadros), marcha (4), ataque (4-6), impacto/herida (2), muerte (2), con versión por dirección (S, SE, E como mínimo — espejo para el resto). Proyectiles separados: virote (ballesta), flecha (arco), piedra (bombarda), con trayectoria balística visible.
+- **Armas por época (§6.4):** las siluetas deben distinguir pica/lanza de alabarda (aparece hacia 1380) y de arcabuz (post-1440); la ballesta con gafa y cinturín de recarga; el arco largo inglés; escudo heater vs. pavés; caballería con lanza en ristre vs. cab. ligera con jabalina.
+- **Asignación:** `units.json` añade campo opcional `"sprite_sheet": "res://assets/art/units/<unit_id>.png"`; fallback = marcador heráldico por facción (ya existente) si falta el sprite.
+- **Producción:** AG-5 (Fase 3) con guía de estilo; la lista de hojas requeridas se deriva de `units.json` (17 tipos × variantes por época según aplique). Prioridad: las 6-8 unidades más comunes del Escenario 1.
+
+**Criterios de aceptación:** cada tipo de unidad del Escenario 1 identificable en silueta a 64 px; animación de ataque con proyectil visible para ballesteros/arqueros/bombardas; todas las hojas referenciadas en `units.json` cargan sin error en CI; capturas de las 3 unidades de ejemplo (milicia, ballesteros, arqueros) en `docs/screenshots/`.
 
 ---
 
@@ -640,8 +665,10 @@ C:\Proyectos\TSB\sovereigns-blood --script tests/run_all.gd
 
 ### Fase 2 — Profundidad militar (objetivo: 2-3 semanas)
 - Mapa táctico Nivel 2 (hex local) y combate cerrado Nivel 3 (órdenes/cartas); espionaje; fin de partidas por extinción dinástica.
+- **AG-REA ampliado (§3.2):** informe `docs/rea/gk2_battle_mechanics.md` (mecármicas observadas de batalla Nivel 2/3 + estructura de `SUNIT.DAT`).
 - **Módulo Mapa (§10.1):** mapa geográfico profesional con fronteras por año; depreca `map_layout.json`.
-- **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente; módulo Mapa cumple sus criterios §10.1.
+- **Módulo Retratos (§10.2):** integrar los 14 retratos finales entregados por Kimi (`assets/art/portraits/`) y referenciarlos en `characters.json`.
+- **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente; módulos Mapa y Retratos cumplen §10.1/§10.2; informe REA ampliado entregado.
 
 ### Fase 3 — Contenido y remaster (objetivo: 2-3 semanas)
 - Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2, tiles, música CC); balance general.
@@ -693,4 +720,4 @@ PG: Puntos de Gobernanza · Casus Belli: justificación de guerra · Devshirme: 
 
 ---
 
-*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3.*
+*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3. v1.5: REA ampliado a mecármicas de batalla Nivel 2/3 y estructura de sprites (Sección 3.2, autorización del usuario); retratos finales de los 14 soberanos diseñados por Kimi con heráldica real (Sección 10.2); sprites de unidades con armas de época y proyectiles visibles (Sección 10.3).*
