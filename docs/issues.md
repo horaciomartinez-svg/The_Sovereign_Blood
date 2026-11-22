@@ -1269,3 +1269,47 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 **task-43 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 — verificación final (task-43).*
+
+---
+
+## 19. Fase 3.1 — Verificación final animación de combate (task-47, 2026-11-22)
+
+**Contexto:** animación de combate 17×13 integrada por AG-5 (170 PNG + 170 raw), AG-2 (datos/estados/timing, D-064) y AG-3 (render N3). HEAD verificado **`8ae9621`**. Informe completo: **`docs/qa/fase3_anim_report.md`**.
+
+> **Veredicto: QA Animación Fase 3.1: APROBADO** — **6/6 criterios PASS**, 0 FAIL/SKIP.
+
+### 19.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3_anim.gd` (×2) | **0 / 0** | **6/6 PASS** |
+| 2 | `--script tests/qa_acceptance_fase3.gd` (sprites 13 frames) | **0** | **6/6 PASS** (C1/C2 actualizados) |
+| 3 | `--script tests/qa_acceptance_tiles.gd` | **0** | **7/7 PASS** |
+| 4 | `--script tests/qa_acceptance_fase3_final.gd` | **0** | **7/7 PASS** |
+| 5 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 6 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 7 | `--script tests/run_all.gd` | **0** | **1438 / 0 / 1**; `CI: OK` |
+| 8 | `--script tools/validate_data.gd` | **0** | **11 datasets / 7 schemas, 11.545 comprobaciones, 0 errores/WARN** |
+| 9 | `--editor --quit` | **0** | 6 `[DONE]`, 0 ERROR/WARNING |
+| 10 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+### 19.2 Evidencia
+
+- **A1:** 17/17 unidades × 13 frames; **221 PNG producción** (51 march + 170 anim) y **221 raw**; 221 `Texture2D`; dimensiones 64×64/64×80/64×43; `anim` completo con `fps_attack=9/hit=8/death=6/death_hold`.
+- **A2:** `attack_2` índice 6 a **111,1 ms**; ataque 111,1 ms; reacción **222,2 ms**; attack→idle; dead persiste; mirror W=true/E=false.
+- **A3:** sonda real N3: idle→attack→attack_2(111,1)→hit(222,2) y →dead(222,2)+death_hold; proyectil **virote** con `started_ms`+`impact_ms=111,1`; mirroring E/W correcto.
+- **A4:** 2 secuencias idénticas (deterministas, sin RNG).
+- **A5:** 3 capturas 1920×1080 (`anim_idle`, `anim_n3_attack_sequence`, `anim_n3_hit_death`) revisadas: idle, ataque con proyectil y resolución hit/death visibles.
+- **A6:** sprites 17/17, tiles 12/12, escenarios 7/7, F1/F2 6/6, 18 escenas, 0 scripts sin compilar.
+
+**Hashes:** `close_combat.tscn 7D77DC29E98B6234`; `tactical_map.tscn 3719D3966F7ABB0D`; `units.json 3B44B4066998452A`; `anim_idle 57D3AE78CF1E04D6`; `anim_n3_attack_sequence 532E5D473044D116`; `anim_n3_hit_death BD2DB9A12271FEB1`.
+
+### 19.3 Observaciones
+
+- N3 `CloseCombat` expone `started_ms`+`impact_ms` en vez de un único `launch_ms`; N2 `TacticalBattle` sí usa `launch_ms`. Equivalencia funcional verificada; documentado, sin cambio de producción.
+- El límite exacto 111,1 ms cae en borde de frame por `floor`; la ventana [111,1;222,2] es correcta (el harness usa 112 ms + `impact_ms` exacto).
+- Animación de combate ya entregada; no queda dependencia externa para este módulo. Tags: `fase-0/1/2`; **`fase-3.1` pendiente** de AG-0.
+
+**task-47 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3.1 — verificación final animación (task-47).*

@@ -22,7 +22,9 @@ const PROJECTILE_FILES: Array[String] = [
 	"proyectil_virote.png", "proyectil_flecha.png", "proyectil_piedra.png",
 ]
 const EXPECTED_UNIT_COUNT := 17
-const EXPECTED_UNIT_PNG := 51
+const EXPECTED_UNIT_PNG := 221
+const EXPECTED_UNIT_RAW := 221
+const EXPECTED_FRAMES_PER_UNIT := 13
 const EXPECTED_PROJECTILE_COUNT := 3
 const EXPECTED_UNIT_SHEETS := 17
 const FACING_VALUES: Array[String] = ["E", "SE", "S", "SW", "W", "NW", "N"]
@@ -73,7 +75,7 @@ func _print_environment() -> void:
 func _criterion_1_sprites() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3-C1"
-	var name := "Sprites 17/17: 51 PNG de unidades + 3 proyectiles cargan en headless con dimensiones reales"
+	var name := "Sprites 17/17: 13 frames por unidad (221 PNG) + 3 proyectiles cargan en headless"
 	var data: Variant = _read_json("res://data/units.json")
 	if not (data is Dictionary):
 		_fail(id, name, "data/units.json no legible", started)
@@ -89,6 +91,7 @@ func _criterion_1_sprites() -> void:
 		else:
 			missing.append(unit_id)
 	var unit_png := _count_png(UNIT_PNG_DIR)
+	var unit_raw := _count_png("%s/src" % UNIT_PNG_DIR)
 	var projectile_png := _count_png(PROJECTILE_DIR)
 	if units.size() != EXPECTED_UNIT_COUNT:
 		_fail(id, name, "unidades=%d (esperado %d)" % [units.size(), EXPECTED_UNIT_COUNT], started)
@@ -111,8 +114,8 @@ func _criterion_1_sprites() -> void:
 			continue
 		var sheet := sheet_value as Dictionary
 		var frames_value: Variant = sheet.get("frames", [])
-		if not (frames_value is Array) or (frames_value as Array).size() != 3:
-			issues.append("%s frames != 3" % unit_id)
+		if not (frames_value is Array) or (frames_value as Array).size() != EXPECTED_FRAMES_PER_UNIT:
+			issues.append("%s frames != %d" % [unit_id, EXPECTED_FRAMES_PER_UNIT])
 		else:
 			for frame_index in range((frames_value as Array).size()):
 				var frame_path := str((frames_value as Array)[frame_index])
@@ -138,10 +141,26 @@ func _criterion_1_sprites() -> void:
 			var anim := anim_value as Dictionary
 			if not _int_array_equals(anim.get("march", []), [0, 1, 2]):
 				issues.append("%s anim.march != [0,1,2]" % unit_id)
+			if not _int_array_equals(anim.get("idle", []), [3, 4]):
+				issues.append("%s anim.idle != [3,4]" % unit_id)
+			if not _int_array_equals(anim.get("attack", []), [5, 6, 7, 8]):
+				issues.append("%s anim.attack != [5,6,7,8]" % unit_id)
+			if not _int_array_equals(anim.get("hit", []), [9, 10]):
+				issues.append("%s anim.hit != [9,10]" % unit_id)
+			if not _int_array_equals(anim.get("death", []), [11, 12]):
+				issues.append("%s anim.death != [11,12]" % unit_id)
 			if not is_equal_approx(float(anim.get("fps", 0.0)), 6.0):
 				issues.append("%s fps != 6" % unit_id)
+			if not is_equal_approx(float(anim.get("fps_attack", 0.0)), 9.0):
+				issues.append("%s fps_attack != 9" % unit_id)
+			if not is_equal_approx(float(anim.get("fps_hit", 0.0)), 8.0):
+				issues.append("%s fps_hit != 8" % unit_id)
+			if not is_equal_approx(float(anim.get("fps_death", 0.0)), 6.0):
+				issues.append("%s fps_death != 6" % unit_id)
 			if not bool(anim.get("loop", false)):
 				issues.append("%s loop != true" % unit_id)
+			if not bool(anim.get("death_hold", false)):
+				issues.append("%s death_hold != true" % unit_id)
 		if not _int_array_equals(sheet.get("size", []), [expected.x, expected.y]):
 			issues.append("%s size != [%d,%d]" % [unit_id, expected.x, expected.y])
 		if str(sheet.get("anchor", "")) != "bottom_center":
@@ -150,6 +169,8 @@ func _criterion_1_sprites() -> void:
 			issues.append("%s facing != E" % unit_id)
 	if unit_png != EXPECTED_UNIT_PNG:
 		issues.append("PNG de unidades=%d/%d" % [unit_png, EXPECTED_UNIT_PNG])
+	if unit_raw != EXPECTED_UNIT_RAW:
+		issues.append("raw src=%d/%d" % [unit_raw, EXPECTED_UNIT_RAW])
 	if projectile_png != EXPECTED_PROJECTILE_COUNT:
 		issues.append("proyectiles=%d/%d" % [projectile_png, EXPECTED_PROJECTILE_COUNT])
 	for projectile_name in PROJECTILE_FILES:
@@ -158,7 +179,7 @@ func _criterion_1_sprites() -> void:
 			issues.append("falta %s" % projectile_name)
 		elif not ResourceLoader.exists(projectile_path) or not (load(projectile_path) is Texture2D):
 			issues.append("%s no carga" % projectile_name)
-	var detail := "17/17 sprite_sheet; 51 PNG; 3 proyectiles; 51 texturas reales (64x64 infantería/ranged, 64x80 caballería, 64x43 bombarda/hussite_war_wagon); anim march [0,1,2] fps=6 loop; anchor=bottom_center facing=E"
+	var detail := "17/17 sprite_sheet con 13 frames; 221 PNG producción + 221 raw; 3 proyectiles; 221 texturas reales (64x64 infantería/ranged, 64x80 caballería, 64x43 bombarda/hussite_war_wagon); anim march/idle/attack/hit/death + fps_attack=9/fps_hit=8/fps_death=6/death_hold"
 	if not issues.is_empty():
 		_fail(id, name, "errores: %s" % ", ".join(issues.slice(0, 8)), started)
 		return
@@ -194,7 +215,7 @@ func _criterion_2_fallback() -> void:
 		errors.append("projectile_for_unit(synthetic) debe ser {}")
 	var tactical_text := _read_text("res://scripts/battle/tactical_battle.gd")
 	var close_text := _read_text("res://scripts/battle/close_combat.gd")
-	for marker in ["frames_of", "sprite_frame_path", "_sprite_or_null"]:
+	for marker in ["sprite_sheet", "_sprite_or_null", "anim_state", "state_frame_path"]:
 		if not tactical_text.contains(marker) and not close_text.contains(marker):
 			errors.append("batalla sin marcador de fallback %s" % marker)
 	if not errors.is_empty():
