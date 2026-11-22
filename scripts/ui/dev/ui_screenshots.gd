@@ -186,6 +186,38 @@ func _initialize() -> void:
 			await _settle(3)
 			await _capture("f2_18_after_overlay")
 
+		# Sucesión sin recargar: el slot del mapa pasa al heredero; si no tiene
+		# retrato final, el widget mantiene el fallback heráldico.
+		var game_state := root.get_node_or_null("GameState")
+		var dynasty := root.get_node_or_null("DynastySystem")
+		var turn_manager := root.get_node_or_null("TurnManager")
+		if game_state != null and dynasty != null:
+			var player_faction := TSBGame.player_faction()
+			var ruler: Dictionary = TSBGame.ruler(player_faction)
+			var ruler_id := str(ruler.get("id", ""))
+			var raw_state: Variant = game_state.get("state")
+			if raw_state is Dictionary and not ruler_id.is_empty():
+				var live_characters: Variant = (raw_state as Dictionary).get("characters", {})
+				if live_characters is Dictionary and (live_characters as Dictionary).has(ruler_id):
+					var dead_character: Variant = (live_characters as Dictionary)[ruler_id]
+					if dead_character is Dictionary:
+						(dead_character as Dictionary)["alive"] = false
+						(dead_character as Dictionary)["died"] = int((raw_state as Dictionary).get("year", 1337))
+			dynasty.call("resolve_succession", player_faction)
+			if turn_manager != null and turn_manager.has_method("advance_quarter"):
+				turn_manager.call("advance_quarter")
+			world.call("refresh")
+			await _settle(5)
+			await _capture("f2_19_succession_fallback")
+			var successor: Dictionary = TSBGame.ruler(player_faction)
+			var slot: Variant = world.get("_sovereign_portrait")
+			if slot != null:
+				print("  [sucesion] nuevo gobernante=%s slot=%s fallback=%s" % [
+					str(successor.get("name", "")),
+					str(slot.call("get_portrait_character_id")),
+					str(slot.call("is_fallback")),
+				])
+
 	print("CAPTURAS F2: %d imagenes en %s" % [_shots.size(), OUT_DIR])
 	quit(0)
 
@@ -224,42 +256,49 @@ func _portrait_sheet() -> void:
 	var panel := PanelContainer.new()
 	panel.theme_type_variation = "ParchmentPanel"
 	panel.theme = ThemeBuilder.get_theme()
-	panel.custom_minimum_size = Vector2(1500, 900)
+	panel.custom_minimum_size = Vector2(1540, 760)
 	center.add_child(panel)
 	var margin := UIKit.margin(panel, 20, 18, 20, 16)
-	var column := UIKit.vbox(margin, 10)
-	var title := UIKit.label(column, "RETRATOS §10.2 · FALLBACK HERÁLDICO + SILUETA", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
-	title.add_theme_font_size_override("font_size", 26)
+	var column := UIKit.vbox(margin, 8)
+	var title := UIKit.label(column, "LOS 14 GOBERNANTES · RETRATOS FINALES (GDD v1.5 §10.2)", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	title.add_theme_font_size_override("font_size", 25)
 	title.add_theme_color_override("font_color", Palette.INK_TEXT)
-	var grid := UIKit.grid(column, 6, 12, 10)
+	var subtitle := UIKit.label(column, "Textura final de Kimi cuando el gobernante define portrait; fallback heráldico para el resto de personajes.", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	subtitle.add_theme_font_size_override("font_size", 13)
+	subtitle.add_theme_color_override("font_color", Palette.CRIMSON)
+	var grid := UIKit.grid(column, 7, 12, 8)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var count := 0
-	for character: Variant in TSBGame.all_characters():
-		if not (character is Dictionary):
+	var textured := 0
+	var shown := 0
+	for faction_value: Variant in TSBGame.faction_ids():
+		var fid := str(faction_value)
+		var ruler: Dictionary = TSBGame.ruler(fid)
+		if ruler.is_empty():
 			continue
-		if not TSBGame.character_is_alive(character):
-			continue
-		if TSBGame.character_age(character) < 14:
-			continue
-		var data := character as Dictionary
-		var box := UIKit.vbox(grid, 3)
-		var portrait: Control = PortraitFrame.make(str(data.get("id", "")), Vector2(140, 168))
+		var character_id := str(ruler.get("id", ""))
+		var box := UIKit.vbox(grid, 2)
+		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var portrait: Control = PortraitFrame.make(character_id, Vector2(168, 168))
 		if portrait != null:
 			box.add_child(portrait)
-		var name_label := UIKit.label(box, str(data.get("name", "")), "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		var is_fallback := true
+		if portrait != null and portrait.has_method("is_fallback"):
+			is_fallback = bool(portrait.call("is_fallback"))
+		if not is_fallback:
+			textured += 1
+		var name_label := UIKit.label(box, str(ruler.get("name", character_id)), "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
 		name_label.add_theme_font_size_override("font_size", 12)
 		name_label.add_theme_color_override("font_color", Palette.INK_TEXT)
-		var role_label := UIKit.label(box, "%s · %d años" % [str(data.get("role", "")), TSBGame.character_age(data)], "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
-		role_label.add_theme_font_size_override("font_size", 11)
-		role_label.add_theme_color_override("font_color", Palette.MUTED)
-		count += 1
-		if count >= 18:
-			break
-	var footer := UIKit.label(column, "Los 5 slots (mapa, árbol, diplomacia, batalla, corte) usan este mismo widget; el asset PNG sustituye el fallback en Fase 3.", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
-	footer.add_theme_font_size_override("font_size", 12)
+		var state_label := UIKit.label(box, TSBGame.faction_name(fid) if not is_fallback else "%s · fallback" % TSBGame.faction_name(fid), "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		state_label.add_theme_font_size_override("font_size", 11)
+		state_label.add_theme_color_override("font_color", Palette.GOLD_DIM if not is_fallback else Palette.MUTED)
+		shown += 1
+	var footer := UIKit.label(column, "%d/%d gobernantes con retrato final; el resto (herederos y personajes sin portrait) conserva el fallback heráldico." % [textured, shown], "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	footer.add_theme_font_size_override("font_size", 13)
 	footer.add_theme_color_override("font_color", Palette.MUTED)
 	await _settle(4)
 	await _capture("f2_11b_portraits_contact_sheet")
+	await _capture("portraits_contact_sheet_final")
 	layer.queue_free()
 	await _settle(2)
 

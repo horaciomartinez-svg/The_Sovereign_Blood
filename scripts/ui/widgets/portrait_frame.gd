@@ -1,10 +1,13 @@
 extends Control
-## Retrato de personaje (GDD v1.4 §10.2, contrato fase2 §3).
+## Retrato de personaje (GDD v1.5 §10.2, contrato fase2 §3).
 ##
-## Fallback SIEMPRE visible: si el personaje define `portrait` y el asset existe
-## en assets/art/portraits/<id>.png se dibuja la textura; si no, se compone por
-## codigo: fondo pergamino, heraldica generativa de su casa (escudo), silueta
-## generica por sexo/edad y marco dorado. Nunca queda un hueco vacio.
+## `portrait` admite dos formatos:
+##   - ruta directa "res://assets/art/portraits/<character_id>.png" (el que usa
+##     characters.json para los 14 gobernantes con retrato final);
+##   - un id suelto, que se resuelve a assets/art/portraits/<id>.png.
+## Si no hay `portrait`, el asset no existe o falla la carga, se compone el
+## fallback por codigo: pergamino, heraldica de la casa, silueta por sexo/edad y
+## marco dorado. Nunca queda un hueco vacio.
 ##
 ## API de test: get_portrait_character_id() e is_fallback().
 ## Uso: var p = PortraitFrame.new(); add_child(p); p.setup("edward_iii_plantagenet", Vector2(120,140))
@@ -118,10 +121,12 @@ func _resolve_texture() -> void:
 	_is_fallback = true
 	if _character.is_empty():
 		return
-	var portrait_id := str(_character.get("portrait", ""))
-	if portrait_id.is_empty():
+	var portrait_value := str(_character.get("portrait", "")).strip_edges()
+	if portrait_value.is_empty():
 		return
-	var path := "%s/%s.png" % [PORTRAIT_DIR, portrait_id]
+	var path := portrait_value
+	if not path.begins_with("res://"):
+		path = "%s/%s.png" % [PORTRAIT_DIR, portrait_value]
 	if ResourceLoader.exists(path):
 		var loaded: Variant = load(path)
 		if loaded is Texture2D:
