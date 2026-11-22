@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vÃ­a DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **VersiÃ³n del documento** | 1.9 |
-| **Estado** | Aprobado â€” v1.9: Fase 4 (mercancÃ­as y comercio, pantalla de ejÃ©rcitos, acciÃ³n de consorte, Manual del Jugador, tutorial con Consejero y dificultad); hereda v1.8.1 (animaciÃ³n de combate), v1.8/v1.7 (sprites/tiles), v1.6 (17 unidades) |
+| **Versión del documento** | 1.9.2 |
+| **Estado** | Aprobado — v1.9.2: Fase 5A «El juego te explica» (estaciones en HUD, boletín/crónica persistida, confirmación de órdenes, consejero comercial/ayuda contextual, panel de unidad N2/N3); hereda v1.9.1 (acciones 1/turno, costes por tipo), v1.9 (Fase 4), v1.8.1 (animación), v1.8/v1.7 (sprites/tiles), v1.6 (17 unidades) |
 
 ---
 
@@ -254,12 +254,21 @@ Acciones (todas cuestan PG; Ã©xito = tirada modificada por Astucia del enviado
 | Proponer paz | 4 | tÃ©rminos: oro/regiones/casamiento |
 | Enviar espÃ­a (Fase 2) | 6 | revelar ejÃ©rcitos/tesoro/regente |
 
-**PuntuaciÃ³n de IA rival (ver 5.6)** decida aceptaciÃ³n.
+**PuntuaciÃ³n de IA rival (ver 5.7)** decida aceptaciÃ³n.
 
 ### 5.5 Militar (visiÃ³n general; detalle en SecciÃ³n 6)
 EjÃ©rcitos = grupos de unidades dentro de una regiÃ³n; lÃ­mite por regiÃ³n segÃºn edificios. Movimiento por adyacencia regional (1 PG por ejÃ©rcito movido + coste de terreno). **Reclutamiento con mercancÃ­as (v1.9 â€” D-070):** ademÃ¡s de oro y pool regional, ciertas unidades consumen mercancÃ­as del inventario de facciÃ³n â€” caballerÃ­a exige **caballos**; infanterÃ­a pesada/hombres de armas exigen **armas** (tabla Â§6.4 ampliada). La **pantalla de ejÃ©rcitos** muestra por tipo de unidad su imagen (sprite `march_1` existente), nÃºmero, fuerza y moral/experiencia medias, y permite **Reclutar / Entrenar** (sube experiencia; oro + 1 PG) / **Disolver** (libera reclutas y devuelve parte del oro) desde una vista global de facciÃ³n.
 
-### 5.6 IA de facciones rivales
+### 5.6 Legibilidad y ayuda (v1.9.2 — Fase 5A)
+El juego **narra** el estado y acompaña al jugador sin alterar la simulación:
+- **Estaciones y HUD:** el trimestre se muestra como estación (Primavera, Verano, Otoño, Invierno) y año en el HUD persistente; un tinte de mapa sutil por estación se genera por código (sin assets) y la estación se deriva del turno (D-079).
+- **Boletín y Crónica:** al cerrar cada trimestre, un boletín de 4-6 líneas resume ingresos/gastos, apoyo, acciones usadas, nacimientos/muertes, mercaderes y eventos; al cerrar el año, la Crónica presenta el desglose económico, eventos y ranking de prestigio. Las entradas se guardan en `state.chronicle` (persistido en save/load, con defaults para partidas antiguas) y hay pestaña «Crónica» (D-080).
+- **Confirmar órdenes:** antes de resolver el turno se muestra «Tus órdenes este trimestre» con las acciones registradas (`turn_actions`, estado transitorio de presentación), botones Corregir/Confirmar y aviso de acciones libres (reclutar/entrenar/disolver, trabajadores, mercado) (D-081).
+- **Consejero y ayuda contextual:** el Consejero puede activarse en cualquier dificultad; en el Mercado da un consejo determinista (mejor margen de venta/compra y retorno de expediciones); cada pantalla §9 tiene un botón «?» con 3-5 líneas de ayuda propias desde datos (D-082).
+- **Panel de unidad N2/N3:** cada unidad muestra hombres, armamento, apoyo, moral y entrenamiento; el comandante muestra estado sano/herido y su stat de Mando. Solo lectura (D-083).
+
+### 5.7 IA de facciones rivales
+
 Motor por **utilidad esperada**, modular y reemplazable (un solo script `ai_brain.gd` por facciÃ³n con perfiles):
 
 ```
@@ -514,6 +523,13 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 13. **Dificultad y tutorial (v1.9 â€” D-073):** selecciÃ³n Principiante/Normal al iniciar; en Principiante, panel del **Consejero** con guion del primer aÃ±o, texto breve, resaltado de UI y opciÃ³n de saltar; guion en `data/tutorial_script.json`, estado serializable. Normal = sin Consejero y IA algo mÃ¡s agresiva.
 
 **MVP de interacciÃ³n:** todo con mouse; atajos opcionales (Enter = terminar turno). ResoluciÃ³n objetivo 1920Ã—1080, escalable.
+
+14. **Estaciones + HUD (v1.9.2 — D-079):** HUD «{Estación} {Año} — Tesoro/PG» y tinte de mapa por estación generado por código.
+15. **Boletín trimestral (v1.9.2 — D-080):** modal de cierre de trimestre con resumen informativo y «Continuar».
+16. **Crónica anual + histórico (v1.9.2 — D-080):** pantalla de cierre de año con desglose/ranking y pestaña «Crónica» consultable; sus entradas persisten en `state.chronicle`.
+17. **Confirmación de órdenes (v1.9.2 — D-081):** resumen «Tus órdenes este trimestre» con Corregir/Confirmar y lista de exenciones libres.
+18. **Consejero y ayuda contextual (v1.9.2 — D-082):** consejero comercial determinista en Mercado, conmutador del Consejero en partida y botón «?» en cada pantalla §9 con texto desde datos.
+19. **Panel de unidad completo N2/N3 (v1.9.2 — D-083):** hombres, armas, apoyo, moral, entrenamiento y comandante (estado + Mando) por selección.
 
 ---
 

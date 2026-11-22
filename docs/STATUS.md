@@ -633,3 +633,21 @@ y sin material con copyright.
   de AG-0 y no copia literal de código/datos/arte/texto.
 
 **Veredicto de cobertura (AG-4, `docs/qa/fase4_rea_coverage.md`):** **Cobertura REA Fase 4: SUFICIENTE** — M3 (economía/comercio) y M6 (militar/unidades) alta; M4 (dinastía) y M5 (diplomacia) parciales, M2 (gating) parcial y M7 (IA) unknown, documentados sin inventar datos. C3/C4/C5/C14 respaldados por M3/M6; C6/C13 se cierran con D-071/D-074 y tests propios. Ningún vacío bloquea la fase.
+
+---
+
+## 21. Fase 5A — «El juego te explica»: legibilidad y aprendizaje (EN CURSO)
+
+**Directiva:** `prompt_DSH_fase5a_legibilidad_v1.md` (Kimi, a partir del REA completo D-077/D-078, uso interno no publicado). **GDD v1.9.2** (nuevo §5.6 Legibilidad y ayuda; §9 ampliado). **Baseline:** tag `fase-4` (HEAD `6e9f9764`). Solo presentación/flujo sobre sistemas existentes; sin cambios de simulación, balance ni IA; determinismo intacto.
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| Textos de ayuda, boletín y crónica | AG-1 | `data/context_help.json` (3-5 líneas por pantalla §9) + `data/legibility_texts.json` (plantillas de boletín/crónica, etiquetas de estación; español propio) | ⏳ |
+| Estado/API: `turn_actions`, `chronicle`, estación, consejo comercial, `advisor_enabled` | AG-2 | registro transitorio de órdenes (D-081); `state.chronicle` persistido con defaults (D-080); `get_season_name/label` (D-079); `TradeSystem.get_trade_advice` determinista y conmutador (D-082); tests/save | ⏳ |
+| UI: HUD estaciones/tinte, boletín, crónica+histórico, confirmación de órdenes, «?», Consejero, panel unidad N2/N3 | AG-3 | pantallas/modales y capturas 1920×1080 (D-079…D-083) | ⏳ |
+| QA Fase 5A | AG-4 | harness C1-C10, capturas, informe `docs/qa/fase5a_report.md` | ⏳ |
+| Gobernanza/cierre | AG-0 | GDD v1.9.2, D-079…D-083, STATUS, tag `fase-5a`, push y aviso a Kimi | ⏳ |
+
+**Criterios C1-C10:** HUD estación+año+tinte con capturas ×4; boletín ≥5 categorías/texto propio/0 botones muertos; crónica anual + histórico persistido (hash) y consultable; confirmación de órdenes con lista (incl. vacía), Corregir/Confirmar y log determinista; consejo comercial correcto sin RNG; «?» en todas las pantallas §9 (capturas ≥4); paneles N2/N3 con hombres/armas/apoyo/moral/experiencia y comandante; save/load con chronicle (3 puntos) y defaults; no regresión (run_all, validate 0 WARN, editor 0, IA<2 s, mapa<8 ms); congelamientos 1402/1453 diff 0, sin arte externo, GDD v1.9.2 + D-079…D-083 + tag `fase-5a`.
+
+**Cierre previsto:** QA APROBADO 10/10 → commits por agente + `[AG-0]`, tag anotado **`fase-5a`**, push y aviso para verificación de Kimi contra GDD v1.9.2 + esta directiva.
