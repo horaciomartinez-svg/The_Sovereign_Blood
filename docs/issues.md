@@ -536,3 +536,83 @@ EC2626EDA89FE922  data/sources.md
 - No se modificó ningún archivo fuera de `docs/issues.md`. No se ejecutó git.
 
 *Fin del informe QA Fase 0 — AG-4.*
+
+---
+
+## 7. Fase 1 — Baseline (task-8, 2026-11-21)
+
+**Contexto:** arranque de Fase 1 (objetivo MVP jugable, GDD §12 / contrato `docs/architecture_contracts_fase1.md` §9). AG-2 (sistemas) y AG-3 (UI) están implementando en paralelo; en el momento del baseline el repo seguía en el estado stub de Fase 0 (autoloads declarados sin lógica y `scenes/**` sin `.tscn`). Este baseline **no es un veredicto de rechazo**: los `[SKIP]` son «pendiente de implementación» y se convertirán en la verificación final (task-9) cuando AG-2/AG-3 terminen.
+
+**HEAD registrado:** `f11b09f3fba8b0258c7105d4c4ac9494f3a4fb36` («[AG-0] Fase 1: contrato de integracion…»), leído de `.git/logs/HEAD` (AG-4 no ejecuta git, D-005). `scripts/` no se modificó por QA; los mtimes de producción posteriores al baseline corresponden a AG-2/AG-3 trabajando en paralelo.
+
+**Archivos creados por QA (task-8):**
+
+| Archivo | Líneas | Propósito |
+|---|---:|---|
+| `tests/qa_acceptance.gd` | 812 | Harness de aceptación Fase 1 (6 criterios, `extends SceneTree`, sin GUT), compila y se ejecuta contra stubs |
+| `docs/qa/fase1_plan.md` | 112 | Plan de QA: puerta de aceptación, matriz criterio §12 → check → comando → evidencia, protocolo, baseline y riesgos |
+
+### 7.1 Comandos y códigos de salida (baseline)
+
+| # | Comando | Exit code | Resultado baseline |
+|---|---|---:|---|
+| 1 | `godot --headless --path <repo> --script tests/qa_acceptance.gd` | **1** | **0 PASS / 0 FAIL / 6 SKIP** → PENDIENTE (sistemas aún stub); harness ejecutado sin errores de parseo |
+| 1-bis | repetición del harness | **1** | Misma tabla (0/0/6), mismos motivos; solo varían el timestamp y los ms de C6 (3→4 ms) |
+| 2 | `godot --headless --path <repo> --script tools/validate_data.gd` | **0** | 6 datasets ↔ 6 schemas, **5.239 comprobaciones**, reglas §13 OK, **0 errores** (no-regresión Fase 0) |
+| 3 | `godot --headless --path <repo> --script tests/run_all.gd` | **0** | **231 pasados, 0 fallidos, 1 omitido**; «CI: OK (exit 0)» (no-regresión Fase 0) |
+| 4 | `godot --headless --path <repo> --editor --quit` | **0** | Importación completa (2 `[DONE]`), sin `ERROR`/`WARNING`/`SCRIPT ERROR` |
+
+### 7.2 Salida íntegra del harness (ejecución baseline 1, 21:29:08)
+
+```text
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+==============================================================
+ The Sovereign's Blood — QA Aceptación Fase 1 (GDD §12 / contrato §9)
+ Godot 4.7.2-stable (official) · headless · 2026-11-21T21:29:08
+==============================================================
+[INFO] datasets esperados: 14 facciones, 47 regiones
+[INFO] 10/10 autoloads montados
+[INFO] GameState.state inicial: vacío
+  [SKIP] C1 — Partida Inglaterra 1337: new_game + 4 trimestres de órdenes válidas sin crash :: GameState.state vacío tras new_game() (pendiente: sistema aún stub/no disponible)
+  [SKIP] C2 — IA de 13 facciones rivales en <2000 ms (medido) :: GameState.state vacío tras new_game() (pendiente: sistema aún stub/no disponible)
+  [SKIP] C3 — Save/load exacto: hash de to_dict() igual + continuidad del RNG :: GameState.state vacío tras new_game() (pendiente: sistema aún stub/no disponible)
+  [SKIP] C4 — Peste Negra 1348 en event_log con population_modifier -0.35 (europe_west) :: GameState.state vacío tras new_game() (pendiente: sistema aún stub/no disponible)
+  [SKIP] C5 — Batalla delegada: informe coherente y captura de región :: GameState.state vacío tras new_game() (pendiente: sistema aún stub/no disponible)
+  [SKIP] C6 — Smoke UI: instanciar/free todas las escenas de scenes/** en headless :: scenes/** no contiene .tscn todavía (AG-3 en curso) (pendiente: sistema aún stub/no disponible)
+--------------------------------------------------------------
+RESULTADO QA ACEPTACIÓN FASE 1: 0 PASS, 0 FAIL, 6 SKIP (de 6 criterios)
+  C1: [SKIP] Partida Inglaterra 1337: new_game + 4 trimestres de órdenes válidas sin crash (0 ms)
+  C2: [SKIP] IA de 13 facciones rivales en <2000 ms (medido) (0 ms)
+  C3: [SKIP] Save/load exacto: hash de to_dict() igual + continuidad del RNG (0 ms)
+  C4: [SKIP] Peste Negra 1348 en event_log con population_modifier -0.35 (europe_west) (0 ms)
+  C5: [SKIP] Batalla delegada: informe coherente y captura de región (0 ms)
+  C6: [SKIP] Smoke UI: instanciar/free todas las escenas de scenes/** en headless (3 ms)
+--------------------------------------------------------------
+ACEPTACIÓN: PENDIENTE — 6 criterio(s) SKIP por sistemas aún stub (baseline; exit 1)
+```
+
+Segunda ejecución (21:30:17): misma cabecera/INFO, los mismos 6 `[SKIP]` con idénticos motivos, mismo resultado 0/0/6 y exit 1; solo cambian el timestamp y el tiempo de C6 (4 ms). **Comportamiento determinista del baseline.**
+
+### 7.3 Baseline por criterio y qué falta de cada agente
+
+| Criterio §12 | Baseline | Motivo registrado | Requisito para pasar en task-9 (owner) |
+|---|---|---|---|
+| C1 Partida Inglaterra 1337 (4 trimestres, órdenes válidas, sin crash) | `SKIP` | `GameState.state` vacío tras `new_game()` | AG-2: `GameState.new_game/reset` con §1; `TurnManager` (loop trimestre/año, PG); `EconomySystem.allocate`; `DiplomacySystem.propose`; `DataLoader` cargando `data/` |
+| C2 IA 13 facciones <2.000 ms | `SKIP` | Depende de C1; `AIManager.run_all_ai()` sin lógica | AG-2: `AIManager` con 13 facciones IA, mutación observable de `state` y medición <2000 ms |
+| C3 Save/load exacto + RNG continuo | `SKIP` | Depende de C1; `to_dict/save/load` devuelven vacío/false | AG-2: `GameState.to_dict/from_dict/save_game/load_game` (§6 contrato) con `rng.snapshot()` |
+| C4 Peste Negra 1348 (−0.35, `europe_west`) | `SKIP` | Depende de C1; `TurnManager` no avanza años ni dispara eventos | AG-2: `TurnManager.advance_quarter/advance_year` + disparo de `events_1337.json` y registro en `event_log`/`fired_events` |
+| C5 Batalla delegada + captura | `SKIP` | `state.armies` vacío; `MilitarySystem`/`BattleManager` stub | AG-2: `MilitarySystem.move_army`, `BattleManager.resolve_delegated`, `battle_reports` y captura de región |
+| C6 Smoke UI `scenes/**` | `SKIP` | `scenes/**` solo tiene carpetas, sin `.tscn` | AG-3: escenas §9 en `scenes/**` + `main_scene` en `project.godot` |
+
+**No-regresión Fase 0 verificada en el baseline:** `validate_data.gd` 0 errores (5.239 comprobaciones) y `tests/run_all.gd` 231/0/1, ambos exit 0; importación `--editor --quit` exit 0. Los datos de Fase 0 no se han alterado.
+
+### 7.4 Incidencias del harness y notas
+
+- Durante la creación del harness se corrigieron **2 avisos de parseo** de GDScript 4.7 tratados como error («tipo inferido desde Variant»): `var report := _last_report(...)` y `var regions_data := ...`. Tras el cambio a tipo explícito (`Variant`), el harness compila y ejecuta (verificado también con `--editor --quit`, exit 0).
+- El harness **no toca producción**: solo llama a la API pública §2, lee `GameState.state` y los JSON de `data/`; el único efecto lateral es el save temporal `user://saves/qa_acceptance_ag4.json`, eliminado al final de C3.
+- Semántica de aceptación implementada: `exit 0` **solo** con 6/6 `[PASS]`; `[FAIL]` o `[SKIP]` → exit 1. En baseline, los 6 criterios son `SKIP` (no `FAIL`): **pendiente por implementación, no rechazo**.
+- Riesgos de verificación (UI headless, presupuesto IA, determinismo de save, evento 1348, batalla estocástica, concurrencia AG-2/AG-3) detallados en `docs/qa/fase1_plan.md` §5.
+- **task-9 no reclamada:** la verificación final queda bloqueada hasta que AG-2/AG-3 declaren terminados sus módulos (AG-0 avisará). Checklist preparada en `docs/qa/fase1_plan.md` §6.
+
+*Fin de la sección Fase 1 — baseline (task-8).*
