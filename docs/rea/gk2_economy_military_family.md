@@ -164,3 +164,72 @@ texto de GK2 ni se han usado sus nombres.
 - **Prohibiciones respetadas**: sin desensamblado de ejecutables, sin texto literal, sin copia de
   píxeles/paletas/assets. Fuentes históricas abiertas citadas en §5; valores finales a cargo de AG-1 con
   `source` en `data/sources.md`.
+
+---
+
+## 8. Addendum D-074/D-075/D-076 — límites de acciones y costes de reclutamiento
+
+### 8.1 Búsqueda estructural (resultado)
+
+Se amplió la búsqueda a los dos aspectos detectados en la prueba del usuario:
+
+| Qué se buscó | Método | Resultado |
+|---|---|---|
+| Tabla de límites de acciones por turno | Inventario completo de `.DAT`/`.GK2`; búsqueda de tablas de 8–24 registros con campos constantes de límite y patrones de banderas por facción | **No identificada**: el límite es lógica de estado de turno (runtime), no tabla fija; en `SAVEDATA` solo cabría el estado `actions_used`, no su definición |
+| Tabla de costes de reclutamiento por tipo de unidad | Barrido de secuencias ascendentes `u8`/`u16` (ids/costes) en `SCENARIO`, `SAVEDATA`, `GENDATA`, `KGRP`, `GRPDATA` y `KOEI.DAT`, pasos 4–32 y 8–24 registros | **0 candidatos**: no hay tabla de costes aislable en los datos; los parámetros por unidad residen previsiblemente en los `.EXE` (prohibidos) |
+| Secuencia de menús Economía/Militar/Familia | Búsqueda de texto/estructura de menú en datos | **No determinable**: el texto de UI está en los ejecutables; los datos no contienen guiones ni etiquetas de menú |
+| Observación (D-038) | DOSBox verificado ausente | **No observado**: lo siguiente es diseño propio verificable, no descripción del original |
+
+Conclusión: para D-074/D-075 **no hay referencia binaria utilizable**; son decisiones de diseño propias
+(extensión, no port). `actions_used` y la tabla de costes viven en nuestro código y en `units.json`, no en
+datos de GK2.
+
+### 8.2 Lecciones UX — acciones 1/turno frente a repetibles
+
+- **Clasificar por naturaleza, no por pantalla:** órdenes de corte (diplomacia, familia, construcción,
+  espionaje, expedición) = **1/turno**; logística (reclutar/entrenar/disolver, asignar trabajadores,
+  comprar/vender) = **repetible**. La UI debe hacer visible la distinción sin que el jugador memorice reglas.
+- **Marca persistente:** píldora "1/turno" en acciones gateadas; tras usarlas, botón deshabilitado con
+  check y tooltip "Usado este turno" (y "para este objetivo" cuando aplique). Las repetibles no llevan
+  píldora: muestran contador/cantidad.
+- **Motivos de deshabilitado diferenciados:** usado vs sin PG vs requisito no cumplido vs objetivo ya
+  usado. Un botón gris sin motivo es un bug de UX.
+- **Diplomacia/espionaje por objetivo:** el gate es por acción **y** objetivo; la lista debe marcar cuáles
+  se usaron este turno, no deshabilitar la pantalla entera.
+- **Doble clic y carreras:** el motor rechaza el duplicado (`action_used`) aunque la UI falle, sin doble
+  gasto de PG/oro; la UI puede ser optimista pero la autoridad es el estado.
+- **Reinicio y persistencia:** al terminar turno los botones se rehabilitan; `actions_used` viaja en el
+  save y las partidas antiguas migran a conjunto vacío.
+- **Repetibles con control:** reclutar varias veces exige coste acumulado y límites (pool, oro, mercancías)
+  visibles; "repetible" no debe significar "sin freno".
+
+### 8.3 Lecciones UX — costes relativos por tipo de unidad
+
+- **Tier visible:** infantería < arqueros < caballería ligera < caballería pesada < artillería. La
+  caballería ligera no debe ser más barata que un arquero largo y la artillería debe superar a cualquier
+  caballería (D-075).
+- **Coste completo por tarjeta:** oro + hombres del pool + mercancías (`caballos`/`armas`) + PG si aplica;
+  total para la cantidad seleccionada y tesoro proyectado. Comparación sin abrir fichas.
+- **Comparación:** ordenar/filtrar por coste, secundario "oro por hombre" y etiquetas de tier con tooltip
+  que explique el porqué (caballo + armadura + entrenamiento), no solo el número.
+- **Nada oculto:** si la unidad consume caballos, se ve antes de reclutar; si falta el bien, botón
+  deshabilitado con motivo. La IA paga la misma tabla (sin descuentos).
+- **Validación de datos:** test que afirme `cost(caballería) > cost(arqueros/infantería ligera)` y
+  `cost(artillería) > cost(caballería)`; los valores se cambian solo en `units.json` + `sources.md §13`.
+
+### 8.4 Checklist verificable para D-074/D-075 (C13/C14)
+
+| # | Criterio verificable |
+|---:|---|
+| 1 | El motor rechaza una segunda diplomacia (misma acción+objetivo) con motivo `action_used`; PG/estado intactos |
+| 2 | Rechaza 2.º matrimonio/acción familiar, 2.ª construcción, 2.º espionaje por objetivo y 2.ª expedición en el turno |
+| 3 | Reclutar/entrenar/disolver, asignar trabajadores y comprar/vender permiten **varias** operaciones por turno |
+| 4 | `actions_used` se resetea al empezar turno, se conserva en save/load y migra en partidas antiguas |
+| 5 | La UI deshabilita la acción usada con tooltip y distingue usado / sin PG / requisito no cumplido |
+| 6 | Doble clic o reintento no produce doble gasto; el feedback explica el rechazo |
+| 7 | Cada tarjeta de unidad muestra oro + hombres + mercancías, total para la cantidad y tesoro resultante |
+| 8 | Los 17 tipos tienen coste diferenciado por tier (caballería > arqueros/infantería; artillería > caballería) |
+| 9 | Reclutar deduce exactamente `cost.gold` y `recruit_goods`; si falta algo no hay deducción parcial y hay motivo |
+| 10 | Se puede comparar/ordenar por coste; el tier se explica con tooltip; sin costes ocultos |
+| 11 | Test automático de la regla de tiers y de costes distintos; `sources.md §13` documenta los valores |
+| 12 | Sin regresión: `validate_data` 0 WARN/0 errores y C1–C14 del QA de Fase 4 en verde |

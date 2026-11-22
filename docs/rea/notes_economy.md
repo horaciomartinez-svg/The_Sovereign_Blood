@@ -139,3 +139,38 @@ Save (§7.7): `inventory{g:qty}`, `merchants`, `market.prices{g}`, `trade_routes
   persigue un port 1:1.
 - **Legal:** sin `.EXE`, sin desensamblado, sin texto literal, sin assets; fuentes históricas abiertas
   citadas; el informe es consumible para C1 y para AG-1/AG-2/AG-3 sin material derivado de Koei.
+
+## 9. Addendum D-074/D-075/D-076 — búsquedas de límites y costes
+
+### 9.1 Qué se buscó y cómo
+
+| Búsqueda | Comando/lógica | Archivos | Resultado |
+|---|---|---|---|
+| Secuencias ascendentes `u8` (ids o costes) | para `s` en {4,6,8,10,12,16,20,24,32}, inicio `o` con `b[o]≤3` y 13 valores estrictamente crecientes a paso `s` | `SCENARIO.GK2`, `SAVEDATA.GK2`, `GENDATA1.DAT`, `KGRP.DAT`, `KOEI.DAT` | **0 secuencias** |
+| Secuencias ascendentes `u16` (costes/precios) | para los mismos pasos, inicio `o` con `u16≤100` y 11 valores estrictamente crecientes a paso `s` | `SCENARIO.GK2`, `SAVEDATA.GK2`, `GENDATA2.DAT`, `GRPDATA.DAT` | **0 secuencias** |
+| Tablas de acciones/límites con banderas por facción | inventario + revisión de secciones por entropía/perfil (Fase 0/2) | todos los `.DAT`/`.GK2` | no hay tabla fija; `actions_used` es estado de turno (runtime) |
+| Textos/secuencia de menús | búsqueda de texto de UI en datos | todos los `.DAT`/`.GK2` | no determinable: el texto de UI reside en los `.EXE` |
+
+Evidencia de negativos: los barridos no devolvieron candidatos; no se conserva ningún artefacto. La
+ausencia de tabla **no prueba** que GK2 carezca de costes o límites: prueba que no están en los datos
+accesibles (probablemente constantes del ejecutable, protegido por §3). Por eso D-074/D-075 se documentan
+como diseño propio y no como port.
+
+### 9.2 Contratos y referencias usadas para el addendum
+
+- `docs/architecture_contracts_fase4.md` §7.1 (D-074/D-075): `actions_used` por facción/turno, API
+  `GameState.mark_action_used/is_action_used/reset_turn_actions`, motivos `action_used`; exenciones
+  (reclutar/entrenar/disolver, trabajadores, mercado); costes diferenciados con caballería > arqueros/
+  infantería y artillería > caballería; C13/C14 del QA.
+- D-074/D-075/D-076 (`docs/decisions.md`) y D-038 (observación no disponible).
+- Lecciones UX del addendum §8.2–§8.4 del informe: clasificación corte/logística, píldora "1/turno",
+  motivos diferenciados, gate por objetivo, doble clic seguro, persistencia/migración, coste completo por
+  tarjeta y regla de tier con test automático.
+
+### 9.3 Límites del addendum
+
+- **No observado:** secuencia exacta de menús y gating del original (DOSBox ausente, D-038).
+- **No concluyente:** si GK2 limita estas acciones por turno y con qué costes; sin ejecutable no hay
+  evidencia.
+- **Sin material derivado:** sin `.EXE`/desensamblado, sin texto literal, sin assets; no se toca
+  1402/1453; scope `docs/rea/**` y sin git.
