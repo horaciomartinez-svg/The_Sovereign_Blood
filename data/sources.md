@@ -18,7 +18,12 @@
 
 ## 2. Facciones y gobernantes (1337) — GDD §4.2
 
-Las 14 facciones, sus gobernantes y casas provienen de la tabla de GDD §4.2; la URL de cada gobernante documenta nombre, fechas y casa. `playable=true` en las 8 primeras (GDD §2.1) — elección explícita de diseño (D-008).
+Las 14 facciones y sus gobernantes siguen la tabla de GDD §4.2; la URL de cada gobernante documenta nombre, fechas y casa. `playable=true` en las 8 primeras (GDD §2.1) — elección explícita de diseño (D-008). Las casas provienen de esa tabla **con dos excepciones de nomenclatura** (D-011, OBS-02) que se mantienen en `characters.json` porque el campo `house` identifica familia/casa histórica, no solo dinastía gobernante:
+
+- **Benedicto XII → `house: "fournier"`**: la tabla de §4.2 marca «—» (el papado no es una dinastía). Se documenta su familia papal (Jacques Fournier, de ahí `fournier`), con el mismo criterio que `clemente_vi` (`roger`). No se inventa una dinastía: `house` = familia/casa.
+- **An-Nasir Muhammad → `house: "qalawun"`**: la tabla de §4.2 lo etiqueta «Bahri». La dinastía qalawuní es la línea que encabeza el sultanato Bahri mameluco; `qalawun` es la dinastía concreta y «Bahri» la etiqueta amplia del GDD. Se mantiene `qalawun` y se documenta la equivalencia.
+
+Resultado: 12/14 casas literalmente idénticas a §4.2 y 2/14 con equivalencia histórica documentada (D-011); la validación y la jugabilidad no se ven afectadas.
 
 | # | Facción | Nombre | Gobernante 1337 | Capital | Dueño de la capital en 1337 | Jugable | Fuente del gobernante |
 |---|---|---|---|---|---|---|---|
@@ -272,7 +277,7 @@ _Informe leído el 2026-11-21 en su versión publicada por AG-REA (no se reescri
 | **4. Atributos empaquetados de 4 bits** (16 atributos en 8 B, escala 0–15) | `stats{command,intrigue,charisma,loyalty,education}` en escala 1–100 (GDD §5.3), legibles y validables, con `"estimate": true` en las 86 fichas; no se empaqueta ni se copia la conversión de GK2. |
 | **5. Centinelas explícitos y dispersos** (`0x00`, `0xFF`, `0xC8` = sin región) | Sin centinelas numéricos: `died: null` y `family.*: null` explícitos; `year_data["1337"].owner` siempre es un id de facción validado; `terrain` y `buildings` usan enums cerrados. |
 | **6. Nombres en tabla aparte con índice implícito** (`ZNAME.DAT`) | IDs explícitos (`region_*`, personajes snake_case) y validación cruzada de todas las referencias (capital, adyacencia, `owner`, familia, `claims`): el nombre se guarda junto a la entidad por legibilidad, pero la identidad es el id. |
-| **7. Mapa/hex de GK2 no determinable** (`MAPDATA.DAT`, `HEXKG.DAT`, `HEXSG.DAT`) | El mapa jugable es un **grafo de regiones propio** (47 nodos, 130 enlaces), no derivado de los binarios: `adjacency` simétrica y conectada, validada por `tools/validate_data.gd` y por el chequeo de AG-1. |
+| **7. Mapa/hex de GK2 no determinable** (`MAPDATA.DAT`, `HEXKG.DAT`, `HEXSG.DAT`) | El mapa jugable es un **grafo de regiones propio** (47 nodos; 130 entradas de adyacencia dirigidas = 65 pares no dirigidos), no derivado de los binarios: `adjacency` simétrica y conectada, validada por `tools/validate_data.gd` y por el chequeo de AG-1. |
 | **8. Registros de tamaño fijo con campos de texto acolchados** | JSON UTF-8 legible sin acolchado; `additionalProperties: false`, `required`, `pattern`, `enum` y `minItems` actúan como validador de registros incompletos (D-004/D-009). |
 | **9. Determinismo y orden estables** | Listas con orden estable e IDs estables → mismo JSON, mismo estado inicial; validación reproducible (0 errores) y base para los tests de determinismo de §13. |
 | **10. `SCENARIO.GK2` = datos inmutables + estado inicial** | `scenario_1337.json` separa `factions`/`events_script` (datos) de `initial_state` (tesorerías, ejércitos, personajes, año de regiones), replicando esa separación conceptual. |
