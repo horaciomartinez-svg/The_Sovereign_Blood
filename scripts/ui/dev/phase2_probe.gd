@@ -46,12 +46,12 @@ func _initialize() -> void:
 	print("[f2] benchmark mapa: %.4f ms/frame (objetivo < 8 ms; headless mide CPU, no GPU)" % avg_ms)
 	_check(avg_ms < 8.0, "benchmark mapa < 8 ms/frame")
 
-	# Retratos §10.2: fallback siempre visible + API de test.
+	# Retratos §10.2: API de test; con GDD v1.5 el gobernante ya tiene textura final.
 	var portrait: Control = PortraitFrame.make("edward_iii_plantagenet", Vector2(120, 140))
 	root.add_child(portrait)
 	await _frames(2)
 	_check(portrait.call("get_portrait_character_id") == "edward_iii_plantagenet", "retrato id")
-	_check(bool(portrait.call("is_fallback")), "retrato fallback activo (sin assets finales)")
+	_check(not bool(portrait.call("is_fallback")), "retrato final del gobernante carga textura")
 	var empty_portrait: Control = PortraitFrame.make("", Vector2(96, 110))
 	root.add_child(empty_portrait)
 	await _frames(1)
