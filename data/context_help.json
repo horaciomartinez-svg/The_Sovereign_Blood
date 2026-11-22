@@ -1,0 +1,174 @@
+{
+  "main_menu": {
+    "title": "Menú principal",
+    "lines": [
+      "The Sovereign's Blood es un juego de estrategia por turnos sobre dinastías medievales: gobiernas una casa, no un país abstracto.",
+      "Desde aquí empiezas una partida nueva, cargas una guardada, abres el Manual del Jugador o ajustas las opciones.",
+      "Si es tu primera partida, elige el escenario 1337 y el nivel Principiante: el Consejero te acompañará el primer año.",
+      "El escenario «Dos Coronas» se juega de 1337 a 1399; los escenarios 1402 y 1453 permanecen en pausa."
+    ]
+  },
+  "scenario_select": {
+    "title": "Selección de escenario",
+    "lines": [
+      "Elige el escenario y la dificultad. «Dos Coronas» (1337) es el escenario activo del MVP; 1402 y 1453 están en pausa.",
+      "En Principiante el Consejero está activo y la IA es algo menos agresiva; en Normal no hay Consejero y la IA juega sin ventajas.",
+      "Puedes cambiar de dificultad al empezar una partida nueva; la dificultad no modifica tus recursos iniciales.",
+      "Cada facción jugable tiene una posición, unas fortalezas y unos riesgos distintos: revisa la ficha antes de confirmar."
+    ]
+  },
+  "world_map": {
+    "title": "Mapa estratégico",
+    "lines": [
+      "El mapa muestra tus regiones, las de otras facciones y los ejércitos visibles; los colores indican el dueño de cada región.",
+      "Haz clic en una región para abrir su panel: población, riqueza, terreno, edificios y apoyo popular.",
+      "La barra superior indica la estación y el año, tu tesoro y tus Puntos de Gobierno (PG) disponibles.",
+      "Mueve ejércitos a regiones adyacentes (1 PG), revisa las fronteras y decide dónde concentrar tus fuerzas.",
+      "El tinte del mapa cambia suavemente con la estación; si te molesta, puedes desactivarlo en Opciones si está disponible."
+    ]
+  },
+  "region_panel": {
+    "title": "Panel de región",
+    "lines": [
+      "Aquí ves la población, la riqueza base, el terreno y los edificios de la región seleccionada.",
+      "Los trabajadores se reparten entre granjeros, artesanos, comerciantes y reclutas: más granjeros dan comida y apoyo; más artesanos y comerciantes dan oro.",
+      "El apoyo popular (0-100) mide la lealtad; si baja mucho, la región puede rebelarse y perder oro o prestigio.",
+      "Desde este panel puedes construir edificios, ajustar trabajadores y consultar el pool de reclutas disponible.",
+      "El terreno importa: las llanuras alimentan, los bosques y montañas producen otros bienes y las costas favorecen el comercio."
+    ]
+  },
+  "council": {
+    "title": "Consejo",
+    "lines": [
+      "El Consejo reúne el estado de tu reino, los avisos del trimestre y las recomendaciones del Consejero.",
+      "Si juegas en Principiante, el Consejero te guía con el tutorial del primer año y puedes saltarlo cuando quieras.",
+      "Desde aquí puedes abrir la Ayuda del juego, revisar el Manual del Jugador y activar o desactivar al Consejero en partida.",
+      "Las decisiones importantes (guerra, paz, matrimonio, grandes obras) conviene meditarlas: el Consejo te muestra el contexto, no decide por ti."
+    ]
+  },
+  "family": {
+    "title": "Familia y dinastía",
+    "lines": [
+      "El árbol familiar muestra a tu gobernante, su consorte, sus hijos y parientes; la dinastía es tu forma de sobrevivir en el tiempo.",
+      "Puedes casar a tu gobernante o a sus hijos para mejorar relaciones, obtener claims y asegurar descendencia.",
+      "Educa a los herederos (1 PG por acción) para mejorar sus stats; un heredero bien preparado gobierna mejor y evita regencias costosas.",
+      "Si tienes consorte válida, puedes pasar tiempo con ella una vez por trimestre (2-3 PG) para aumentar la fertilidad durante 2-4 trimestres.",
+      "La Peste Negra y las enfermedades pueden golpear a tu casa: mantén al menos un heredero vivo y prepara la sucesión."
+    ]
+  },
+  "diplomacy": {
+    "title": "Diplomacia",
+    "lines": [
+      "La diplomacia mide relaciones de −100 a +100; mejora con matrimonios, pactos, regalos y paces, y empeora con guerras y espionaje descubierto.",
+      "Tienes siete acciones: alianza, matrimonio, pacto comercial, exigir tributo, ofrecer tributo, declarar guerra y proponer paz.",
+      "Declarar guerra sin casus belli cuesta prestigio: busca un motivo, una claim o una agresión previa antes de atacar.",
+      "El espionaje (6 PG) puede revelar información del rival o sabotear relaciones; si te descubren, pagas prestigio y relaciones.",
+      "Revisa el casus belli de cada vecino: una guerra rentable empieza mucho antes de mover el primer ejército."
+    ]
+  },
+  "military": {
+    "title": "Militar",
+    "lines": [
+      "El panel militar muestra tus ejércitos, sus hombres, su moral, su experiencia y el mantenimiento que consumen cada trimestre.",
+      "Reclutar consume oro, pool de reclutas regional y mercancías: caballos para caballería; armas para infantería pesada a pie; hierro/madera para artillería.",
+      "Entrenar sube la experiencia del ejército a cambio de oro y PG; disolver devuelve el 50 % del oro y libera el pool.",
+      "El mantenimiento es de 20 de oro por cada 200 hombres y trimestre: un ejército enorme puede arruinar tu economía.",
+      "Mueve ejércitos a regiones adyacentes (1 PG) y decide cuándo aceptar batalla: el terreno y la composición importan."
+    ]
+  },
+  "economy": {
+    "title": "Economía",
+    "lines": [
+      "Cada trimestre cobras impuestos, produces bienes y comercias; después pagas mantenimiento y, si acumulas demasiado oro, un recargo de tesorería.",
+      "La población y la riqueza determinan los ingresos; los edificios (granero, taller, mercado, puerto, mina) mejoran la producción regional.",
+      "El apoyo popular y la comida sostienen el orden: un déficit o una guerra larga pueden provocar revueltas.",
+      "El comercio aporta una parte de la economía: asigna comerciantes, revisa el mercado y valora pactos o expediciones.",
+      "Invierte el exceso de oro: el tesoro por encima de 8.000 paga un recargo del 35 % trimestral sobre el exceso."
+    ]
+  },
+  "market": {
+    "title": "Mercado",
+    "lines": [
+      "El mercado muestra tus mercancías, su inventario, el precio actual y el precio base de cada bien.",
+      "Sin comerciantes asignados no puedes comprar ni vender; el volumen depende de cuántos comerciantes tengas.",
+      "Los precios suben cuando el bien escasea y bajan cuando sobra: vender caro y comprar barato es la base del beneficio.",
+      "Puedes firmar pactos comerciales o enviar expediciones de mercaderes (2 PG); las expediciones vuelven a los 2 trimestres.",
+      "Grano y sal sostienen el apoyo; armas y caballos se consumen al reclutar: no vendas lo que tu ejército necesita."
+    ]
+  },
+  "army_management": {
+    "title": "Gestión de ejércitos",
+    "lines": [
+      "Aquí administras tus ejércitos por tipo de unidad, con su sprite, número de hombres, fuerza, moral y experiencia.",
+      "Reclutar, entrenar y disolver se hacen desde este panel; las órdenes son libres y puedes repetirlas mientras tengas recursos.",
+      "Antes de reclutar revisa el pool de reclutas, el oro disponible y las mercancías requeridas; si falta un bien, la orden fallará sin gastar oro.",
+      "La experiencia se gana entrenando y combatiendo; un ejército veterano rinde mejor y sufre menos bajas.",
+      "Disolver devuelve el 50 % del oro de la unidad: úsalo para reducir mantenimiento cuando no necesites esa fuerza."
+    ]
+  },
+  "battle_n1": {
+    "title": "Batalla — Nivel 1 (delegada)",
+    "lines": [
+      "En Nivel 1 la batalla se resuelve automáticamente con tus stats, el terreno y la composición de ambos ejércitos.",
+      "Es el nivel más rápido: úsalo cuando tengas una ventaja clara o no quieras microgestionar cada ronda.",
+      "Al terminar verás un informe con el resultado, las bajas y el impacto en la guerra; revísalo antes de continuar.",
+      "Si el resultado no te convence, en niveles superiores puedes intervenir más; en N1 la decisión importante es aceptar o no la batalla."
+    ]
+  },
+  "battle_n2": {
+    "title": "Batalla — Nivel 2 (táctica)",
+    "lines": [
+      "En Nivel 2 despliegas tus unidades en el campo táctico, eliges formación y objetivos antes de resolver.",
+      "Cada tarjeta de unidad muestra hombres, armas, apoyo, moral y entrenamiento; el comandante indica su estado y su stat de Mando.",
+      "Usa el terreno: bosques y colinas frenan a la caballería; la infantería en formación resiste mejor un choque frontal.",
+      "Es el nivel recomendado para la mayoría de batallas: más control que N1 sin la duración de N3.",
+      "Puedes cambiar de nivel en otras batallas; no estás obligado a jugar siempre el mismo."
+    ]
+  },
+  "battle_n3": {
+    "title": "Batalla — Nivel 3 (combate cerrado)",
+    "lines": [
+      "En Nivel 3 luchas ronda a ronda, unidad a unidad, con flanqueos, moral y ataques detallados.",
+      "El panel de unidad muestra hombres, armas, apoyo, moral, entrenamiento, comandante, estado (sano/herido) y Mando.",
+      "La moral y el apoyo caen con las bajas y los flancos expuestos; una unidad rota puede contagiar al resto.",
+      "Reserva N3 para batallas decisivas: es el máximo control y el máximo detalle, pero también el más lento.",
+      "El comandante herido o muerto penaliza a sus tropas: protégelo o acepta el riesgo."
+    ]
+  },
+  "year_end": {
+    "title": "Fin de año",
+    "lines": [
+      "Al cerrar el cuarto trimestre se resuelve el año: cosecha (0,85-1,15), natalidad y mortalidad de la corte, eventos y autoguardado.",
+      "La Peste Negra de 1348 (−35 % de población y −10 de apoyo) y su rebrote de 1350 son los eventos más duros del escenario.",
+      "El boletín trimestral resume ingresos, apoyo, acciones, nacimientos/muertes, mercaderes y eventos; la Crónica anual amplía el balance.",
+      "Revisa la Crónica para entender qué pasó y planificar el año siguiente; el histórico se guarda en la partida."
+    ]
+  },
+  "chronicle": {
+    "title": "Crónica",
+    "lines": [
+      "La Crónica guarda el histórico del reino: cada año registra economía, bienes producidos, eventos, guerras y el ranking de prestigio.",
+      "Puedes consultarla en cualquier momento desde el Consejo; las partidas antiguas sin Crónica empiezan con una lista vacía.",
+      "El ranking compara el prestigio de las 8 facciones jugables y ayuda a ver quién domina la partida.",
+      "La Crónica es memoria, no una mecánica: no cambia el estado ni consume RNG; sirve para aprender de tus decisiones."
+    ]
+  },
+  "options": {
+    "title": "Opciones",
+    "lines": [
+      "Ajusta el volumen de música y efectos, el mute global y las opciones de accesibilidad disponibles.",
+      "Puedes activar o desactivar el Consejero en partida; en Principiante viene activo por defecto.",
+      "Si existe la opción de tinte estacional, desactívala si prefieres un mapa con colores fijos.",
+      "Los cambios de opciones se guardan en tu perfil local y no afectan a la partida ni al balance."
+    ]
+  },
+  "victory": {
+    "title": "Victoria y derrota",
+    "lines": [
+      "Ganas por prestigio si alcanzas 500 y lo mantienes 10 años, por conquista si controlas al menos el 70 % de las regiones, o por supervivencia si llegas vivo a 1399.",
+      "Pierdes si tu dinastía se extingue sin heredero válido o si pierdes tu última región.",
+      "La pantalla final muestra el motivo y un resumen de tu partida; puedes empezar una nueva o volver al menú.",
+      "No hay una única forma de jugar: una partida defensiva y estable también puede ganar por supervivencia."
+    ]
+  }
+}

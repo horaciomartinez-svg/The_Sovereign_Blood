@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "context_help.schema.json",
+  "title": "context_help.json — Ayuda contextual de pantallas (Fase 5A, D-082)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "main_menu",
+    "scenario_select",
+    "world_map",
+    "region_panel",
+    "council",
+    "family",
+    "diplomacy",
+    "military",
+    "economy",
+    "market",
+    "army_management",
+    "battle_n1",
+    "battle_n2",
+    "battle_n3",
+    "year_end",
+    "chronicle",
+    "options",
+    "victory"
+  ],
+  "properties": {
+    "main_menu": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "scenario_select": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "world_map": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "region_panel": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "council": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "family": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "diplomacy": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "military": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "economy": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "market": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "army_management": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "battle_n1": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "battle_n2": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "battle_n3": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "year_end": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "chronicle": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "options": {
+      "$ref": "#/$defs/help_entry"
+    },
+    "victory": {
+      "$ref": "#/$defs/help_entry"
+    }
+  },
+  "$defs": {
+    "help_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "lines"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,12 +1,18 @@
 # Manual del Jugador — The Sovereign's Blood
 
-**Versión:** MVP-1337, Fase 4 (D-069…D-073) · **Escenario:** «Dos Coronas», 1337-1399
+**Versión:** MVP-1337, Fases 4-5A (D-069…D-073, D-079…D-083) · **Escenario:** «Dos Coronas», 1337-1399
 **Cómo abrir este manual en el juego:** botón **Manual** del menú principal (abre este archivo con
-`OS.shell_open`) y entrada **Ayuda** del menú del Consejo, que muestra un resumen rápido.
+`OS.shell_open`) y entrada **Ayuda** del menú del Consejo, que muestra un resumen rápido. Además,
+cada pantalla tiene un botón **?** con ayuda contextual breve (Fase 5A).
 
 > Este manual explica las reglas que afectan al jugador. Si algo cambia en una versión posterior,
-> manda el GDD v1.9 y las notas de la versión. Las cifras son las del MVP-1337 y pueden ajustarse
+> manda el GDD v1.9.2 y las notas de la versión. Las cifras son las del MVP-1337 y pueden ajustarse
 > por balance sin cambiar la filosofía del juego.
+
+**Novedades de la Fase 5A «El juego te explica»:** (1) HUD con estación y año; (2) boletín
+trimestral, Crónica anual y pestaña de histórico; (3) repaso «¿Confirmas tus órdenes?» con
+Corregir/Confirmar; (4) Consejero comercial en el Mercado y botón «?» de ayuda en cada pantalla;
+(5) panel de unidad completo en batallas N2/N3.
 
 ## Índice
 
@@ -20,6 +26,7 @@
 8. [IA, dificultades y eventos históricos](#8-ia-dificultades-y-eventos-históricos)
 9. [Consejos por facción (8 jugables de 1337)](#9-consejos-por-facción-8-jugables-de-1337)
 10. [Glosario](#10-glosario)
+11. [Ayuda en el juego](#11-ayuda-en-el-juego)
 
 ---
 
@@ -87,10 +94,16 @@ aun así remontar. La derrota real es dinástica o territorial.
 Cada **turno** es un trimestre. En un año hay cuatro turnos; al cerrar el cuarto se ejecuta el
 **fin de año** (cosecha, natalidad/mortalidad, eventos históricos, autoguardado).
 
+El **HUD** muestra siempre la **estación y el año**: Primavera, Verano, Otoño e Invierno se derivan
+del trimestre (1-4) y el año avanza tras el invierno. La estación no es un estado nuevo: se calcula
+del reloj y no afecta a guardados ni al determinismo. El mapa recibe un tinte estacional sutil,
+desactivable desde Opciones si está disponible.
+
 En tu turno gastas **Puntos de Gobierno (PG)** en órdenes y, cuando termines, pulsas
-**Terminar turno**. Después se resuelven, en orden: economía trimestral, producción de mercancías,
-decisiones de la IA, eventos y comprobaciones de victoria/derrota. Al final del cuarto trimestre se
-suma el **avance de año**.
+**Terminar turno**. Antes de resolver verás el repaso **«¿Confirmas tus órdenes?»** (ver §3.4).
+Después se resuelven, en orden: economía trimestral, producción de mercancías, decisiones de la IA,
+eventos y comprobaciones de victoria/derrota. Al cerrar cada trimestre aparece el **boletín**, y al
+cerrar el año la **Crónica** (ver §3.5). Al final del cuarto trimestre se suma el **avance de año**.
 
 ### 3.2 Puntos de Gobierno (PG)
 
@@ -111,6 +124,12 @@ matrimonio 10 PG; alianza 8 PG; pacto comercial 6 PG; exigir tributo 5 PG; ofrec
 proponer paz 4 PG; espionaje 6 PG; expedición comercial 2 PG. Declarar guerra no consume PG, pero
 sin **casus belli** cuesta prestigio.
 
+**Límite de acciones y exenciones:** las acciones de corte y diplomacia suelen estar limitadas a
+una por turno cuando el sistema lo indica. En cambio, **reclutar, entrenar y disolver**, así como
+**asignar trabajadores** y **operar en el mercado**, son acciones libres: puedes repetirlas varias
+veces en el mismo turno mientras tengas oro, PG, pool y mercancías. El repaso de órdenes (§3.4)
+señala estas exenciones para que no las confundas con el límite general.
+
 ### 3.3 Fases del turno
 
 1. **Gobierno/economía:** trabajadores, edificios, impuestos y mercado.
@@ -123,6 +142,34 @@ sin **casus belli** cuesta prestigio.
 
 **Consejo:** no gastes todos los PG en la primera pantalla. Guarda 2-3 PG para reaccionar a una
 batalla o a una oportunidad diplomática.
+
+### 3.4 «¿Confirmas tus órdenes?» (Fase 5A)
+
+Al pulsar **Terminar turno**, el juego no resuelve de inmediato: abre el repaso **«Tus órdenes este
+trimestre»**, con la lista de acciones realizadas y su coste en PG. Si no has dado órdenes, verás
+«No has dado órdenes este trimestre».
+
+- **Corregir:** cierra el repaso y vuelve al mapa sin resolver nada; puedes cambiar de idea.
+- **Confirmar:** resuelve el trimestre (economía, IA, eventos, etc.).
+- **Exenciones visibles:** reclutar/entrenar/disolver, asignar trabajadores y operar en el mercado
+  son libres y pueden repetirse; el repaso las marca como tales para que no las confundas con las
+  acciones limitadas a una por turno.
+- El registro de órdenes es transitorio (se reinicia al empezar turno) y **no consume RNG**; no
+  altera el guardado ni el balance.
+
+### 3.5 Boletín trimestral, Crónica anual e histórico (Fase 5A)
+
+- **Boletín trimestral:** al cerrar cada trimestre aparece un resumen encabezado por **«Ha terminado
+  el {estación} de {año}»** con seis categorías: ingresos/gastos, apoyo popular, acciones usadas,
+  nacimientos/muertes, mercaderes/expediciones y eventos. Se genera del estado (sin RNG) y se cierra
+  con **Continuar**.
+- **Crónica anual:** al cerrar el año aparece la **«Crónica del año {año}»** con el balance
+  económico (oro, ingresos y gastos), bienes producidos, eventos, guerras declaradas/terminadas y el
+  **ranking de prestigio de las 8 facciones jugables**.
+- **Histórico:** cada entrada se guarda en `state.chronicle` y se **persiste en save/load**; puedes
+  consultarla en cualquier momento desde la pestaña **Crónica** del Consejo. Las partidas antiguas
+  sin Crónica arrancan con una lista vacía, sin romper la carga. La Crónica es memoria, no una
+  mecánica: no cambia el estado ni consume RNG.
 
 ## 4. Economía, mercancías y comercio
 
@@ -187,6 +234,12 @@ serializable (se guarda en la partida).
 (> 0). El volumen por trimestre depende de ellos (≈5 unidades por comerciante). Los precios parten
 del precio base y suben si el bien escasea; hay un pequeño factor aleatorio determinista por
 semilla. **Sin comerciantes no hay comercio**, aunque tengas oro.
+
+**Consejero comercial (Fase 5A):** el Mercado incorpora un consejo calculado del estado real, sin
+RNG: compara el precio actual con el precio base y el inventario/volumen disponible, y te sugiere
+la operación con mejor margen (por ejemplo, «El {bien} está caro hoy: conviene vender») o te avisa
+de cuándo vuelve una expedición. Es una recomendación, no una orden: la decisión y el coste son
+tuyos.
 
 **Pactos y expediciones:** un **pacto comercial** mejora el comercio y las relaciones; una
 **expedición de mercaderes** cuesta 2 PG, envía un bien y vuelve a los **2 trimestres** con
@@ -297,6 +350,12 @@ tu economía; entrena y concentra fuerzas en lugar de reclutar sin límite.
 3. **Nivel 3 — combate cerrado:** luchas ronda a ronda, unidad a unidad, con flanqueos, moral y
    ataques. Máximo control y detalle; úsalo en batallas decisivas o cuando necesites exprimir una
    victoria.
+
+**Panel de unidad (N2/N3):** al seleccionar una unidad, la tarjeta muestra **hombres, armamento
+(armas), apoyo/suministro, moral y entrenamiento (experiencia)**, además del **comandante**, su
+estado (**sano/herido/muerto**) y su stat de **Mando**. En N2 lo usarás para desplegar y elegir
+objetivos; en N3, para decidir flancos y ataques ronda a ronda. Es solo lectura del estado: no
+cambia el balance ni la simulación.
 
 **Cuándo elegir:** N1 para limpiar rebeldes o ventajas abrumadoras; N2 para la mayoría de guerras;
 N3 para batallas que cambian la partida (Crécy, Poitiers, asedios clave) o cuando quieras aprender
@@ -429,8 +488,35 @@ guerra anglo-francesa activa para que la cadena histórica pueda dispararse en u
 - **Turno:** un trimestre; cuatro por año.
 - **Vasallo/aliado:** facción con pacto; no es un subordinado automático, hay que negociar.
 
+## 11. Ayuda en el juego
+
+La Fase 5A añade varias formas de consultar las reglas sin salir de la partida:
+
+- **Manual:** botón **Manual** del menú principal; abre este documento con `OS.shell_open`. Si el
+  sistema no puede abrirlo, muestra un aviso y puedes consultarlo desde `docs/`.
+- **Ayuda del Consejo:** entrada **Ayuda** en el menú del Consejero, con un resumen rápido y acceso
+  al manual.
+- **Botón «?» contextual:** cada pantalla del juego (menú, mapa, región, consejo, familia,
+  diplomacia, militar, economía, mercado, gestión de ejércitos, batallas N1/N2/N3, fin de año,
+  crónica, opciones y victoria) tiene un botón **?** que abre **3-5 líneas de ayuda** adaptadas de
+  este manual. El contenido vive en `data/context_help.json`; es original, está en español y no
+  depende de RNG. Cerrar la ayuda no altera la partida.
+- **Consejero durante la partida:** puedes activarlo o desactivarlo desde el Consejo. En
+  Principiante viene activo por defecto; en Normal puedes activarlo cuando quieras. El Consejero
+  comercial del Mercado (§4.4) es independiente y calcula su consejo del estado real.
+- **Boletín y Crónica** (§3.5) son también ayuda de lectura: resumen lo ocurrido y guardan el
+  histórico consultable.
+
+La ayuda contextual usa las mismas claves de pantalla que la UI y el manual:
+`main_menu`, `scenario_select`, `world_map`, `region_panel`, `council`, `family`, `diplomacy`,
+`military`, `economy`, `market`, `army_management`, `battle_n1`, `battle_n2`, `battle_n3`,
+`year_end`, `chronicle`, `options` y `victory`. Si una pantalla nueva no tiene ayuda, se muestra un
+texto genérico y se puede ampliar el JSON sin tocar código.
+
 ---
 
-*Manual del MVP-1337 (D-072). Para el detalle técnico de sistemas, consulta
-`docs/architecture_contracts_fase4.md`; para el tutorial, `data/tutorial_script.json` (D-073).
-Si una cifra de balance cambia en un parche, se actualizará este manual en la misma entrega.*
+*Manual del MVP-1337 (D-072, actualizado en Fase 5A por C11/D-079…D-083). Para el detalle técnico
+de sistemas, consulta `docs/architecture_contracts_fase4.md` y `docs/architecture_contracts_fase5a.md`;
+para el tutorial, `data/tutorial_script.json` (D-073); para la ayuda contextual,
+`data/context_help.json` y `data/legibility_texts.json`. Si una cifra de balance cambia en un
+parche, se actualizará este manual en la misma entrega.*

@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "legibility_texts.schema.json",
+  "title": "legibility_texts.json — Boletín, Crónica, HUD y paneles (Fase 5A, D-079/D-080/D-083)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "seasons",
+    "hud",
+    "quarterly_bulletin",
+    "annual_chronicle",
+    "battle_panel",
+    "placeholders"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "seasons": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "hud": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "hud",
+        "season_index"
+      ],
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "hud": {
+          "type": "string"
+        },
+        "season_index": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "properties": {
+            "1": {
+              "type": "string"
+            },
+            "2": {
+              "type": "string"
+            },
+            "3": {
+              "type": "string"
+            },
+            "4": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "quarterly_bulletin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "header",
+        "empty",
+        "categories"
+      ],
+      "properties": {
+        "header": {
+          "type": "string"
+        },
+        "empty": {
+          "type": "string"
+        },
+        "categories": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "economy",
+            "support",
+            "actions",
+            "demography",
+            "trade",
+            "events"
+          ],
+          "properties": {
+            "economy": {
+              "$ref": "#/$defs/text_block"
+            },
+            "support": {
+              "$ref": "#/$defs/text_block"
+            },
+            "actions": {
+              "$ref": "#/$defs/text_block"
+            },
+            "demography": {
+              "$ref": "#/$defs/text_block"
+            },
+            "trade": {
+              "$ref": "#/$defs/text_block"
+            },
+            "events": {
+              "$ref": "#/$defs/text_block"
+            }
+          }
+        }
+      }
+    },
+    "annual_chronicle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "intro",
+        "sections"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "intro": {
+          "type": "string"
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "economy",
+            "goods",
+            "events",
+            "wars",
+            "prestige"
+          ],
+          "properties": {
+            "economy": {
+              "$ref": "#/$defs/text_block"
+            },
+            "goods": {
+              "$ref": "#/$defs/text_block"
+            },
+            "events": {
+              "$ref": "#/$defs/text_block"
+            },
+            "wars": {
+              "$ref": "#/$defs/text_block"
+            },
+            "prestige": {
+              "$ref": "#/$defs/text_block"
+            }
+          }
+        }
+      }
+    },
+    "battle_panel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "n2",
+        "n3"
+      ],
+      "properties": {
+        "n2": {
+          "$ref": "#/$defs/battle_panel_entry"
+        },
+        "n3": {
+          "$ref": "#/$defs/battle_panel_entry"
+        }
+      }
+    },
+    "placeholders": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "text_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        },
+        "row": {
+          "type": "string"
+        },
+        "empty": {
+          "type": "string"
+        }
+      }
+    },
+    "battle_panel_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "labels",
+        "commander_status"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hombres",
+            "armas",
+            "apoyo",
+            "moral",
+            "entrenamiento",
+            "comandante",
+            "estado_comandante",
+            "mando"
+          ],
+          "properties": {
+            "hombres": {
+              "type": "string"
+            },
+            "armas": {
+              "type": "string"
+            },
+            "apoyo": {
+              "type": "string"
+            },
+            "moral": {
+              "type": "string"
+            },
+            "entrenamiento": {
+              "type": "string"
+            },
+            "comandante": {
+              "type": "string"
+            },
+            "estado_comandante": {
+              "type": "string"
+            },
+            "mando": {
+              "type": "string"
+            }
+          }
+        },
+        "commander_status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sano",
+            "herido",
+            "muerto"
+          ],
+          "properties": {
+            "sano": {
+              "type": "string"
+            },
+            "herido": {
+              "type": "string"
+            },
+            "muerto": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

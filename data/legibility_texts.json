@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "seasons": [
+    "Primavera",
+    "Verano",
+    "Otoño",
+    "Invierno"
+  ],
+  "hud": {
+    "date": "{estación} {año}",
+    "hud": "{estación} {año} — Tesoro: {oro} oro — PG: {pg}",
+    "season_index": {
+      "1": "Primavera",
+      "2": "Verano",
+      "3": "Otoño",
+      "4": "Invierno"
+    }
+  },
+  "quarterly_bulletin": {
+    "header": "Ha terminado el {estación} de {año}",
+    "empty": "No ha ocurrido nada destacable este trimestre.",
+    "categories": {
+      "economy": {
+        "label": "Ingresos y gastos",
+        "template": "Ingresos: {ingresos} oro; gastos: {gastos} oro; neto: {neto} oro."
+      },
+      "support": {
+        "label": "Apoyo popular",
+        "template": "Apoyo medio: {apoyo_medio}/100; regiones en riesgo: {regiones_riesgo}."
+      },
+      "actions": {
+        "label": "Acciones del trimestre",
+        "template": "Has usado {acciones} órdenes; te quedan {pg_restantes} PG."
+      },
+      "demography": {
+        "label": "Nacimientos y muertes",
+        "template": "Nacimientos: {nacimientos}; muertes: {muertes}."
+      },
+      "trade": {
+        "label": "Mercaderes y expediciones",
+        "template": "Mercaderes asignados: {mercaderes}; expediciones activas: {expediciones}."
+      },
+      "events": {
+        "label": "Eventos",
+        "template": "{eventos}",
+        "empty": "Sin eventos este trimestre."
+      }
+    }
+  },
+  "annual_chronicle": {
+    "title": "Crónica del año {año}",
+    "intro": "El año {año} ha terminado. Este es el balance de tu reino.",
+    "sections": {
+      "economy": {
+        "label": "Oro y tesorería",
+        "template": "Tesoro final: {oro} oro; ingresos del año: {ingresos} oro; gastos: {gastos} oro."
+      },
+      "goods": {
+        "label": "Bienes producidos",
+        "template": "{bien}: {cantidad}",
+        "empty": "No se produjeron bienes este año."
+      },
+      "events": {
+        "label": "Eventos del año",
+        "template": "{evento}",
+        "empty": "Sin eventos este año."
+      },
+      "wars": {
+        "label": "Guerras",
+        "template": "{guerra}",
+        "empty": "Sin guerras declaradas este año."
+      },
+      "prestige": {
+        "label": "Ranking de prestigio",
+        "row": "{posicion}. {faccion}: {prestigio}",
+        "empty": "Sin datos de prestigio."
+      }
+    }
+  },
+  "battle_panel": {
+    "n2": {
+      "title": "Información de unidad — N2",
+      "labels": {
+        "hombres": "Hombres",
+        "armas": "Armas",
+        "apoyo": "Apoyo",
+        "moral": "Moral",
+        "entrenamiento": "Entrenamiento",
+        "comandante": "Comandante",
+        "estado_comandante": "Estado",
+        "mando": "Mando"
+      },
+      "commander_status": {
+        "sano": "Sano",
+        "herido": "Herido",
+        "muerto": "Muerto"
+      }
+    },
+    "n3": {
+      "title": "Información de unidad — N3",
+      "labels": {
+        "hombres": "Hombres",
+        "armas": "Armas",
+        "apoyo": "Apoyo",
+        "moral": "Moral",
+        "entrenamiento": "Entrenamiento",
+        "comandante": "Comandante",
+        "estado_comandante": "Estado",
+        "mando": "Mando"
+      },
+      "commander_status": {
+        "sano": "Sano",
+        "herido": "Herido",
+        "muerto": "Muerto"
+      }
+    }
+  },
+  "placeholders": {
+    "{estación}": "Primavera, Verano, Otoño o Invierno según el trimestre actual (derivado del reloj, D-079).",
+    "{año}": "Año de la partida (1337-1399 en el escenario activo).",
+    "{oro}": "Oro disponible o tesoro final, según el contexto.",
+    "{pg}": "Puntos de Gobierno disponibles en el trimestre actual.",
+    "{ingresos}": "Oro ingresado en el trimestre o en el año.",
+    "{gastos}": "Oro gastado en mantenimiento y recargos en el trimestre o en el año.",
+    "{neto}": "Diferencia entre ingresos y gastos (puede ser negativa).",
+    "{apoyo_medio}": "Apoyo popular medio de las regiones propias (0-100).",
+    "{regiones_riesgo}": "Número de regiones propias con apoyo bajo (<20).",
+    "{acciones}": "Número de órdenes registradas en el trimestre (log de acciones).",
+    "{pg_restantes}": "Puntos de Gobierno que quedan sin gastar al cerrar el trimestre.",
+    "{nacimientos}": "Nacimientos en la corte durante el trimestre o el año.",
+    "{muertes}": "Muertes de personajes de la corte durante el trimestre o el año.",
+    "{mercaderes}": "Comerciantes asignados al comercio por la facción.",
+    "{expediciones}": "Expediciones comerciales activas (en tránsito).",
+    "{eventos}": "Lista de eventos ocurridos, ya formateada por el motor.",
+    "{bien}": "Nombre de una mercancía (grano, sal, lana, vino, armas, caballos…).",
+    "{cantidad}": "Cantidad producida o comerciada de un bien.",
+    "{evento}": "Una línea de evento histórico ya formateada por el motor.",
+    "{guerra}": "Una línea de guerra declarada/terminada ya formateada por el motor.",
+    "{posicion}": "Posición en el ranking de prestigio (1 = mayor prestigio).",
+    "{faccion}": "Nombre de una facción jugable.",
+    "{prestigio}": "Valor de prestigio de la facción en el ranking.",
+    "{hombres}": "Número de hombres de la unidad seleccionada.",
+    "{armas}": "Valor de armamento/equipo de la unidad.",
+    "{apoyo}": "Apoyo o suministro de la unidad en batalla.",
+    "{moral}": "Moral actual de la unidad.",
+    "{entrenamiento}": "Experiencia/entrenamiento de la unidad (0-100).",
+    "{comandante}": "Nombre del comandante de la unidad o del ejército.",
+    "{estado_comandante}": "Sano, Herido o Muerto.",
+    "{mando}": "Stat de Mando del comandante."
+  }
+}
