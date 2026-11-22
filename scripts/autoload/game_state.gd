@@ -99,6 +99,10 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		"tutorial": {"active": false, "step_index": 0, "completed_steps": [], "skipped": false},
 		# D-074/task-71: acciones singulares usadas en el turno actual.
 		"actions_used": {},
+		# D-079/D-080/D-082 Fase 5A: presentación legible.
+		"chronicle": [],
+		"turn_actions": [],
+		"advisor_enabled": difficulty == "beginner",
 	}
 	_build_characters(start_year)
 	_build_factions(scenario, start_year)
@@ -148,6 +152,8 @@ func to_dict() -> Dictionary:
 	if rng != null:
 		state["rng"] = rng.snapshot()
 	var copy: Dictionary = state.duplicate(true)
+	# D-081: turn_actions es estado transitorio de presentación, NO se serializa.
+	copy.erase("turn_actions")
 	copy["rng"] = _rng_snapshot_json_safe()
 	var canonical: Variant = _canonicalize(copy)
 	if canonical is Dictionary:
@@ -293,6 +299,12 @@ func _ensure_phase4_defaults() -> void:
 		return
 	if not state.has("difficulty") or not ["beginner", "normal"].has(str(state.get("difficulty"))):
 		state["difficulty"] = "normal"
+	# D-080/D-081/D-082: defaults para saves antiguos, sin subir save_version.
+	if not state.has("chronicle") or not state.get("chronicle") is Array:
+		state["chronicle"] = []
+	state["turn_actions"] = []
+	if not state.has("advisor_enabled"):
+		state["advisor_enabled"] = str(state.get("difficulty")) == "beginner"
 	if not state.has("tutorial"):
 		state["tutorial"] = {"active": false, "step_index": 0, "completed_steps": [], "skipped": false}
 	TutorialSystem.ensure_state()
@@ -320,6 +332,90 @@ func set_difficulty(value: String) -> bool:
 		return false
 	state["difficulty"] = value
 	return true
+
+
+## D-079: estaciones derivadas del trimestre (sin estado nuevo).
+const SEASON_NAMES: Array[String] = ["Primavera", "Verano", "Otoño", "Invierno"]
+
+
+func get_season_index() -> int:
+	return clampi(SafeDict.as_int(state.get("quarter"), quarter), 1, 4)
+
+
+func get_season_name(quarter_override: int = -1) -> String:
+	var q: int = quarter_override if quarter_override > 0 else get_season_index()
+	return SEASON_NAMES[clampi(q, 1, 4) - 1]
+
+
+func get_season_label() -> String:
+	return "%s %d" % [get_season_name(), SafeDict.as_int(state.get("year"), year)]
+
+
+## D-081: log transitorio de órdenes del trimestre (no se serializa).
+func record_turn_action(action: String, target: String = "", pg: int = 0) -> void:
+	if state.is_empty() or action == "":
+		return
+	var entries: Array = SafeDict.as_array(state.get("turn_actions", null))
+	entries.append({"action": action, "target": target, "pg": pg})
+	state["turn_actions"] = entries
+
+
+func get_turn_actions() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for entry_value in SafeDict.as_array(state.get("turn_actions", null)):
+		result.append(SafeDict.as_dict(entry_value).duplicate(true))
+	return result
+
+
+func clear_turn_actions() -> void:
+	if state.is_empty():
+		return
+	state["turn_actions"] = []
+
+
+## D-080: crónica persistida.
+func append_chronicle(entry: Dictionary) -> Dictionary:
+	if state.is_empty():
+		return {}
+	var normalized: Dictionary = {
+		"year": SafeDict.as_int(entry.get("year"), SafeDict.as_int(state.get("year"), year)),
+		"season_or_year": SafeDict.as_string(entry.get("season_or_year"), get_season_label()),
+		"kind": SafeDict.as_string(entry.get("kind"), "quarter"),
+		"text": SafeDict.as_string(entry.get("text"), ""),
+	}
+	var entries: Array = SafeDict.as_array(state.get("chronicle", null))
+	entries.append(normalized)
+	state["chronicle"] = entries
+	return normalized.duplicate(true)
+
+
+func get_chronicle(filter_year: int = -1) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for entry_value in SafeDict.as_array(state.get("chronicle", null)):
+		var entry: Dictionary = SafeDict.as_dict(entry_value)
+		if filter_year > 0 and SafeDict.as_int(entry.get("year"), -1) != filter_year:
+			continue
+		result.append(entry.duplicate(true))
+	return result
+
+
+func get_chronicle_text(filter_year: int = -1) -> String:
+	var lines: Array[String] = []
+	for entry in get_chronicle(filter_year):
+		lines.append("[%s] %s" % [SafeDict.as_string(entry.get("season_or_year"), ""),
+			SafeDict.as_string(entry.get("text"), "")])
+	return "\n".join(lines)
+
+
+## D-082: conmutador del Consejero (persistido).
+func set_advisor_enabled(value: bool) -> void:
+	if state.is_empty():
+		return
+	state["advisor_enabled"] = value
+
+
+func is_advisor_enabled() -> bool:
+	return SafeDict.as_bool(state.get("advisor_enabled"), get_difficulty() == "beginner")
 
 
 ## task-71: acciones singulares por facción/turno. Reset al iniciar trimestre.

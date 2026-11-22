@@ -41,6 +41,8 @@ func begin_turn(faction_id: String) -> void:
 	sync_clock_from_state()
 	current_faction_id = faction_id
 	GameState.current_faction_id = faction_id
+	# D-081: el boletín de órdenes empieza limpio en cada turno.
+	GameState.clear_turn_actions()
 	remaining_pg = calculate_pg(faction_id)
 	_set_faction_pg(faction_id, remaining_pg)
 	phase = "governance"

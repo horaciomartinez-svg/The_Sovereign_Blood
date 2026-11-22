@@ -469,6 +469,76 @@ func unit_recruit_cost(unit_id: String, amount: int) -> Dictionary:
 	return SafeDict.as_dict(mil.call("get_unit_recruit_cost", unit_id, amount))
 
 
+# --- Fase 5A: legibilidad (D-079…D-083) -----------------------------------
+
+func turn_actions() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var value: Variant = gs.call("get_turn_actions")
+	if value is Array:
+		for item in value:
+			if item is Dictionary:
+				result.append(item)
+	return result
+
+
+func record_turn_action(action: String, target: String = "", pg: int = 0) -> void:
+	gs.call("record_turn_action", action, target, pg)
+
+
+func clear_turn_actions() -> void:
+	gs.call("clear_turn_actions")
+
+
+func chronicle(year: int = -1) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var value: Variant = gs.call("get_chronicle", year)
+	if value is Array:
+		for item in value:
+			if item is Dictionary:
+				result.append(item)
+	return result
+
+
+func append_chronicle(entry: Dictionary) -> Dictionary:
+	return SafeDict.as_dict(gs.call("append_chronicle", entry))
+
+
+func chronicle_text(year: int = -1) -> String:
+	return SafeDict.as_string(gs.call("get_chronicle_text", year), "")
+
+
+func season_index() -> int:
+	return SafeDict.as_int(gs.call("get_season_index"), 0)
+
+
+func season_name(quarter: int = -1) -> String:
+	return SafeDict.as_string(gs.call("get_season_name", quarter), "")
+
+
+func season_label() -> String:
+	return SafeDict.as_string(gs.call("get_season_label"), "")
+
+
+func advisor_enabled() -> bool:
+	return SafeDict.as_bool(gs.call("is_advisor_enabled"), false)
+
+
+func set_advisor_enabled(value: bool) -> void:
+	gs.call("set_advisor_enabled", value)
+
+
+func trade_advice(faction_id: String, region_id: String = "") -> Dictionary:
+	return SafeDict.as_dict(trade.call("get_trade_advice", faction_id, region_id))
+
+
+func context_help(screen: String = "") -> Dictionary:
+	return SafeDict.as_dict(dl.call("get_context_help", screen))
+
+
+func legibility_texts() -> Dictionary:
+	return SafeDict.as_dict(dl.call("get_legibility_texts"))
+
+
 # --- Fase 4: consorte/dificultad/tutorial (D-071/D-073) -------------------
 
 func difficulty() -> String:

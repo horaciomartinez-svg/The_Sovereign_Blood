@@ -37,6 +37,7 @@ const TestMusicScript = preload("res://tests/test_music.gd")
 const TestTradeMilitaryScript = preload("res://tests/test_trade_military.gd")
 const TestPhase4FamilyScript = preload("res://tests/test_phase4_family.gd")
 const TestActionsCostsScript = preload("res://tests/test_actions_costs.gd")
+const TestLegibilityScript = preload("res://tests/test_legibility.gd")
 const HarnessScript = preload("res://tests/harness.gd")
 const ValidatorCore = preload("res://tools/validator_core.gd")
 
@@ -88,6 +89,8 @@ func _initialize() -> void:
 	TestPhase4FamilyScript.new().run(runner, harness)
 	# Fase 4 D-074/D-075: acciones singulares y costes de reclutamiento.
 	TestActionsCostsScript.new().run(runner, harness)
+	# Fase 5A D-079…D-083: legibilidad (turn_actions/crónica/estaciones/consejo).
+	TestLegibilityScript.new().run(runner, harness)
 	_run_data_validation(runner)
 
 	var summary: Dictionary = runner.summary()

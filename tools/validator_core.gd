@@ -659,6 +659,9 @@ func _index_entities() -> void:
 		# D-069/D-073: trade_goods/tutorial_script no son listas de entidades.
 		if kind == "trade_goods" or kind == "tutorial_script":
 			continue
+		# D-082 Fase 5A: textos de presentación (schema sí, sin entidades).
+		if kind == "context_help" or kind == "legibility_texts":
+			continue
 		var root: Variant = _datasets[dataset_path]["data"]
 		var list := _entities_of(root, kind)
 		if list.is_empty():
@@ -695,6 +698,10 @@ func _kind_of(dataset_path: String) -> String:
 		return "audio_tracks"
 	if stem.begins_with("trade_goods") or stem.begins_with("trade_good"):
 		return "trade_goods"
+	if stem.begins_with("context_help") or stem.begins_with("context_hel"):
+		return "context_help"
+	if stem.begins_with("legibility_texts") or stem.begins_with("legibility_text"):
+		return "legibility_texts"
 	if stem.begins_with("tutorial_script") or stem.begins_with("tutorial"):
 		return "tutorial_script"
 	if stem.begins_with("scenario"):

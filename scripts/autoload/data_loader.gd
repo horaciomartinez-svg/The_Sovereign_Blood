@@ -29,6 +29,9 @@ var scenarios: Dictionary = {}
 var events: Dictionary = {}
 ## Tabla `clave → {tile, move_cost, defense, passable, flags}` (D-053).
 var battle_tiles: Dictionary = {}
+## Fase 5A (D-082): textos de presentación; no son datasets de simulación.
+var _context_help_cache: Dictionary = {}
+var _legibility_cache: Dictionary = {}
 var is_loaded: bool = false
 var last_errors: Array[String] = []
 
@@ -152,6 +155,40 @@ func get_battle_tile(key: String) -> Dictionary:
 	if entry is Dictionary:
 		return entry
 	return {}
+
+
+## D-082: ayuda contextual por pantalla (`data/context_help.json`).
+## Formato contrato Fase 5A: claves planas en raíz (screen→{title,lines}).
+## Se acepta `{"contexts":{...}}` solo como fallback de migración.
+func get_context_help(screen: String = "") -> Dictionary:
+	if _context_help_cache.is_empty():
+		var root: Dictionary = load_json(DATA_DIR.path_join("context_help.json"))
+		var nested: Variant = root.get("contexts", null)
+		if nested is Dictionary:
+			_context_help_cache = (nested as Dictionary).duplicate(true)
+		else:
+			_context_help_cache = root.duplicate(true)
+	if screen == "":
+		return _context_help_cache.duplicate(true)
+	return SafeDict.as_dict(_context_help_cache.get(screen, null)).duplicate(true)
+
+
+func get_context_help_screens() -> Array[String]:
+	get_context_help()
+	var result: Array[String] = []
+	for screen in SafeDict.sorted_keys(_context_help_cache):
+		var key: String = str(screen)
+		if key == "schema_version" or key == "contexts":
+			continue
+		result.append(key)
+	return result
+
+
+## D-080/D-082: plantillas de boletín/crónica/HUD (`data/legibility_texts.json`).
+func get_legibility_texts() -> Dictionary:
+	if _legibility_cache.is_empty():
+		_legibility_cache = load_json(DATA_DIR.path_join("legibility_texts.json"))
+	return _legibility_cache.duplicate(true)
 
 
 func has_battle_tile(key: String) -> bool:

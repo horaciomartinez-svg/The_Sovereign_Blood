@@ -102,6 +102,7 @@ func allocate(region_id: String, worker_class: String, amount: int) -> bool:
 		var pool_buffer: int = SafeDict.as_int(region.get("recruit_pool"), 0)
 		region["recruit_pool"] = maxi(0, pool_buffer - delta * Constants.WORKER_POPULATION_PER_UNIT)
 	emit_signal("assignment_changed", region_id, worker_class, amount)
+	GameState.record_turn_action("workers", region_id, 0)
 	EventBus.emit_signal("region_assignment_changed", region_id, worker_class, amount)
 	return true
 
@@ -340,6 +341,7 @@ func build_building(faction_id: String, region_id: String, building_id: String) 
 	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) - cost_gold
 	buildings.append(building_id)
 	region["buildings"] = buildings
+	GameState.record_turn_action("build", "%s:%s" % [region_id, building_id], cost_pg)
 	result["ok"] = true
 	result["reason"] = "ok"
 	EventBus.emit_signal("building_completed", region_id, building_id)

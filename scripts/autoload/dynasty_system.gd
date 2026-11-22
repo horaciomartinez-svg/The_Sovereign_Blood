@@ -81,6 +81,7 @@ func marry(character_id: String, target_character_id: String) -> Dictionary:
 	if not TurnManager.spend_pg_for(faction_a, cost_pg):
 		result["reason"] = "pg"
 		return result
+	GameState.record_turn_action("family:marry", target_character_id, cost_pg)
 
 	family_a["spouse"] = target_character_id
 	family_b["spouse"] = character_id
@@ -220,6 +221,8 @@ func spend_time_with_consort(faction_id: String) -> Dictionary:
 	GameState.mark_action_used(faction_id, "family:consort")
 	if not TurnManager.spend_pg_for(faction_id, Constants.CONSORT_PG_COST):
 		return {"ok": false, "reason": "PG insuficiente"}
+	GameState.record_turn_action("family:consort", SafeDict.as_string(validation.get("spouse_id"), ""),
+		Constants.CONSORT_PG_COST)
 	var current_turn: int = SafeDict.as_int(st.get("turn"), 1)
 	faction["last_consort_turn"] = current_turn
 	faction["fertility_bonus_until_turn"] = current_turn + Constants.CONSORT_FERTILITY_TURNS

@@ -405,6 +405,7 @@ func buy(faction_id: String, region_id: String, good_id: String, qty: int) -> bo
 	# El precio sube al aumentar la demanda (determinista, sin RNG).
 	_update_price_after_trade(trade, region_id, good_id, price, qty, _trade_volume(faction_id), true)
 	EventBus.emit_signal("trade_completed", faction_id, good_id, qty, cost, "buy")
+	GameState.record_turn_action("market:buy", good_id, 0)
 	return true
 
 
@@ -439,6 +440,7 @@ func sell(faction_id: String, region_id: String, good_id: String, qty: int) -> b
 	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) + income
 	_update_price_after_trade(trade, region_id, good_id, price, qty, _trade_volume(faction_id), false)
 	EventBus.emit_signal("trade_completed", faction_id, good_id, qty, income, "sell")
+	GameState.record_turn_action("market:sell", good_id, 0)
 	return true
 
 
@@ -494,6 +496,7 @@ func send_expedition(faction_id: String, good_id: String, qty: int) -> bool:
 	var expeditions: Array = SafeDict.as_array(trade.get("expeditions", null))
 	expeditions.append(expedition)
 	trade["expeditions"] = expeditions
+	GameState.record_turn_action("expedition", good_id, Constants.EXPEDITION_PG_COST)
 	EventBus.emit_signal("expedition_sent", faction_id, good_id, qty, expedition["return_turn"])
 	return true
 
@@ -546,3 +549,75 @@ func can_consume_goods(faction_id: String, requirements: Dictionary) -> bool:
 		if SafeDict.as_float(inventory.get(good_id), 0.0) < SafeDict.as_float(requirements.get(good_id), 0.0):
 			return false
 	return true
+
+
+## D-082: consejo comercial determinista (sin RNG) por margen precio/base.
+## Devuelve {ok, good_id, kind:"sell"|"buy"|"hold", price, base, margin, text,
+## expedition_return_turn}. Elige la mayor venta disponible o, si no hay
+## inventario, la compra con menor margen; incluye el retorno de expediciones.
+func get_trade_advice(faction_id: String, region_id: String = "") -> Dictionary:
+	var trade: Dictionary = ensure_state()
+	if trade.is_empty():
+		return {"ok": false, "reason": "sin partida", "kind": "hold", "text": ""}
+	var trade_available: bool = can_trade(faction_id)
+	var inventory: Dictionary = get_inventory(faction_id)
+	var best_sell: Dictionary = {}
+	var best_buy: Dictionary = {}
+	var best_sell_margin: float = -999.0
+	var best_buy_margin: float = 999.0
+	for good_id in SafeDict.sorted_keys(_goods):
+		var base: float = get_base_price(good_id)
+		if base <= 0.0:
+			continue
+		var price: float = get_good_price(faction_id, good_id, region_id)
+		var margin: float = price / base - 1.0
+		var amount: float = SafeDict.as_float(inventory.get(good_id), 0.0)
+		if amount > 0.0 and margin > best_sell_margin:
+			best_sell_margin = margin
+			best_sell = {"good_id": good_id, "price": price, "base": base, "margin": margin}
+		if margin < best_buy_margin:
+			best_buy_margin = margin
+			best_buy = {"good_id": good_id, "price": price, "base": base, "margin": margin}
+	var expedition_return_turn: int = 0
+	var current_turn: int = SafeDict.as_int(GameState.state.get("turn"), 1)
+	for expedition_value in get_expeditions():
+		var expedition: Dictionary = SafeDict.as_dict(expedition_value)
+		if SafeDict.as_string(expedition.get("faction"), "") != faction_id:
+			continue
+		var return_turn: int = SafeDict.as_int(expedition.get("return_turn"), 0)
+		if return_turn > current_turn and (expedition_return_turn == 0 or return_turn < expedition_return_turn):
+			expedition_return_turn = return_turn
+	var choice: Dictionary = best_sell if not best_sell.is_empty() else best_buy
+	if choice.is_empty():
+		return {"ok": false, "reason": "sin mercancías", "kind": "hold", "text": ""}
+	var kind: String = "sell" if not best_sell.is_empty() else "buy"
+	var good_id: String = SafeDict.as_string(choice.get("good_id"), "")
+	var price: float = SafeDict.as_float(choice.get("price"), 0.0)
+	var base: float = SafeDict.as_float(choice.get("base"), 1.0)
+	var margin: float = SafeDict.as_float(choice.get("margin"), 0.0)
+	var text: String = ""
+	if kind == "sell":
+		text = "Vende %s: precio %.2f (base %.2f, margen %+d%%)." % [
+			_good_name(good_id), price, base, int(roundf(margin * 100.0))]
+	else:
+		text = "Compra %s: precio %.2f (base %.2f, margen %+d%%)." % [
+			_good_name(good_id), price, base, int(roundf(margin * 100.0))]
+	if expedition_return_turn > 0:
+		text += " Una expedición vuelve en el turno %d." % expedition_return_turn
+	if not trade_available:
+		text += " Asigna comerciantes en el mercado para operar."
+	return {
+		"ok": true,
+		"good_id": good_id,
+		"kind": kind,
+		"price": snappedf(price, 0.01),
+		"base": snappedf(base, 0.01),
+		"margin": snappedf(margin, 0.001),
+		"can_trade": trade_available,
+		"text": text,
+		"expedition_return_turn": expedition_return_turn,
+	}
+
+
+func _good_name(good_id: String) -> String:
+	return SafeDict.as_string(get_good_definition(good_id).get("name"), good_id)

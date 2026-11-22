@@ -71,6 +71,11 @@ func propose(actor: String, target: String, action: Dictionary) -> Dictionary:
 	if cost_pg > 0 and action_type != "marriage" and not TurnManager.spend_pg_for(actor, cost_pg):
 		result["reason"] = "pg"
 		return result
+	# D-081: log de órdenes del trimestre (presentación; no simula).
+	if action_type == "espia":
+		GameState.record_turn_action("espionage", target, cost_pg)
+	elif action_type != "marriage":
+		GameState.record_turn_action("diplomacy:%s" % action_type, target, cost_pg)
 
 	emit_signal("proposal_sent", actor, target, action_type)
 	EventBus.emit_signal("proposal_sent", actor, target, action_type)
