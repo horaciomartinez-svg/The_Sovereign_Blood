@@ -16,6 +16,7 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const MapBordersLayer = preload("res://scripts/ui/map/map_borders_layer.gd")
 const MapInteractiveLayer = preload("res://scripts/ui/map/map_interactive_layer.gd")
 const MapEntitiesLayer = preload("res://scripts/ui/map/map_entities_layer.gd")
@@ -112,6 +113,7 @@ var _tactical_pending_report: Dictionary = {}
 
 func _ready() -> void:
 	TSBGame.ensure_data()
+	UIAudio.play_music("map")
 	_build_world()
 	_build_hud()
 	_build_council()
@@ -1456,6 +1458,8 @@ func _on_overlay_closed() -> void:
 	_overlay = null
 	_overlay_kind = ""
 	_refresh_all()
+	if closed_kind in ["tactical", "battle", "victory", "year_end", "close"]:
+		UIAudio.play_music("map")
 	if not _tactical_pending_report.is_empty():
 		var report := _tactical_pending_report
 		_tactical_pending_report = {}

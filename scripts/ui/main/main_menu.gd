@@ -5,6 +5,7 @@ extends Control
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const ParchmentBackdrop = preload("res://scripts/ui/widgets/parchment_backdrop.gd")
 const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
 
@@ -21,6 +22,7 @@ func _ready() -> void:
 	UIKit.apply_theme(self)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	TSBGame.ensure_data()
+	UIAudio.play_music("menu")
 	_build()
 	_refresh()
 

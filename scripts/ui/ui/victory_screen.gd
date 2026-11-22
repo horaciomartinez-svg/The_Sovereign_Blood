@@ -3,6 +3,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## Se abre al recibir EventBus.game_over / GameState.game_over.
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 const WORLD_MAP_SCENE := "res://scenes/map/world_map.tscn"
 
@@ -11,6 +12,7 @@ var _body: VBoxContainer = null
 
 
 func _build_content() -> void:
+	UIAudio.play_music("end")
 	dialog.custom_minimum_size = Vector2(1120, 780)
 	_body = add_body_scroll()
 	UIKit.hsep(content, Palette.with_alpha(Palette.GOLD_DIM, 0.8))

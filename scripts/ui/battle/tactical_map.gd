@@ -13,6 +13,7 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const GameConstants = preload("res://scripts/utils/game_constants.gd")
 const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
@@ -192,6 +193,7 @@ func _begin_level1() -> void:
 # Nivel 2
 # ==========================================================================
 func _begin_level2() -> void:
+	UIAudio.play_music("battle_n2")
 	var attacker := str(_context.get("attacker_army_id", ""))
 	var defender := str(_context.get("defender_army_id", ""))
 	var region_id := str(_context.get("region_id", ""))

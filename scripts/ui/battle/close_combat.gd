@@ -10,6 +10,7 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
 const BattleTileView = preload("res://scripts/ui/battle/battle_tile_view.gd")
@@ -62,6 +63,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 85
+	UIAudio.play_music("battle_n3")
 	var dim := ColorRect.new()
 	dim.color = Color(0.02, 0.03, 0.05, 0.72)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

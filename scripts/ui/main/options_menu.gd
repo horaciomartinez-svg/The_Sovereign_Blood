@@ -30,6 +30,9 @@ func _ready() -> void:
 
 func open(in_game: bool) -> void:
 	_in_game = in_game
+	# Pausa la música mientras el juego está en pausa (opciones in-game).
+	if _in_game:
+		UIAudio.set_music_paused(true)
 	_rebuild_content()
 	visible = true
 
@@ -70,13 +73,62 @@ func _rebuild_content() -> void:
 
 	var mute_check := CheckButton.new()
 	mute_check.text = "Silenciar audio"
-	mute_check.tooltip_text = "Activa/desactiva los tonos de UI (click, campana de fin de año, espada N3)."
-	mute_check.button_pressed = _is_audio_muted()
+	mute_check.tooltip_text = "Activa/desactiva música y efectos de sonido."
+	mute_check.button_pressed = UIAudio.is_muted()
 	mute_check.toggled.connect(_on_mute_toggled)
 	_content.add_child(mute_check)
 
-	var info := UIKit.label(_content, "Resolución de diseño 1920×1080 · escalado por canvas_items\nAudio: tonos generados por AudioManager (click, campana de fin de año, espada N3); sin assets externos.", "InkLabel")
-	info.add_theme_font_size_override("font_size", 16)
+	var audio_title := UIKit.label(_content, "AUDIO", "InkLabel")
+	audio_title.add_theme_font_size_override("font_size", 18)
+	audio_title.add_theme_color_override("font_color", Palette.CRIMSON)
+
+	var music_row := UIKit.hbox(_content, 10)
+	var music_label := UIKit.label(music_row, "Música", "InkLabel")
+	music_label.custom_minimum_size = Vector2(110, 0)
+	music_label.tooltip_text = "Volumen de la banda sonora (por defecto −6 dB)."
+	var music_slider := HSlider.new()
+	music_slider.min_value = -40.0
+	music_slider.max_value = 6.0
+	music_slider.step = 1.0
+	music_slider.value = UIAudio.music_volume_db()
+	music_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	music_slider.custom_minimum_size = Vector2(240, 28)
+	music_slider.tooltip_text = "Música: %d dB" % int(UIAudio.music_volume_db())
+	music_row.add_child(music_slider)
+	var music_value := UIKit.label(music_row, "%d dB" % int(UIAudio.music_volume_db()), "InkLabel", HORIZONTAL_ALIGNMENT_RIGHT)
+	music_value.custom_minimum_size = Vector2(70, 0)
+	music_value.add_theme_font_size_override("font_size", 14)
+	music_slider.value_changed.connect(func(value: float) -> void:
+		music_value.text = "%d dB" % int(value)
+		music_slider.tooltip_text = "Música: %d dB" % int(value)
+		UIAudio.set_music_volume_db(value)
+	)
+
+	var sfx_row := UIKit.hbox(_content, 10)
+	var sfx_label := UIKit.label(sfx_row, "Efectos", "InkLabel")
+	sfx_label.custom_minimum_size = Vector2(110, 0)
+	sfx_label.tooltip_text = "Volumen de clicks, campana de fin de año y espada N3."
+	var sfx_slider := HSlider.new()
+	sfx_slider.min_value = -40.0
+	sfx_slider.max_value = 6.0
+	sfx_slider.step = 1.0
+	sfx_slider.value = UIAudio.sfx_volume_db()
+	sfx_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sfx_slider.custom_minimum_size = Vector2(240, 28)
+	sfx_slider.tooltip_text = "Efectos: %d dB" % int(UIAudio.sfx_volume_db())
+	sfx_row.add_child(sfx_slider)
+	var sfx_value := UIKit.label(sfx_row, "%d dB" % int(UIAudio.sfx_volume_db()), "InkLabel", HORIZONTAL_ALIGNMENT_RIGHT)
+	sfx_value.custom_minimum_size = Vector2(70, 0)
+	sfx_value.add_theme_font_size_override("font_size", 14)
+	sfx_slider.value_changed.connect(func(value: float) -> void:
+		sfx_value.text = "%d dB" % int(value)
+		sfx_slider.tooltip_text = "Efectos: %d dB" % int(value)
+		UIAudio.set_sfx_volume_db(value)
+	)
+	sfx_slider.drag_ended.connect(func(_changed: bool) -> void: UIAudio.play_click())
+
+	var info := UIKit.label(_content, "Resolución de diseño 1920×1080 · escalado por canvas_items\nMúsica y SFX se guardan en user://; la música de fondo no se corta al guardar/cargar.", "InkLabel")
+	info.add_theme_font_size_override("font_size", 15)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 	if _in_game:
@@ -85,6 +137,8 @@ func _rebuild_content() -> void:
 		save.pressed.connect(_on_save)
 		var load_button := UIKit.button(_content, "Cargar autoguardado", "", "Restaura user://saves/autosave.json vía GameState.load_game()")
 		load_button.disabled = not TSBGame.has_save("autosave")
+		if load_button.disabled:
+			load_button.tooltip_text = "No hay autoguardado disponible todavía."
 		load_button.pressed.connect(_on_load)
 		var menu := UIKit.button(_content, "Salir al menú principal", "DangerButton")
 		menu.pressed.connect(_on_main_menu)
@@ -105,20 +159,13 @@ func _on_fullscreen_toggled(enabled: bool) -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 
-func _audio() -> Node:
-	return get_node_or_null("/root/AudioManager")
-
-
 func _is_audio_muted() -> bool:
-	var audio := _audio()
-	return bool(audio.call("is_muted")) if audio != null and audio.has_method("is_muted") else false
+	return UIAudio.is_muted()
 
 
 func _on_mute_toggled(enabled: bool) -> void:
 	UIAudio.play_click()
-	var audio := _audio()
-	if audio != null and audio.has_method("set_muted"):
-		audio.call("set_muted", enabled)
+	UIAudio.set_muted(enabled)
 
 
 func _on_save() -> void:
@@ -146,6 +193,8 @@ func _set_status(text: String) -> void:
 
 
 func close_overlay() -> void:
+	if _in_game:
+		UIAudio.set_music_paused(false)
 	closed.emit()
 	queue_free()
 

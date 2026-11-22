@@ -3,12 +3,14 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## Se abre al recibir EventBus.year_advanced / TurnManager.year_advanced.
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 
 var _year: int = 0
 var _body: VBoxContainer = null
 
 
 func _build_content() -> void:
+	UIAudio.play_music("year_end")
 	dialog.custom_minimum_size = Vector2(1180, 760)
 	_body = add_body_scroll()
 	add_footer("COMENZAR EL AÑO SIGUIENTE")
