@@ -1155,3 +1155,63 @@ ACEPTACIÓN TILES FASE 3: OK — 7/7 criterios PASS (exit 0)
 **task-37 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 — verificación final tiles N3 §10.4 (task-37).*
+
+---
+
+## 17. Fase 3 final — Baseline QA 3 escenarios (task-42, 2026-11-22)
+
+**Contexto:** tramo final de Fase 3 (GDD v1.7 §4.3/§4.4/§4.5/§6.4/§12; `docs/architecture_contracts_fase3_scenarios.md`; D-058..D-062). HEAD `069a5e2`. Estado: solo existe `scenario_1337`/`events_1337`; **faltan** `scenario_1402/1453` y `events_1402/1453`, retratos nuevos y capturas de escenarios; AG-1/AG-2/AG-3 en curso. Plan/matriz: **`docs/qa/fase3_final_plan.md`**. Harness: **`tests/qa_acceptance_fase3_final.gd`** (extends SceneTree, sin GUT; compila siempre).
+
+> **Estado baseline: PENDIENTE (no es rechazo).** Harness final **1 PASS / 0 FAIL / 6 SKIP** (exit 1; sale 0 solo con 7/7 PASS). La verificación final es **task-43**.
+
+### 17.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3_final.gd` | **1** | **1 PASS / 0 FAIL / 6 SKIP**; `BASELINE FINAL FASE 3: PENDIENTE` |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 4 | `--script tests/qa_acceptance_fase3.gd` (sprites) | **0** | **6/6 PASS** |
+| 5 | `--script tests/qa_acceptance_tiles.gd` (tiles) | **0** | **7/7 PASS** |
+| 6 | `--script tests/run_all.gd` | **0** | **1194 / 0 / 1**; `CI: OK` |
+| 7 | `--script tools/validate_data.gd` | **0** | **7 datasets/7 schemas, 5.722 comprobaciones, 0 errores/WARN** |
+| 8 | `--editor --quit` | **0** | 6 `[DONE]`, 0 ERROR/WARNING |
+| 9 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+Salida resumida del harness final:
+```text
+  scenario_1337: true
+  scenario_1402: false
+  scenario_1453: false
+  events_1402.json: false
+  events_1453.json: false
+  [SKIP] F3F-C1 — faltan escenarios/datos: scenario_1402, scenario_1453, events_1402.json, events_1453.json; AG-1/AG-2/AG-3 en curso
+  [SKIP] F3F-C2 — 10 años por escenario: faltan escenarios
+  [SKIP] F3F-C3 — Victoria/derrota: faltan escenarios
+  [SKIP] F3F-C4 — Datos 3 escenarios: faltan escenarios
+  [SKIP] F3F-C5 — Retratos nuevos/5 slots: faltan escenarios
+  [PASS] F3F-C6 — No regresión: 17/17 sprites; 12 tiles; 18 escenas; 27 tests; F1/F2/F3/tiles; scripts fallos=0
+  [SKIP] F3F-C7 — Capturas 1402/1453/selección: faltan
+RESULTADO QA FINAL FASE 3: 1 PASS, 0 FAIL, 6 SKIP (de 7 criterios)
+BASELINE FINAL FASE 3: PENDIENTE — 6 criterio(s) a la espera de módulos en curso (no es rechazo)
+```
+
+### 17.2 Detalle
+
+| Criterio | Baseline | Motivo / evidencia |
+|---|---|---|
+| F3F-C1 3 escenarios→end_year | **SKIP** | Solo `scenario_1337`; faltan `scenario_1402/1453` y sus eventos. |
+| F3F-C2 10 años determinista | **SKIP** | Ídem; no hay escenarios nuevos que simular. |
+| F3F-C3 Victoria/derrota §4.5 | **SKIP** | Sin escenarios nuevos ni APIs de motivo/cierre de AG-2. |
+| F3F-C4 Datos 3 escenarios | **SKIP** | Sin `scenario_1402/1453`, `events_1402/1453`; validate actual 7/7 (solo datasets existentes). |
+| F3F-C5 Retratos 5 slots | **SKIP** | Sin personajes nuevos; la base 1337/fallback se revalidará en task-43. |
+| F3F-C6 No regresión | **PASS** | 17/17 sprites, 12 tiles, 18 escenas, 27 tests, F1/F2/F3/tiles, 0 scripts sin compilar. |
+| F3F-C7 Capturas | **SKIP** | Faltan `scenario_select_1402_1453.png`, `scenario_1402_inicio.png`, `scenario_1453_inicio.png`. |
+
+### 17.3 Riesgos R-F3F (detalle en plan §4)
+
+R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años con crash/cuelgue · R-F3F-03 determinismo/save en 10 años · R-F3F-04 victoria/derrota mal evaluada · R-F3F-05 datos incoherentes (8 jugables, owners por año, eventos, tech) · R-F3F-06 retratos nuevos sin PNG (fallback obligatorio; dependencia Kimi D-062) · R-F3F-07 capturas · R-F3F-08 regresión sprites/tiles · R-F3F-09 concurrencia · R-F3F-10 tech por era.
+
+**Siguiente paso:** cuando AG-1/AG-2/AG-3 cierren, **task-43** re-ejecutará el harness final (debe 7/7 PASS exit 0), la batería completa, revisará capturas y emitirá el veredicto final **«QA Fase 3 final: APROBADO/RECHAZADO»** en `docs/qa/fase3_report.md` + `docs/issues.md`, con la dependencia externa de retratos/animaciones documentada (D-062). Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 final — baseline 3 escenarios (task-42).*
