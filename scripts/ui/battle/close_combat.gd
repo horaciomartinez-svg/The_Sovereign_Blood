@@ -14,6 +14,7 @@ const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
 const BattleTileView = preload("res://scripts/ui/battle/battle_tile_view.gd")
 const BattlefieldGenerator = preload("res://scripts/ui/battle/battlefield_generator.gd")
+const BattleSprites = preload("res://scripts/battle/battle_sprites.gd")
 
 const CARD_LABELS := {
 	"carga": "Carga",
@@ -167,6 +168,9 @@ func _build_battlefield() -> void:
 func _process(delta: float) -> void:
 	if _cc != null and is_instance_valid(_cc):
 		_cc.call("tick_animation", delta * 1000.0)
+		# D-064: idle/attack/hit/dead avanzan cada frame; el render consume el
+		# estado y `sprite_frame_path` que expone el motor de AG-2.
+		_update_battlefield_units()
 		if _field_projectiles != null:
 			_field_projectiles.queue_redraw()
 
@@ -210,9 +214,27 @@ func _update_battlefield_units() -> void:
 	var defender := defender_value as Dictionary if defender_value is Dictionary else {}
 	_field_attacker_foot_extra = _sprite_foot_offset(str(attacker.get("unit_id", "")))
 	_field_defender_foot_extra = _sprite_foot_offset(str(defender.get("unit_id", "")))
-	_apply_field_unit(_field_attacker, _field_attacker_fallback, attacker)
-	_apply_field_unit(_field_defender, _field_defender_fallback, defender, true)
+	_apply_field_unit(_field_attacker, _field_attacker_fallback, attacker, false, _display_frame_path(attacker))
+	_apply_field_unit(_field_defender, _field_defender_fallback, defender, true, _display_frame_path(defender))
 	_layout_battlefield()
+
+
+## D-064: idle se dibuja a 2 fps sobre los cuadros `anim.idle` (reposo lento);
+## attack/hit/dead usan el frame exacto que expone el motor.
+func _display_frame_path(unit: Dictionary) -> String:
+	var path := str(unit.get("sprite_frame_path", ""))
+	if str(unit.get("anim_state", "")) != "idle":
+		return path
+	var sheet_value: Variant = unit.get("sprite_sheet", null)
+	if not (sheet_value is Dictionary):
+		return path
+	var sheet := sheet_value as Dictionary
+	var indices := BattleSprites.state_frame_indices(sheet, "idle")
+	if indices.size() < 2:
+		return path
+	var elapsed_ms := maxf(0.0, float(unit.get("anim_elapsed_ms", 0.0)))
+	var index := posmod(int(floor(elapsed_ms / 500.0)), indices.size())
+	return BattleSprites.frame_path(sheet, indices[index])
 
 
 ## Ajuste de pies para sprites panorámicos 64×43 (bombarda/carro húsita).
@@ -226,10 +248,10 @@ func _sprite_foot_offset(unit_id: String) -> float:
 			return 0.0
 
 
-func _apply_field_unit(sprite: Sprite2D, fallback: ColorRect, unit: Dictionary, mirror_default: bool = false) -> void:
+func _apply_field_unit(sprite: Sprite2D, fallback: ColorRect, unit: Dictionary, mirror_default: bool = false, display_path: String = "") -> void:
 	if sprite == null:
 		return
-	var path := str(unit.get("sprite_frame_path", ""))
+	var path := display_path if not display_path.is_empty() else str(unit.get("sprite_frame_path", ""))
 	var texture := _field_texture(path)
 	var faction_id := str(unit.get("faction", ""))
 	var color := TSBGame.faction_color(faction_id) if not faction_id.is_empty() else Palette.CRIMSON
