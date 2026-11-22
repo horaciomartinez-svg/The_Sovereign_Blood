@@ -72,6 +72,36 @@ func _rebuild() -> void:
 	for entry_value: Variant in summary:
 		if entry_value is Dictionary:
 			_build_unit_card(grid, fid, entry_value as Dictionary)
+	_build_cost_reference()
+
+
+func _build_cost_reference() -> void:
+	UIKit.hsep(_body, Palette.with_alpha(Palette.GOLD_DIM, 0.6))
+	var title := UIKit.label(_body, "Costes de referencia por bloque (200 hombres)", "InkLabel")
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Palette.CRIMSON)
+	var hint := UIKit.label(_body, "Caballería > arqueros/infantería ligera; artillería > caballería. El coste real se descuenta al reclutar y se muestra en cada tarjeta.", "InkLabel")
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_color_override("font_color", Palette.MUTED)
+	var list := UIKit.vbox(_body, 2)
+	var gold_parts: Array[String] = []
+	var goods_parts: Array[String] = []
+	for unit_id: String in ["militia_spearman", "longbowman", "men_at_arms", "bombarda"]:
+		var cost := TSBGame.unit_recruit_cost(unit_id, 100)
+		gold_parts.append("%s %d" % [TSBGame.unit_name(unit_id), int(cost.get("per_block_gold", 0))])
+		var goods := _goods_text(cost.get("per_block_goods", {}))
+		if not goods.is_empty():
+			goods_parts.append("%s: %s" % [TSBGame.unit_name(unit_id), goods])
+	var summary := UIKit.label(list, "Oro/bloque (200 hombres): " + " · ".join(gold_parts), "InkLabel")
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	summary.add_theme_font_size_override("font_size", 13)
+	summary.add_theme_color_override("font_color", Palette.INK_TEXT)
+	if not goods_parts.is_empty():
+		var goods_summary := UIKit.label(list, "Mercancías/bloque: " + " · ".join(goods_parts), "InkLabel")
+		goods_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		goods_summary.add_theme_font_size_override("font_size", 13)
+		goods_summary.add_theme_color_override("font_color", Palette.GOLD_DIM)
 
 
 func _build_unit_card(parent: Node, faction_id: String, entry: Dictionary) -> void:
@@ -108,22 +138,22 @@ func _build_unit_card(parent: Node, faction_id: String, entry: Dictionary) -> vo
 		int(roundf(float(entry.get("avg_morale", 1.0)) * 100.0)), int(roundf(float(entry.get("avg_experience", 0.0))))], "InkLabel")
 	morale.add_theme_font_size_override("font_size", 12)
 	morale.add_theme_color_override("font_color", Palette.MUTED)
-	var goods := TSBGame.unit_recruit_goods(unit_id)
-	if not goods.is_empty():
-		var parts: Array[String] = []
-		for good_id: Variant in goods.keys():
-			parts.append("%s %d" % [str(good_id), int(ceilf(float(goods[good_id])))])
-		var goods_label := UIKit.label(column, "Recluta: " + ", ".join(parts), "InkLabel")
-		goods_label.add_theme_font_size_override("font_size", 12)
-		goods_label.add_theme_color_override("font_color", Palette.GOLD_DIM)
+	var cost_label := UIKit.label(column, "", "InkLabel")
+	cost_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	cost_label.add_theme_font_size_override("font_size", 12)
+	cost_label.add_theme_color_override("font_color", Palette.GOLD_DIM)
 	var controls := UIKit.hbox(column, 5)
 	var qty := SpinBox.new()
 	qty.min_value = 1
 	qty.max_value = 500
-	qty.step = 10
+	qty.step = 1
 	qty.value = 100
 	qty.custom_minimum_size = Vector2(80, 32)
 	controls.add_child(qty)
+	cost_label.text = _cost_text(unit_id, int(qty.value))
+	qty.value_changed.connect(func(value: float) -> void:
+		cost_label.text = _cost_text(unit_id, int(value))
+	)
 	var recruit := UIKit.button(controls, "Reclutar", "SmallButton", "Recluta en la región seleccionada; consume oro, pool y mercancías.")
 	recruit.custom_minimum_size = Vector2(96, 32)
 	recruit.pressed.connect(func() -> void: _on_recruit(faction_id, unit_id, qty))
@@ -133,6 +163,31 @@ func _build_unit_card(parent: Node, faction_id: String, entry: Dictionary) -> vo
 	var disband := UIKit.button(controls, "Disolver", "SmallButton", "Disuelve hombres del tipo; devuelve parte del oro y libera pool.")
 	disband.custom_minimum_size = Vector2(96, 32)
 	disband.pressed.connect(func() -> void: _ask_disband(faction_id, unit_id, qty))
+
+
+func _cost_text(unit_id: String, amount: int) -> String:
+	var cost := TSBGame.unit_recruit_cost(unit_id, amount)
+	var block := int(cost.get("block_size", 200))
+	var per_goods := _goods_text(cost.get("per_block_goods", {}))
+	var total_goods := _goods_text(cost.get("goods", {}))
+	var per_text := "Por bloque (%d hombres): %d oro · %d reclutas" % [
+		block, int(cost.get("per_block_gold", 0)), int(cost.get("per_block_recruits", 0))]
+	if not per_goods.is_empty():
+		per_text += " · " + per_goods
+	var total_text := "Total para %d: %d oro · %d reclutas" % [
+		amount, int(cost.get("gold", 0)), int(cost.get("recruits", 0))]
+	if not total_goods.is_empty():
+		total_text += " · " + total_goods
+	return per_text + "\n" + total_text
+
+
+func _goods_text(goods_value: Variant) -> String:
+	if not (goods_value is Dictionary):
+		return ""
+	var parts: Array[String] = []
+	for good_id: Variant in (goods_value as Dictionary).keys():
+		parts.append("%s %d" % [str(good_id), int(ceilf(float((goods_value as Dictionary)[good_id])))])
+	return ", ".join(parts)
 
 
 func _selected_region() -> String:
@@ -146,8 +201,17 @@ func _on_recruit(faction_id: String, unit_id: String, qty: SpinBox) -> void:
 	if region_id.is_empty():
 		_set_status("No hay región propia seleccionada para reclutar.")
 		return
-	if TSBGame.recruit(faction_id, region_id, unit_id, int(qty.value)):
-		_set_status("Reclutamiento confirmado: %d de %s." % [int(qty.value), TSBGame.unit_name(unit_id)])
+	var amount := int(qty.value)
+	var cost := TSBGame.unit_recruit_cost(unit_id, amount)
+	var gold_before := TSBGame.gold(faction_id)
+	if TSBGame.recruit(faction_id, region_id, unit_id, amount):
+		var spent := maxi(0, gold_before - TSBGame.gold(faction_id))
+		var goods_text := _goods_text(cost.get("goods", {}))
+		var message := "Reclutados %d de %s: -%d oro, -%d reclutas" % [
+			amount, TSBGame.unit_name(unit_id), spent, int(cost.get("recruits", 0))]
+		if not goods_text.is_empty():
+			message += ", mercancías: " + goods_text
+		_set_status(message + ".")
 	else:
 		_set_status("No se pudo reclutar (%s)." % _reason(TSBGame.recruit_last_error()))
 	_rebuild()

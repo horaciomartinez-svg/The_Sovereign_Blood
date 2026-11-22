@@ -1208,6 +1208,8 @@ func _system(node_name: String, signal_name: String, handler: Callable) -> void:
 
 func _on_turn_started(_quarter: int, _year: int) -> void:
 	_refresh_all()
+	if _overlay != null and is_instance_valid(_overlay) and _overlay.has_method("refresh"):
+		_overlay.call("refresh")
 	_notify("Turno iniciado: %s de %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()])
 
 

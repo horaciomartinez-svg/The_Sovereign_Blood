@@ -41,8 +41,40 @@ func _initialize() -> void:
 		await _overlay_capture("market_no_merchants", "res://scenes/economy/market_screen.tscn", "market")
 		TSBGame.set_trade_merchants(fid, mini(available, 12))
 		await _frames(2)
+	# Añade artillería para que la captura de costes muestre también un 4º tipo.
+	var owned_regions := TSBGame.regions_owned_by(fid)
+	if not owned_regions.is_empty():
+		TSBGame.recruit(fid, str(owned_regions[0]), "bombarda", 40)
+		await _frames(2)
 	await _overlay_capture("army_management", "res://scenes/military/army_management.tscn", "army")
+	# Captura específica de costes visibles (misma pantalla, nombre pedido).
+	_copy_capture("army_management", "army_costs")
+	# Acción diplomática ya usada: el botón debe aparecer deshabilitado.
+	_world.call("_open_overlay", "res://scenes/diplomacy/diplomacy_screen.tscn", "diplomacy", null)
+	await _frames(5)
+	var diplomacy: Variant = _world.get("_overlay")
+	if diplomacy is Node:
+		var target := str(diplomacy.get("_target_id"))
+		if not target.is_empty():
+			TSBGame.mark_action_used("diplomacy:trade_pact:%s" % target)
+			if diplomacy.has_method("refresh"):
+				diplomacy.call("refresh")
+			await _frames(3)
+	await _capture("action_used_diplomacy")
+	if diplomacy is Node and is_instance_valid(diplomacy):
+		(diplomacy as Node).call("close_overlay")
+	await _frames(2)
 	_finish()
+
+
+func _copy_capture(source_name: String, target_name: String) -> void:
+	var source := OUT_DIR.path_join(source_name + ".png")
+	if not FileAccess.file_exists(source):
+		return
+	var image := Image.load_from_file(source)
+	if image != null:
+		image.save_png(OUT_DIR.path_join(target_name + ".png"))
+		print("  [OK] ", target_name, " (copia de ", source_name, ")")
 
 
 func _overlay_capture(file_name: String, scene_path: String, kind: String) -> void:

@@ -233,6 +233,9 @@ func _build_consort_section() -> void:
 		"Fertilidad +18% durante 3 trimestres y +2 de prestigio." if valid else reason.capitalize())
 	action.disabled = not valid
 	action.pressed.connect(_on_consort_action)
+	if TSBGame.action_used("family:consort") or not TSBGame.can_use_action("family:consort"):
+		action.disabled = true
+		action.tooltip_text = "Usado este turno"
 	if not valid:
 		var why := UIKit.label(_detail_box, "No disponible: %s." % (reason if not reason.is_empty() else "consorte no válida"), "InkLabel")
 		why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -312,10 +315,22 @@ func _build_marriage_section(member: Dictionary) -> void:
 	var propose_button := UIKit.button(_detail_box, "Proponer matrimonio", "PrimaryButton", "DynastySystem.marry() — puede crear alianza o pretensión")
 	propose_button.disabled = not TSBGame.has_game()
 	propose_button.pressed.connect(func() -> void: _propose_marriage(str(member.get("id", "")), picker))
+	picker.item_selected.connect(func(_index: int) -> void: _update_marriage_button(propose_button, picker))
+	_update_marriage_button(propose_button, picker)
 	var note := UIKit.label(_detail_box, "La aceptación depende de la relación y la Astucia de las cortes (GDD §5.3).", "InkLabel")
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_font_size_override("font_size", 12)
 	note.add_theme_color_override("font_color", Palette.MUTED)
+
+
+func _update_marriage_button(button: Button, picker: OptionButton) -> void:
+	if picker.item_count == 0 or picker.selected < 0:
+		return
+	var target_id := str(picker.get_item_metadata(picker.selected))
+	var key := "family:marry:%s" % target_id
+	var used := TSBGame.action_used(key) or not TSBGame.can_use_action(key)
+	button.disabled = not TSBGame.has_game() or used
+	button.tooltip_text = "Usado este turno" if used else "DynastySystem.marry() — puede crear alianza o pretensión"
 
 
 func _marriage_candidates(member: Dictionary) -> Array:

@@ -120,6 +120,8 @@ func _rebuild() -> void:
 		expedition_button.disabled = not trade_ok
 		expedition_button.tooltip_text = "Sin comerciantes asignados" if not trade_ok else "Vende en el extranjero; retorno a 2 trimestres."
 		expedition_button.pressed.connect(func() -> void: _on_expedition(fid, expedition_good, expedition_qty))
+		expedition_good.item_selected.connect(func(_index: int) -> void: _update_expedition_button(expedition_button, expedition_good, trade_ok))
+		_update_expedition_button(expedition_button, expedition_good, trade_ok)
 		var expedition_hint := UIKit.label(_body, "Vende mercancía en el extranjero: 2 PG, retorno a los 2 trimestres con beneficio determinista.", "InkLabel")
 		expedition_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		expedition_hint.add_theme_font_size_override("font_size", 13)
@@ -166,6 +168,17 @@ func _build_good_card(parent: Node, faction_id: String, good_id: String, invento
 	sell.disabled = not trade_ok or amount < 1.0
 	sell.tooltip_text = "Faltan comerciantes asignados" if not trade_ok else ("Inventario insuficiente" if amount < 1.0 else "Vende inventario y obtiene oro.")
 	sell.pressed.connect(func() -> void: _on_sell(faction_id, region_id, good_id, qty))
+
+
+func _update_expedition_button(button: Button, picker: OptionButton, trade_ok: bool) -> void:
+	if picker.item_count == 0 or picker.selected < 0:
+		button.disabled = true
+		return
+	var good_id := str(picker.get_item_metadata(picker.selected))
+	var key := "expedition:%s" % good_id
+	var used := TSBGame.action_used(key) or not TSBGame.can_use_action(key)
+	button.disabled = not trade_ok or used
+	button.tooltip_text = "Sin comerciantes asignados" if not trade_ok else ("Usado este turno" if used else "Vende en el extranjero; retorno a 2 trimestres.")
 
 
 func _selected_region() -> String:

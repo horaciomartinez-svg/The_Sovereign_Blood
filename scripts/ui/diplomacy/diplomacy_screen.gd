@@ -204,7 +204,17 @@ func _action_button(parent: Node, action_id: String, at_war: bool, allied: bool)
 		disabled = true
 	if action_id == "marriage" and at_war:
 		disabled = true
+	var action_key := "diplomacy:%s:%s" % [action_id, _target_id]
+	var used_action := TSBGame.action_used(action_key) or not TSBGame.can_use_action(action_key)
+	if used_action:
+		disabled = true
+		button.tooltip_text = "Usado este turno"
+		button.text = label + " · USADO"
 	button.disabled = disabled
+	if used_action:
+		var used_note := UIKit.label(box, "Usado este turno", "InkLabel")
+		used_note.add_theme_font_size_override("font_size", 11)
+		used_note.add_theme_color_override("font_color", Palette.CRIMSON)
 	if action_id != "marriage":
 		button.pressed.connect(func() -> void: _propose(action_id, {}))
 	var estimate_label := UIKit.label(box, "Éxito estimado: %d%%" % estimate, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)

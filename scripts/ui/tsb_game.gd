@@ -11,6 +11,7 @@ extends RefCounted
 ## automaticamente en cuanto `DataLoader.load_all()` devuelve datos reales).
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
+const GameConstants = preload("res://scripts/utils/game_constants.gd")
 const SCENARIO_ID := "scenario_1337"
 
 static var _initialized := false
@@ -967,6 +968,47 @@ static func unit_recruit_goods(unit_id: String) -> Dictionary:
 	return (sheet as Dictionary).duplicate(true) if sheet is Dictionary else {}
 
 
+## D-075: coste de reclutar `amount` hombres de `unit_id`. Usa la API de AG-2
+## si está disponible y, mientras tanto, calcula desde units.json+constantes.
+static func unit_recruit_cost(unit_id: String, amount: int) -> Dictionary:
+	var definition := unit(unit_id)
+	var cost_data: Variant = definition.get("cost", {})
+	var cost: Dictionary = cost_data if cost_data is Dictionary else {}
+	var block_size := maxi(1, int(GameConstants.UNIT_MEN_PER_BLOCK))
+	var blocks := int(ceilf(float(maxi(0, amount)) / float(block_size)))
+	var goods_block := unit_recruit_goods(unit_id)
+	var goods_total: Dictionary = {}
+	for good_id: Variant in goods_block.keys():
+		goods_total[str(good_id)] = float(goods_block[good_id]) * float(blocks)
+	var fallback := {
+		"unit_id": unit_id,
+		"amount": amount,
+		"blocks": blocks,
+		"block_size": block_size,
+		"per_block_gold": int(cost.get("gold", 0)),
+		"per_block_recruits": int(cost.get("recruits", 0)),
+		"per_block_goods": goods_block,
+		"gold": int(cost.get("gold", 0)) * blocks,
+		"recruits": int(cost.get("recruits", 0)) * blocks,
+		"goods": goods_total,
+	}
+	var from_system: Variant = _call("MilitarySystem", "get_unit_recruit_cost", [unit_id, amount])
+	if not (from_system is Dictionary) or (from_system as Dictionary).is_empty():
+		return fallback
+	var out: Dictionary = (from_system as Dictionary).duplicate(true)
+	# Normaliza la API de AG-2 al contrato que consume la pantalla.
+	out["block_size"] = block_size
+	out["per_block_gold"] = int(out.get("gold_per_block", fallback["per_block_gold"]))
+	out["per_block_goods"] = out.get("goods_per_block", fallback["per_block_goods"])
+	out["per_block_recruits"] = int(fallback["per_block_recruits"])
+	out["recruits"] = int(fallback["recruits"])
+	if not out.has("gold"):
+		out["gold"] = fallback["gold"]
+	if not out.has("goods"):
+		out["goods"] = fallback["goods"]
+	return out
+
+
 # D-069: fachada de mercancías/comercio (TradeSystem).
 static func trade_goods_ids() -> Array[String]:
 	var result: Variant = _call("TradeSystem", "get_goods_ids", [])
@@ -1145,6 +1187,21 @@ static func tutorial_skip() -> bool:
 static func tutorial_steps_count() -> int:
 	var result: Variant = _call("TutorialSystem", "get_steps_count", [])
 	return int(result) if result != null else 0
+
+
+static func action_used(key: String) -> bool:
+	var result: Variant = _call("GameState", "is_action_used", [player_faction(), key])
+	return bool(result) if result != null else false
+
+
+static func can_use_action(key: String) -> bool:
+	var result: Variant = _call("GameState", "can_use_action", [player_faction(), key])
+	return bool(result) if result != null else true
+
+
+static func mark_action_used(key: String) -> bool:
+	var result: Variant = _call("GameState", "mark_action_used", [player_faction(), key])
+	return bool(result) if result != null else false
 
 
 static func consort_info(faction_id: String) -> Dictionary:
