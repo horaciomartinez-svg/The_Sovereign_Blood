@@ -255,3 +255,33 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** el REA §6 exige que el arma se reconozca en silueta; el usuario pide mínimo milicia, ballesteros, arqueros, almogávar y jenízaro a 64 px reales.
 **Decisión:** las capturas de aceptación serán a tamaño real 64 px (sin zoom) de `militia_spearman`, `crossbowmen`, `longbowman`, `almogavar` y `janissary`, además de una captura N2 y otra N3 con sprites/proyectiles; se guardan en `docs/screenshots/` y se revisan visualmente.
 **Consecuencia:** criterio objetivo y mínimo para cerrar la integración de sprites.
+
+## D-051 · Sincronización y normalización del GDD v1.7 (2026-11-22)
+**Contexto:** el usuario indica que el GDD v1.7 ya está en main y añade §10.4 (tiles del campo de batalla N3); el fichero del workspace tenía el contenido v1.7 (incluido §10.4) pero el campo «Versión del documento» seguía marcando 1.5, y el repo estaba en v1.6.
+**Decisión:** se copia el GDD al repo, se normaliza la versión a **1.7** (coherente con «Estado»), se sincroniza el master del workspace y se adopta §10.4 como vinculante; commit `[GDD]`.
+**Consecuencia:** repo y master coinciden en v1.7; la verificación externa de Kimi se hará contra esta versión.
+
+## D-052 · Reparto de la integración de tiles §10.4 (2026-11-22)
+**Contexto:** el usuario asigna la extracción/render/generador de tiles a AG-3 y la tabla/reglas a AG-2; el scope habitual de assets es de AG-5, que acaba de cerrar los sprites.
+**Decisión:** AG-3 extrae los 12 tiles (producción 512 y `src/` raw 1024), implementa el campo N3 y el generador; AG-2 crea `battle_tiles` (datos+schema+validación) y las reglas tácticas; AG-4 valida. AG-5 no toca la escena N3 durante este módulo (orden tiles→unidades ya satisfecho). Se sigue el reparto explícito del usuario sobre el scope genérico de AG-5.
+**Consecuencia:** sin pisar archivos y con una sola fuente de verdad por capa.
+
+## D-053 · `battle_tiles`: formato, validación y balance (2026-11-22)
+**Contexto:** §10.4/README definen la tabla con `tile`, `move_cost`, `defense`, `passable` y flags `cavalry_penalty`/`move_bonus`; `validate_data.gd` debe validarla sin WARN.
+**Decisión:** se crea `data/battle_tiles.json` (envelope D-009) + `data/schema/battle_tiles.schema.json`; AG-2 añade el reconocimiento del dataset en `tools/validator_core.gd` (dato de juego con reglas cruzadas: 12 claves, rutas `res://assets/art/battle/tiles/*.png` existentes, flags coherentes con passable). Valores de balance: pastizal/pradera 1/0, río y montaña impassable, puente 1/0, puente_villa 1/1, colina 2/1, bosque 2/1 + cavalry_penalty, villa 1/1, villa_calle 1/0 + move_bonus, camino 0,5/0 + move_bonus (GDD §6.4 + README v1.7).
+**Consecuencia:** datos validados en CI y balance único; cualquier ajuste futuro se registra aquí.
+
+## D-054 · Render de tiles: escala, rotación y fuentes (2026-11-22)
+**Contexto:** los tiles llegan a 512×512 y el N3 se juega a sprites 64×64 ×2; río/puente/puente_villa/camino traen la banda horizontal.
+**Decisión:** producción importada a **512** y dibujada a **128×128** en pantalla N3 (escalable ×2/×3); rotación **90° en motor** (sin assets duplicados) para el sentido vertical de río/puente/puente_villa/camino; `_raw_1024` en `src/` con `.gdignore`. La geometría del agua es idéntica en río/puente/puente_villa; las sustituciones de casillas son lógicas/render.
+**Consecuencia:** un solo asset por tipo y continuidad visual del río.
+
+## D-055 · Generador de campos N3 derivado de la región (2026-11-22)
+**Contexto:** §10.4 exige que la distribución de terreno se derive de la región estratégica y que el río corte el campo con 1-2 puentes.
+**Decisión:** AG-3 implementa un generador determinista (semilla de partida/región) que mapea `region.terrain` (plains/forest/mountain/coast/city) a proporciones de pastizal/pradera/bosque/colinas/montaña/río, traza un río continuo de orilla a orilla con 1-2 cruces (sustituyendo casillas por `puente`/`puente_villa`), coloca la villa en el asentamiento sitiado y caminos desde el despliegue a villa/puente. Expone la rejilla para el render N3; la lógica de movimiento/defensa la aporta AG-2.
+**Consecuencia:** cada batalla tiene terreno coherente con el mapa estratégico y un obstáculo táctico realista.
+
+## D-056 · Criterio de capturas de tiles (2026-11-22)
+**Contexto:** §10.4 exige capturas de un campo con río+puente+villa y uno de llanura; sin ellas no se cierra.
+**Decisión:** capturas 1920×1080 en `docs/screenshots/`: `tiles_n3_rio_puente_villa.png` y `tiles_n3_llanura.png`, más la hoja de contacto de tiles; revisión visual de continuidad del río y legibilidad a 128 px.
+**Consecuencia:** criterio objetivo para el cierre del módulo de tiles.
