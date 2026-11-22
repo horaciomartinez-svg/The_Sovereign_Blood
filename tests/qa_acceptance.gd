@@ -360,6 +360,31 @@ func _criterion_3_save_load() -> void:
 			_fail(id, name, "save_game()=true pero has_save(%s)=false" % SAVE_SLOT, started)
 			_cleanup_save()
 			return
+	# Evidencia de roundtrip REAL a disco: fichero no vacío + perturbación + load.
+	var save_path := "user://saves/%s.json" % SAVE_SLOT
+	if not FileAccess.file_exists(save_path):
+		_fail(id, name, "save_game()=true pero no existe %s" % save_path, started)
+		_cleanup_save()
+		return
+	var save_size := 0
+	var save_file := FileAccess.open(save_path, FileAccess.READ)
+	if save_file != null:
+		save_size = save_file.get_length()
+		save_file.close()
+	if save_size <= 0:
+		_fail(id, name, "save en disco vacío: %s (0 B)" % save_path, started)
+		_cleanup_save()
+		return
+	# Perturba el estado tras guardar: load_game debe restaurarlo desde disco
+	# (sin esto, un load no-op también daría el mismo hash).
+	var perturbed := false
+	var tm := _autoload("TurnManager")
+	if tm != null:
+		if tm.has_method("advance_quarter"):
+			tm.call("advance_quarter")
+		if _hash(gs.call("to_dict")) == hash_before and tm.has_method("advance_year"):
+			tm.call("advance_year")
+		perturbed = _hash(gs.call("to_dict")) != hash_before
 	var load_ok: Variant = gs.call("load_game", SAVE_SLOT)
 	if not (load_ok is bool) or not bool(load_ok):
 		_fail(id, name, "GameState.load_game() devuelve false/no implementado", started)
@@ -377,7 +402,8 @@ func _criterion_3_save_load() -> void:
 	if not bool(rng_result["ok"]):
 		_fail(id, name, "hash OK pero RNG no continuo: %s" % str(rng_result["detail"]), started)
 		return
-	_pass(id, name, "hash %s idéntico; %s" % [hash_before.substr(0, 16), str(rng_result["detail"])], started)
+	var roundtrip := "disco=%d B, restaurado tras perturbación=%s" % [save_size, str(perturbed)]
+	_pass(id, name, "hash %s idéntico; %s; %s" % [hash_before.substr(0, 16), roundtrip, str(rng_result["detail"])], started)
 
 
 func _check_rng_continuity(gs: Node) -> Dictionary:
@@ -435,6 +461,7 @@ func _criterion_4_black_death() -> void:
 		return
 
 	var year := int(state.get("year", 1337))
+	var pops_1347: Dictionary = {}
 	var pop_before_plague := 0
 	var pop_after_plague := 0
 	var advanced_any := false
@@ -449,7 +476,7 @@ func _criterion_4_black_death() -> void:
 		if year > year_before:
 			advanced_any = true
 		if year == 1347:
-			pop_before_plague = _total_population(state)
+			pops_1347 = _pops_by_region(state)
 		if year == year_before and guard >= 8:
 			break
 	if year < 1348 and tm.has_method("advance_year"):
@@ -464,7 +491,7 @@ func _criterion_4_black_death() -> void:
 			if year > year_before:
 				advanced_any = true
 			if year == 1347:
-				pop_before_plague = _total_population(state)
+				pops_1347 = _pops_by_region(state)
 			if year == year_before:
 				break
 	if not advanced_any:
@@ -473,8 +500,7 @@ func _criterion_4_black_death() -> void:
 	if year < 1348:
 		_fail(id, name, "no se alcanzó 1348 (año=%d, 60 iteraciones)" % year, started)
 		return
-	if pop_before_plague == 0:
-		pop_before_plague = _total_population(state)
+	pop_before_plague = _total_of(pops_1347)
 	pop_after_plague = _total_population(state)
 
 	var event_found := false
@@ -491,7 +517,44 @@ func _criterion_4_black_death() -> void:
 	var data_ok := _black_death_data_ok()
 	var effect_applied := false
 	var effect_detail := ""
-	if pop_before_plague > 0 and pop_after_plague > 0:
+	if not pops_1347.is_empty():
+		# Verificación por región: europe_west debe bajar ~35% y el resto no.
+		var pops_now := _pops_by_region(state)
+		var western: Array[String] = [
+			"england", "france", "castile", "aragon", "hre", "bohemia", "scotland", "papacy", "poland",
+		]
+		var affected := 0
+		var unaffected := 0
+		var out_of_range := 0
+		var owners_affected: Dictionary = {}
+		var min_ratio := 2.0
+		var max_ratio := 0.0
+		for region_id in pops_1347.keys():
+			var before := int(pops_1347[region_id])
+			if before <= 0:
+				continue
+			var after := int(pops_now.get(region_id, before))
+			var ratio := float(after) / float(before)
+			if ratio < 0.90:
+				affected += 1
+				min_ratio = minf(min_ratio, ratio)
+				max_ratio = maxf(max_ratio, ratio)
+				owners_affected[_region_owner_of(state, str(region_id))] = true
+				if ratio < 0.60 or ratio > 0.70:
+					out_of_range += 1
+			else:
+				unaffected += 1
+		var owners_ok := true
+		for faction_id in western:
+			if not owners_affected.has(faction_id):
+				owners_ok = false
+		effect_applied = affected >= 25 and out_of_range == 0 and owners_ok
+		effect_detail = "regiones afectadas=%d (ratio %.3f–%.3f), no afectadas=%d, dueños occidentales con plaga=%d/%d, fuera de rango=%d; población total %d → %d (%+.1f%%)" % [
+			affected, min_ratio, max_ratio, unaffected, owners_affected.size(), western.size(),
+			out_of_range, pop_before_plague, pop_after_plague,
+			(float(pop_after_plague - pop_before_plague) / float(maxi(1, pop_before_plague))) * 100.0,
+		]
+	elif pop_before_plague > 0 and pop_after_plague > 0:
 		effect_applied = pop_after_plague < pop_before_plague
 		effect_detail = "población %d → %d (%+.1f%%)" % [
 			pop_before_plague, pop_after_plague,
@@ -517,6 +580,25 @@ func _criterion_4_black_death() -> void:
 		_fail(id, name, "evento registrado pero sin evidencia de -0.35 aplicado: " + detail, started)
 		return
 	_pass(id, name, detail, started)
+
+
+func _pops_by_region(state: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	var regions: Variant = state.get("regions", {})
+	if not (regions is Dictionary):
+		return out
+	for region_id in (regions as Dictionary).keys():
+		var region_data: Variant = (regions as Dictionary)[region_id]
+		if region_data is Dictionary and (region_data as Dictionary).has("population"):
+			out[str(region_id)] = int((region_data as Dictionary).get("population", 0))
+	return out
+
+
+func _total_of(pops: Dictionary) -> int:
+	var total := 0
+	for region_id in pops.keys():
+		total += int(pops[region_id])
+	return total
 
 
 func _total_population(state: Dictionary) -> int:
@@ -599,14 +681,14 @@ func _criterion_5_delegated_battle() -> void:
 		_skip(id, name, "sin región enemiga adyacente en el estado inicial", started)
 		return
 	var reports_before := _reports_hash(state)
+	var owner_before := _region_owner_of(state, target)
 
 	if tm.has_method("begin_turn"):
 		tm.call("begin_turn", PLAYER_FACTION)
 	var moved: Variant = mil.call("move_army", army_id, target)
 	state = _state()
-	if _reports_hash(state) == reports_before and tm.has_method("end_turn"):
-		tm.call("end_turn")
-		state = _state()
+	# Contrato §5: mover a región enemiga CON defensores resuelve la batalla en
+	# el propio movimiento. No se llama a end_turn() aquí para no mezclar la IA.
 	if _reports_hash(state) == reports_before:
 		if not (moved is bool) or not bool(moved):
 			_skip(id, name, "move_army() rechazado y sin informe de batalla (stub de sistemas)", started)
@@ -619,10 +701,22 @@ func _criterion_5_delegated_battle() -> void:
 		_fail(id, name, "ultimo battle_report no es Dictionary", started)
 		return
 	var rd := report as Dictionary
+	var report_region := str(rd.get("region_id", ""))
+	if report_region != target:
+		_fail(id, name, "el último informe es de otra región: %s (esperada %s)" % [report_region, target], started)
+		return
+	if str(rd.get("attacker_faction", "")) != PLAYER_FACTION or str(rd.get("defender_faction", "")) != owner_before:
+		_fail(id, name, "bandos incoherentes: attacker=%s defender=%s (esperado %s vs %s)" % [
+			str(rd.get("attacker_faction", "?")), str(rd.get("defender_faction", "?")), PLAYER_FACTION, owner_before,
+		], started)
+		return
 	var coherence := _report_coherence(rd)
+	var owner_after := _region_owner_of(state, target)
 	var captured := _report_captured(rd, state, target)
-	var detail := "army=%s %s→%s; report.keys=%s; coerente=%s; capturada=%s" % [
-		army_id, from_region, target, str(rd.keys()), str(coherence["ok"]), str(captured),
+	var detail := "army=%s %s→%s; owner %s→%s; region_id=%s; winner=%s; region_captured=%s; report.keys=%s; coerente=%s; capturada=%s" % [
+		army_id, from_region, target, owner_before, owner_after,
+		str(rd.get("region_id", "?")), str(rd.get("winner_faction", "?")),
+		str(rd.get("region_captured", "?")), str(rd.keys()), str(coherence["ok"]), str(captured),
 	]
 	if not bool(coherence["ok"]):
 		_fail(id, name, "informe incoherente: %s (%s)" % [str(coherence["reason"]), detail], started)
@@ -656,13 +750,44 @@ func _find_enemy_target(from_region: String, state: Dictionary) -> String:
 	var state_regions: Variant = state.get("regions", {})
 	if not (state_regions is Dictionary):
 		return ""
+	# C5 exige BATALLA (no ocupación): se prioriza un vecino enemigo CON
+	# ejército defensor; si no lo hay, se devuelve el primer vecino enemigo.
+	var fallback := ""
 	for neighbor in adjacency:
 		var neighbor_id := str(neighbor)
 		if not (state_regions as Dictionary).has(neighbor_id):
 			continue
 		var neighbor_data: Variant = (state_regions as Dictionary)[neighbor_id]
-		if neighbor_data is Dictionary and str((neighbor_data as Dictionary).get("owner", "")) != PLAYER_FACTION:
+		if not (neighbor_data is Dictionary):
+			continue
+		if str((neighbor_data as Dictionary).get("owner", "")) == PLAYER_FACTION:
+			continue
+		if fallback == "":
+			fallback = neighbor_id
+		if _has_defender_army(state, neighbor_id):
 			return neighbor_id
+	return fallback
+
+
+func _has_defender_army(state: Dictionary, region_id: String) -> bool:
+	var armies: Variant = state.get("armies", {})
+	if not (armies is Dictionary):
+		return false
+	for army_id in (armies as Dictionary).keys():
+		var army_data: Variant = (armies as Dictionary)[army_id]
+		if army_data is Dictionary \
+				and str((army_data as Dictionary).get("region_id", "")) == region_id \
+				and str((army_data as Dictionary).get("faction_id", "")) != PLAYER_FACTION:
+			return true
+	return false
+
+
+func _region_owner_of(state: Dictionary, region_id: String) -> String:
+	var state_regions: Variant = state.get("regions", {})
+	if state_regions is Dictionary and (state_regions as Dictionary).has(region_id):
+		var region_data: Variant = (state_regions as Dictionary)[region_id]
+		if region_data is Dictionary:
+			return str((region_data as Dictionary).get("owner", ""))
 	return ""
 
 
@@ -710,16 +835,23 @@ func _report_coherence(report: Dictionary) -> Dictionary:
 
 
 func _report_captured(report: Dictionary, state: Dictionary, target: String) -> bool:
-	var serialized := JSON.stringify(report)
-	var declared := serialized.contains("\"captured\":true") or serialized.contains("\"region_captured\":true") \
-		or serialized.contains("\"captured\": true") or serialized.contains("\"region_captured\": true")
+	# Captura = prueba de estado (owner cambió al jugador) y coherencia con el
+	# flag del informe si lo declara explícitamente.
+	var declared: Variant = null
+	for key in ["region_captured", "captured", "region_conquered"]:
+		if report.has(key) and report[key] is bool:
+			declared = bool(report[key])
+			break
 	var state_regions: Variant = state.get("regions", {})
 	var owner := ""
 	if state_regions is Dictionary and (state_regions as Dictionary).has(target):
 		var region_data: Variant = (state_regions as Dictionary)[target]
 		if region_data is Dictionary:
 			owner = str((region_data as Dictionary).get("owner", ""))
-	return declared or owner == PLAYER_FACTION
+	var owner_ok := owner == PLAYER_FACTION
+	if declared is bool and bool(declared) != owner_ok:
+		return false
+	return owner_ok
 
 
 # ---------------------------------------------------------------------------

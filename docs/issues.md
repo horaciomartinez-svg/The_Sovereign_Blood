@@ -616,3 +616,60 @@ Segunda ejecución (21:30:17): misma cabecera/INFO, los mismos 6 `[SKIP]` con id
 - **task-9 no reclamada:** la verificación final queda bloqueada hasta que AG-2/AG-3 declaren terminados sus módulos (AG-0 avisará). Checklist preparada en `docs/qa/fase1_plan.md` §6.
 
 *Fin de la sección Fase 1 — baseline (task-8).*
+
+---
+
+## 8. Fase 1 — Verificación final (task-9, 2026-11-21)
+
+**Contexto:** verificación de aceptación de Fase 1 sobre el árbol integrado (`722b778` [AG-2] sistemas + 548 tests, `73bff2f` [AG-3] UI 16 escenas, HEAD `7814dda`). Informe completo con evidencia íntegra y métricas: **`docs/qa/fase1_report.md`**.
+
+> **Veredicto: QA Fase 1: APROBADO** — 6/6 criterios PASS, **0 BLOQUEANTES, 0 MAYORES, 3 MENORES**.
+
+### 8.1 Comandos y códigos de salida
+
+| # | Comando | Exit code | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance.gd` | **0** | **6 PASS / 0 FAIL / 0 SKIP**; `ACEPTACIÓN: OK`; pared ≈2,65 s |
+| 1-bis | repetición del harness ×2 | **0 / 0** | Salida normalizada **idéntica**; hash, población y captura idénticos (solo varían los ms de C2) |
+| 2 | `--script tests/run_all.gd` | **0** | **548 pasados, 0 fallidos, 1 omitido**; `CI: OK (exit 0)` |
+| 3 | `--script tools/validate_data.gd` | **0** | 6 datasets ↔ 6 schemas, **5.239 comprobaciones**, reglas §13 OK, **0 errores**; `map_layout.json` excluido por D-017 |
+| 4 | `--editor --quit` | **0** | Importación completa (5 `[DONE]`), **0 ERROR/WARNING** |
+| 5 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, **0 ERROR/WARNING** |
+
+### 8.2 Criterios §12 — resultado y métricas
+
+| Criterio | Estado | Evidencia (ejecución canónica) |
+|---|---|---|
+| C1 Partida Inglaterra 1337 (4 trimestres, órdenes, sin crash) | `PASS` | 1337·T1 → 1338·T1; órdenes 8/8 aceptadas; 109 ms |
+| C2 IA 13 facciones <2.000 ms | `PASS` | **17 ms** (16–21 ms en 4 ejecuciones; ≈100× margen); 13 facciones IA |
+| C3 Save/load exacto + RNG continuo | `PASS` | hash `900976fefd4c7e01` idéntico; save en disco 96.231 B; restaurado tras perturbación; RNG next=39012 reproducible; 77 ms |
+| C4 Peste Negra 1348 (−0,35 `europe_west`) | `PASS` | `event_log` + `fired_events`; **32 regiones afectadas ratio 0,650–0,657**, 15 no afectadas, 9/9 dueños occidentales; población total 13.931.280 → 10.318.856 (−25,9 %); 204 ms |
+| C5 Batalla delegada + captura | `PASS` | `army_england_1` Aquitania→**Burgos**; informe de 16 campos coherente; winner=england; `region_captured=true`; **owner castile→england**; 13 ms |
+| C6 Smoke UI `scenes/**` | `PASS` | **16/16** escenas instanciadas/liberadas; 749 ms |
+
+### 8.3 Verificación independiente
+
+- **UI-sin-mutación (contrato §7):** auditoría estática de los 25 `.gd` de `scripts/ui/**` (excluye `scripts/ui/dev/`): **0** asignaciones a autoloads/`GameState.state`/`DataLoader.*`/campos de estado, **0** setters de sistemas, **0** mutaciones de contenedores sobre datos de estado; las 31 llamadas dinámicas observadas son métodos de la API §2. Los `.tscn` no referencian autoloads/estado. (Observación M-F1-02: la fachada `tsb_game.gd` expone referencias vivas, sin escrituras detectadas.)
+- **`project.godot`:** `config_version=5`, `main_scene=res://scenes/main/main_menu.tscn`, **10 autoloads** intactos, 1920×1080, tema global existente.
+- **Capturas `docs/screenshots/`:** **17 PNG 1920×1080** (16 numeradas + `03b_tooltip`), **16 únicas** — `14_after_end_turn` y `15_live_overlay_battle` son byte-idénticas (M-F1-01); correspondencia con §9 verificada y revisión visual de menú, mapa, árbol familiar e informe de batalla.
+- **No-regresión de datos:** hashes SHA-256 de los 6 datasets **idénticos** a Fase 0; `data/map_layout.json` = 47 regiones (D-017).
+- **Determinismo:** 4 ejecuciones finales con 6/6 PASS y exit 0; invariantes idénticos (hash, población, captura); salida normalizada idéntica.
+- **Limpieza:** save QA `user://saves/qa_acceptance_ag4.json` eliminado; sidecars `*.png.import` generados por la importación de Godot retirados para no ensuciar el working tree de AG-0.
+
+### 8.4 Hallazgos (sin bloqueantes)
+
+| ID | Severidad | Hallazgo | Owner sugerido |
+|---|---|---|---|
+| M-F1-01 | MENOR | `14_after_end_turn.png` y `15_live_overlay_battle.png` son la misma imagen (SHA-256 idéntico) | AG-3 (recapturar 15 o eliminar duplicada) |
+| M-F1-02 | MENOR | `tsb_game.gd` expone referencias vivas del estado (`state()`, `armies()`, `region()` comparte arrays); hoy 0 escrituras, riesgo futuro | AG-3 (copias defensivas o documentar solo-lectura) |
+| M-F1-03 | MENOR | Tooling de desarrollo en `scripts/ui/dev/` (3 `.gd` + `gen_map_layout.ps1`); no se carga desde escenas | AG-3/AG-0 (mover a `tools/` o documentar) |
+| — | INFORMATIVO | 17 capturas para 16 pantallas: `03b_tooltip` es extra de §9 y 14–16 son estados en vivo | — |
+| — | INFORMATIVO | `--editor --quit` regenera `docs/screenshots/*.png.import`; retirados por QA. Considerar `.gitignore` o commit de assets | AG-0 |
+
+### 8.5 Riesgos R1–R8 del plan
+
+Todos **cerrados o cerrados con limitación documentada** (detalle en `docs/qa/fase1_report.md` §5). Nota de transparencia: durante la verificación final se **reforzó el harness** en tres puntos (C3 prueba de roundtrip real a disco con perturbación; C5 exige batalla contra región **con defensores** y cruza el flag del informe con el `owner` real; C4 verifica el −35 % **por región**). La versión inicial de C5 del baseline aceptaba una ocupación sin batalla; el fallo era del harness, **no de producción**, y quedó corregido antes del veredicto.
+
+**Limitaciones:** el criterio de UI se valida por instanciación headless + capturas estáticas (sin interacción real), y la medición de IA corresponde a esta máquina y semilla 1337.
+
+*Fin de la sección Fase 1 — verificación final (task-9).*
