@@ -1101,3 +1101,57 @@ Riesgos en `docs/qa/fase3_tiles_plan.md` §4: R-T-01 rutas, R-T-02 import, R-T-0
 Cuando AG-2/AG-3 cierren, **task-37** re-ejecutará el harness tiles (debe 7/7 PASS exit 0), la batería completa, revisará continuidad del río/puente y legibilidad a 128 px, y emitirá el veredicto **«QA Tiles Fase 3 (12/12): APROBADO/RECHAZADO»** en `docs/qa/fase3_tiles_report.md` + `docs/issues.md`. Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3 §10.4 — baseline tiles N3 (task-36).*
+
+---
+
+## 16. Fase 3 — Verificación final tiles N3 §10.4 (task-37, 2026-11-22)
+
+**Contexto:** módulo de tiles §10.4 cerrado por AG-2/AG-3 (12 tiles 512×512 + `src/` 12 raw, `battle_tiles` validado, reglas N2/N3, generador N3 y capturas). HEAD verificado **`2c1857d`**. Informe completo: **`docs/qa/fase3_tiles_report.md`**.
+
+> **Veredicto: QA Tiles Fase 3: APROBADO** — **7/7 criterios PASS**, 0 FAIL, 0 SKIP.
+
+### 16.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_tiles.gd` (×2) | **0 / 0** | **7 PASS / 0 FAIL / 0 SKIP**; `ACEPTACIÓN TILES FASE 3: OK` |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** |
+| 4 | `--script tests/qa_acceptance_fase3.gd` (sprites) | **0** | **6/6 PASS** |
+| 5 | `--script tests/run_all.gd` | **0** | **1194 / 0 / 1**; `CI: OK` |
+| 6 | `--script tools/validate_data.gd` | **0** | 7 datasets/7 schemas, **5.722 comprobaciones**, 0 errores/WARN |
+| 7 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 8 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+Salida resumida del harness:
+```text
+  [PASS] F3T-C1 — 12 tiles 512x512 cargan como Texture2D; 12 PNG producción; 12 raw src con .gdignore
+  [PASS] F3T-C2 — battle_tiles: 12/12 claves y valores/flags D-053; schema; validate 7/7 0 errores
+  [PASS] F3T-C3 — rio/montana passable=false cost=-1; puente passable/cost1; N2: 1 entrada impasable bloqueada + 1 puente adyacente transitable
+  [PASS] F3T-C4 — colina 2/1; camino 0.5+bonus; villa_calle 0.5+bonus; villa defense1×1.2; bosque 2/1 cavalry_penalty (cab 3.0); fallback OK; N2 12 claves/61 hexes; N3 tile preservado
+  [PASS] F3T-C5 — generator real: coast+villa 24 tiles/2 puentes/villa(5,2); plains 24 tiles sin río; determinista
+  [PASS] F3T-C6 — 3/3 capturas 1920×1080: rio_puente_villa, llanura, contact sheet
+  [PASS] F3T-C7 — 18 escenas; 26 tests; F1/F2/F3; artefactos; scripts fallos=0
+RESULTADO QA TILES FASE 3: 7 PASS, 0 FAIL, 0 SKIP
+ACEPTACIÓN TILES FASE 3: OK — 7/7 criterios PASS (exit 0)
+```
+
+### 16.2 Evidencia independiente y visual
+
+- **Assets:** 12/12 PNG 512×512 cargan; 12 raw en `src/` + `.gdignore`; rutas del contrato.
+- **Tabla:** 12 claves con balance D-053 exacto; `battle_tiles` como 7º dataset validado (5.722 comprobaciones, 0 WARN).
+- **Reglas:** río/montaña intransitables (`passable=false`, coste -1); puente/puente_villa transitables; colina 2/1, camino 0,5 + bonus, villa_calle 0,5 + bonus, villa/puente_villa defensa 1 (×1,2), bosque 2/1 + penalización caballería (coste 3,0, ×0,6 combate N3); fallback legado sin tabla.
+- **Generador:** `battlefield_generator.gd::generate` cableado (C5 real) → `coast`+villa: 24 tiles, 2 puentes, villa (5,2), río vertical; `plains`: 24 tiles sin río; misma semilla → misma rejilla.
+- **Capturas 1920×1080:** `tiles_n3_rio_puente_villa.png` (río vertical continuo + puente + villa + unidades), `tiles_n3_llanura.png` (llanura con caminos/villa), `tiles_contact_sheet.png` (12 tiles etiquetados). Continuidad del río y rotación vertical correctas; legibilidad a 128 px.
+- **No regresión:** sprites 17/17 (F3 6/6), F1/F2 6/6, 18 escenas, determinismo intacto.
+
+### 16.3 Observaciones
+
+- C3 prueba el cruce de puente cuando hay un puente adyacente a una unidad (1 caso en el mapa); la API pura cubre puente/puente_villa transitables en general.
+- C4 valida fórmulas en `BattleTiles`/API N2/N3 y la penalización de caballería; el ×0,6 exacto de N3 está cubierto por los tests de AG-2.
+- C5 prueba el generador 8×3 con dos regiones; la composición visual se revisó en capturas.
+- Fuera de este módulo quedan escenarios 1402/1453, retratos/animaciones y QA final de Fase 3.
+
+**task-37 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 — verificación final tiles N3 §10.4 (task-37).*
