@@ -21,6 +21,8 @@ const MapBordersLayer = preload("res://scripts/ui/map/map_borders_layer.gd")
 const MapInteractiveLayer = preload("res://scripts/ui/map/map_interactive_layer.gd")
 const MapEntitiesLayer = preload("res://scripts/ui/map/map_entities_layer.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
+const AdvisorPanel = preload("res://scripts/ui/widgets/advisor_panel.gd")
+const TutorialHighlight = preload("res://scripts/ui/widgets/tutorial_highlight.gd")
 const CouncilScene = preload("res://scenes/council/council_menu.tscn")
 const RegionPanelScene = preload("res://scenes/map/region_panel.tscn")
 const TooltipScene = preload("res://scenes/ui/tooltip.tscn")
@@ -94,6 +96,8 @@ var _year_label: Label = null
 var _borders_notice: PanelContainer = null
 var _zoom_label: Label = null
 var _zoom_controls: Control = null
+var _advisor: Control = null
+var _tutorial_highlight: Control = null
 var _map_hint: Label = null
 var _preview_banner: PanelContainer = null
 var _view_banner: PanelContainer = null
@@ -125,6 +129,7 @@ func _ready() -> void:
 	_build_region_panel()
 	_build_tooltip_and_overlays()
 	_build_notifications()
+	_build_tutorial_ui()
 	_connect_signals()
 	_view_year = _default_view_year()
 	_set_view_year(_view_year)
@@ -135,6 +140,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	# Coste minimo: solo clamp de camara y seguimiento de tooltip.
 	_clamp_camera()
+	if _advisor != null:
+		_update_tutorial_highlight()
 	if _tooltip != null and _tooltip.visible:
 		_tooltip.call("follow", get_viewport().get_mouse_position())
 		var mouse := get_viewport().get_mouse_position()
@@ -452,6 +459,8 @@ func _build_council() -> void:
 		_council.connect("military_requested", func() -> void: _open_overlay(MilitaryScene.resource_path, "military"))
 	if _council.has_signal("economy_requested"):
 		_council.connect("economy_requested", func() -> void: _open_overlay(EconomyScene.resource_path, "economy"))
+	if _council.has_signal("help_requested"):
+		_council.connect("help_requested", func() -> void: _open_overlay("res://scenes/ui/help_overlay.tscn", "help"))
 	if _council.has_signal("end_turn_requested"):
 		_council.connect("end_turn_requested", _on_end_turn_requested)
 	if _council.has_signal("menu_requested"):
@@ -618,6 +627,108 @@ func _build_notifications() -> void:
 	_notification_box.add_theme_constant_override("separation", 6)
 	_notification_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_notification_box)
+
+
+# ==========================================================================
+# Tutorial / Consejero (D-073)
+# ==========================================================================
+func _build_tutorial_ui() -> void:
+	_tutorial_highlight = TutorialHighlight.new()
+	_hud.add_child(_tutorial_highlight)
+	_advisor = AdvisorPanel.new()
+	_advisor.anchor_left = 1.0
+	_advisor.anchor_right = 1.0
+	_advisor.anchor_top = 1.0
+	_advisor.anchor_bottom = 1.0
+	_advisor.offset_left = -SIDEBAR_RIGHT - 470
+	_advisor.offset_right = -SIDEBAR_RIGHT - 20
+	_advisor.offset_top = -330
+	_advisor.offset_bottom = -90
+	_hud.add_child(_advisor)
+
+
+func _advance_tutorial(condition_id: String) -> void:
+	if TSBGame.tutorial_active():
+		TSBGame.tutorial_advance(condition_id)
+		_update_tutorial_highlight()
+
+
+func _refresh_tutorial_ui() -> void:
+	if _advisor != null:
+		_advisor.call("refresh")
+	_update_tutorial_highlight()
+
+
+func _update_tutorial_highlight() -> void:
+	if _tutorial_highlight == null:
+		return
+	if _overlay != null and is_instance_valid(_overlay):
+		_tutorial_highlight.call("clear_highlight")
+		return
+	if not TSBGame.tutorial_active():
+		_tutorial_highlight.call("clear_highlight")
+		return
+	var step := TSBGame.tutorial_step()
+	if step.is_empty():
+		_tutorial_highlight.call("clear_highlight")
+		return
+	var target := _tutorial_target_rect(str(step.get("highlight", "")))
+	var hint := "Consejo: %s" % str(step.get("title", ""))
+	_tutorial_highlight.call("set_highlight", target, hint)
+
+
+func _tutorial_target_rect(highlight: String) -> Rect2:
+	var view_size := get_viewport_rect().size
+	match highlight:
+		"map_region":
+			return Rect2(Vector2(SIDEBAR_LEFT + 12, 140), Vector2(view_size.x - SIDEBAR_LEFT - SIDEBAR_RIGHT - 24, view_size.y - 210))
+		"workers_panel":
+			if _region_panel != null and _region_panel.visible:
+				return _region_panel.get_global_rect()
+			return Rect2(Vector2(view_size.x - SIDEBAR_RIGHT - 460, 100), Vector2(440, view_size.y - 180))
+		"family_button":
+			return _control_rect_by_text("Familia", Rect2(Vector2(20, 280), Vector2(SIDEBAR_LEFT - 30, 52)))
+		"diplomacy_button":
+			return _control_rect_by_text("Diplomacia", Rect2(Vector2(20, 340), Vector2(SIDEBAR_LEFT - 30, 52)))
+		"military_button":
+			return _control_rect_by_text("Militar", Rect2(Vector2(20, 400), Vector2(SIDEBAR_LEFT - 30, 52)))
+		"market_button":
+			if _overlay != null and _overlay_kind == "market":
+				return _overlay.get_global_rect()
+			var market := _control_rect_by_text("MERCADO", Rect2())
+			if market.size.x > 0.0:
+				return market
+			return _control_rect_by_text("Economía", Rect2(Vector2(20, 460), Vector2(SIDEBAR_LEFT - 30, 52)))
+		"end_turn_button":
+			return _control_rect_by_text("TERMINAR TURNO", Rect2(Vector2(20, view_size.y - 120), Vector2(SIDEBAR_LEFT - 40, 56)))
+		"save_button":
+			return _control_rect_by_text("Guardar", Rect2(Vector2(view_size.x - SIDEBAR_RIGHT + 20, 680), Vector2(400, 42)))
+		"battle_report":
+			if _overlay != null and is_instance_valid(_overlay):
+				return _overlay.get_global_rect()
+			return Rect2(Vector2(view_size.x * 0.25, view_size.y * 0.25), Vector2(view_size.x * 0.5, view_size.y * 0.5))
+	return Rect2()
+
+
+func _control_rect_by_text(text: String, fallback: Rect2) -> Rect2:
+	var found := _find_control_with_text(self, text)
+	if found != null:
+		return found.get_global_rect()
+	if _overlay != null and is_instance_valid(_overlay):
+		found = _find_control_with_text(_overlay, text)
+		if found != null:
+			return found.get_global_rect()
+	return fallback
+
+
+func _find_control_with_text(root_node: Node, text: String) -> Control:
+	for child: Node in root_node.get_children():
+		if child is Button and (child as Button).text == text:
+			return child as Control
+		var nested := _find_control_with_text(child, text)
+		if nested != null:
+			return nested
+	return null
 
 
 # ==========================================================================
@@ -976,6 +1087,7 @@ func _on_region_clicked(region_id: String) -> void:
 		_zoom_controls.visible = false
 	if _tooltip != null:
 		_tooltip.call("hide_tip")
+	_advance_tutorial("open_region")
 
 
 func _region_tooltip_bbcode(region_id: String) -> String:
@@ -1425,6 +1537,19 @@ func _open_overlay(scene_path: String, kind: String, setup_arg: Variant = null) 
 		_overlay.connect("battle_report_ready", _on_overlay_battle_report_ready)
 	if _tooltip != null:
 		_tooltip.call("hide_tip")
+	match kind:
+		"family":
+			_advance_tutorial("open_family")
+		"diplomacy":
+			_advance_tutorial("open_diplomacy")
+		"military":
+			_advance_tutorial("open_military")
+		"market":
+			_advance_tutorial("open_market")
+	if _advisor != null:
+		_advisor.visible = false
+	if _tutorial_highlight != null:
+		_tutorial_highlight.call("clear_highlight")
 
 
 func _on_overlay_region_requested(region_id: String) -> void:
@@ -1470,6 +1595,7 @@ func _on_overlay_closed() -> void:
 	_overlay = null
 	_overlay_kind = ""
 	_refresh_all()
+	_refresh_tutorial_ui()
 	if closed_kind in ["tactical", "battle", "victory", "year_end", "close"]:
 		UIAudio.play_music("map")
 	if not _tactical_pending_report.is_empty():

@@ -96,6 +96,8 @@ var _faction_box: VBoxContainer = null
 var _detail_box: VBoxContainer = null
 var _start_button: Button = null
 var _status_label: Label = null
+var _difficulty: String = "normal"
+var _difficulty_picker: OptionButton = null
 
 
 func _ready() -> void:
@@ -183,6 +185,24 @@ func _build() -> void:
 	var footer := UIKit.hbox(page, 16)
 	_status_label = UIKit.label(footer, "", "SmallLabel", HORIZONTAL_ALIGNMENT_LEFT)
 	_status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var difficulty_label := UIKit.label(footer, "Dificultad", "InkLabel")
+	difficulty_label.add_theme_font_size_override("font_size", 14)
+	difficulty_label.add_theme_color_override("font_color", Palette.PARCHMENT_LIGHT)
+	difficulty_label.tooltip_text = "Principiante activa el Consejero y reduce la agresividad de la IA; Normal es la experiencia estándar."
+	_difficulty_picker = OptionButton.new()
+	_difficulty_picker.custom_minimum_size = Vector2(190, 46)
+	_difficulty_picker.add_item("Normal")
+	_difficulty_picker.set_item_metadata(0, "normal")
+	_difficulty_picker.add_item("Principiante (Consejero)")
+	_difficulty_picker.set_item_metadata(1, "beginner")
+	_difficulty_picker.selected = 0
+	_difficulty_picker.tooltip_text = "Normal por defecto. Principiante activa el tutorial del Consejero."
+	_difficulty_picker.item_selected.connect(func(index: int) -> void:
+		_difficulty = str(_difficulty_picker.get_item_metadata(index))
+		if _status_label != null:
+			_status_label.text = "Dificultad: %s." % ("Principiante" if _difficulty == "beginner" else "Normal")
+	)
+	footer.add_child(_difficulty_picker)
 	_start_button = UIKit.button(footer, "COMENZAR REINADO", "PrimaryButton")
 	_start_button.custom_minimum_size = Vector2(380, 62)
 	_start_button.pressed.connect(_on_start)
@@ -485,7 +505,7 @@ func _age_text(character_entry: Dictionary) -> String:
 func _on_start() -> void:
 	if _selected_faction.is_empty() or _selected_scenario_id.is_empty():
 		return
-	var started: bool = TSBGame.start_new_game_in_scenario(_selected_scenario_id, _selected_faction)
+	var started: bool = TSBGame.start_new_game_in_scenario(_selected_scenario_id, _selected_faction, 1337, _difficulty)
 	if not started:
 		if _status_label != null:
 			_status_label.text = "No se pudo iniciar el escenario: datos del escenario todavía no cargados."

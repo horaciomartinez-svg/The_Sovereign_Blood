@@ -7,6 +7,7 @@ signal family_requested
 signal diplomacy_requested
 signal military_requested
 signal economy_requested
+signal help_requested
 signal end_turn_requested
 signal menu_requested
 
@@ -92,6 +93,7 @@ func _build() -> void:
 	_order_row(orders, "Diplomacia", "propuestas y tratados", "0–10 PG", diplomacy_requested)
 	_order_row(orders, "Militar", "ejércitos y movimiento", "1 PG / ej.", military_requested)
 	_order_row(orders, "Economía", "mano de obra y tesoro", "1 PG / orden", economy_requested)
+	_order_row(orders, "Ayuda", "resumen y manual del jugador", "—", help_requested)
 
 	UIKit.spacer(column, 4)
 	UIKit.hsep(column)

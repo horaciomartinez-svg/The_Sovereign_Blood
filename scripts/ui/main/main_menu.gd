@@ -6,6 +6,7 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
+const UIManual = preload("res://scripts/ui/ui_manual.gd")
 const ParchmentBackdrop = preload("res://scripts/ui/widgets/parchment_backdrop.gd")
 const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
 
@@ -64,6 +65,10 @@ func _build() -> void:
 	var options := UIKit.button(menu, "OPCIONES", "")
 	options.custom_minimum_size = Vector2(500, 58)
 	options.pressed.connect(_on_options)
+
+	var manual := UIKit.button(menu, "MANUAL DEL JUGADOR", "", "Abre docs/MANUAL_DEL_JUGADOR.md en el visor del sistema")
+	manual.custom_minimum_size = Vector2(500, 58)
+	manual.pressed.connect(_on_manual)
 
 	var quit := UIKit.button(menu, "SALIR", "GhostButton")
 	quit.custom_minimum_size = Vector2(500, 48)
@@ -149,6 +154,13 @@ func _on_options() -> void:
 		_overlay.call("open", false)
 	if _overlay.has_signal("closed"):
 		_overlay.connect("closed", _on_overlay_closed)
+
+
+func _on_manual() -> void:
+	if not UIManual.open_manual():
+		_notify(UIManual.fallback_message())
+	else:
+		_notify("Manual abierto: %s" % UIManual.manual_path())
 
 
 func _on_overlay_closed() -> void:

@@ -1099,12 +1099,62 @@ static func start_new_game(faction_id: String, seed_value: int = 1337) -> bool:
 
 
 ## Arranque data-driven de cualquiera de los 3 escenarios (Fase 3 §3).
-static func start_new_game_in_scenario(scenario_id_value: String, faction_id: String, seed_value: int = 1337) -> bool:
+static func start_new_game_in_scenario(scenario_id_value: String, faction_id: String, seed_value: int = 1337, difficulty: String = "normal") -> bool:
 	if not scenario_available(scenario_id_value):
 		return false
-	_call("GameState", "new_game", [scenario_id_value, faction_id, seed_value])
+	_call("GameState", "new_game", [scenario_id_value, faction_id, seed_value, difficulty])
 	_call("TurnManager", "begin_turn", [faction_id])
 	return has_game()
+
+
+static func difficulty() -> String:
+	var result: Variant = _call("GameState", "get_difficulty", [])
+	return str(result) if result != null else "normal"
+
+
+static func set_difficulty(value: String) -> bool:
+	var result: Variant = _call("GameState", "set_difficulty", [value])
+	return bool(result) if result != null else false
+
+
+static func tutorial_active() -> bool:
+	var result: Variant = _call("TutorialSystem", "is_tutorial_active", [])
+	return bool(result) if result != null else false
+
+
+static func tutorial_step() -> Dictionary:
+	var result: Variant = _call("TutorialSystem", "get_current_step", [])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func tutorial_state() -> Dictionary:
+	var result: Variant = _call("TutorialSystem", "get_tutorial_state", [])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func tutorial_advance(condition_id: String) -> Dictionary:
+	var result: Variant = _call("TutorialSystem", "advance_tutorial", [condition_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func tutorial_skip() -> bool:
+	var result: Variant = _call("TutorialSystem", "tutorial_skip", [])
+	return bool(result) if result != null else false
+
+
+static func tutorial_steps_count() -> int:
+	var result: Variant = _call("TutorialSystem", "get_steps_count", [])
+	return int(result) if result != null else 0
+
+
+static func consort_info(faction_id: String) -> Dictionary:
+	var result: Variant = _call("DynastySystem", "get_consort_info", [faction_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func spend_time_with_consort(faction_id: String) -> Dictionary:
+	var result: Variant = _call("DynastySystem", "spend_time_with_consort", [faction_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
 
 
 ## Devuelve el estado a "sin partida" (usado por herramientas de prueba y el

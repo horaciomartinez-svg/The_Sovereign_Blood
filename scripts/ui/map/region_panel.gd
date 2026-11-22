@@ -377,6 +377,7 @@ func _allocate(worker_class: String, delta: int) -> void:
 	var ok := TSBGame.allocate(region_id, worker_class, target)
 	if ok:
 		action_result.emit("%s: %s asignados a %d." % [str(data.get("name", region_id)), WORKER_LABELS[worker_class], target], true)
+		TSBGame.tutorial_advance("assign_workers")
 	else:
 		action_result.emit("No se pudo reasignar (¿PG insuficiente o población ocupada?).", false)
 	refresh()

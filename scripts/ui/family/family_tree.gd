@@ -9,9 +9,12 @@ const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 
 var _faction_id: String = ""
 var _canvas: Control = null
+var _tree_scroll: ScrollContainer = null
 var _detail_box: VBoxContainer = null
 var _selected_id: String = ""
 var _action_status: Label = null
+var _consort_status: Label = null
+var _scroll_reset_frames: int = 0
 
 
 func _build_content() -> void:
@@ -30,6 +33,7 @@ func _build_content() -> void:
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left_margin.add_child(scroll)
+	_tree_scroll = scroll
 	_canvas = FamilyTreeCanvas.new()
 	scroll.add_child(_canvas)
 	_canvas.connect("character_selected", _on_character_selected)
@@ -64,10 +68,29 @@ func _rebuild_all() -> void:
 	var ruler_id := str(TSBGame.ruler(_faction_id).get("id", ""))
 	var heir_id := str(TSBGame.heir(_faction_id).get("id", ""))
 	_canvas.call("set_model", members, ruler_id, heir_id, _faction_id)
+	# El árbol se lee desde el gobernante; no arrancar desplazado al fondo.
+	_scroll_reset_frames = 5
+	call_deferred("_reset_tree_scroll")
 	if _selected_id.is_empty():
 		_selected_id = ruler_id
 	_canvas.call("set_selected", _selected_id)
 	_rebuild_detail()
+
+
+func _reset_tree_scroll() -> void:
+	if _tree_scroll == null:
+		return
+	_tree_scroll.scroll_horizontal = maxi(0, int((_canvas.size.x - _tree_scroll.size.x) * 0.5))
+	_tree_scroll.scroll_vertical = 0
+
+
+func _process(_delta: float) -> void:
+	# Tras el layout inicial, centra horizontalmente la casa y deja la raíz arriba.
+	if _scroll_reset_frames > 0:
+		_scroll_reset_frames -= 1
+		if _tree_scroll != null:
+			_tree_scroll.scroll_horizontal = maxi(0, int((_canvas.size.x - _tree_scroll.size.x) * 0.5))
+			_tree_scroll.scroll_vertical = 0
 
 
 func _on_character_selected(character_id: String) -> void:
@@ -161,6 +184,8 @@ func _rebuild_detail() -> void:
 	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
 	_build_marriage_section(member)
 	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
+	_build_consort_section()
+	UIKit.hsep(_detail_box, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
 
 	var future := UIKit.label(_detail_box, "Acciones de Fase 2", "InkLabel")
 	future.add_theme_font_size_override("font_size", 18)
@@ -173,6 +198,59 @@ func _rebuild_detail() -> void:
 	_action_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_action_status.add_theme_font_size_override("font_size", 13)
 	_action_status.add_theme_color_override("font_color", Palette.CRIMSON)
+
+
+func _build_consort_section() -> void:
+	var title := UIKit.label(_detail_box, "Pasar tiempo con la consorte", "InkLabel")
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Palette.CRIMSON)
+	var info := TSBGame.consort_info(_faction_id)
+	var spouse_name := str(info.get("spouse_name", ""))
+	if spouse_name.is_empty():
+		var none := UIKit.label(_detail_box, "El gobernante no tiene consorte: concierta un matrimonio para habilitar esta acción.", "InkLabel")
+		none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		none.add_theme_font_size_override("font_size", 14)
+		none.add_theme_color_override("font_color", Palette.MUTED)
+		return
+	var valid := bool(info.get("valid", false))
+	var reason := str(info.get("reason", ""))
+	var detail := UIKit.label(_detail_box, "Consorte: %s · coste 3 PG · una vez por trimestre." % spouse_name, "InkLabel")
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail.add_theme_font_size_override("font_size", 14)
+	detail.add_theme_color_override("font_color", Palette.INK_TEXT)
+	var current_turn := int(info.get("current_turn", 0))
+	var fertility_until := int(info.get("fertility_bonus_until_turn", 0))
+	if fertility_until >= current_turn and current_turn > 0:
+		var active_bonus := UIKit.label(_detail_box, "Bonus de fertilidad activo hasta el turno %d (+18%% de nacimiento)." % fertility_until, "InkLabel")
+		active_bonus.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		active_bonus.add_theme_font_size_override("font_size", 13)
+		active_bonus.add_theme_color_override("font_color", Palette.GOLD_DIM)
+	_consort_status = UIKit.label(_detail_box, "", "InkLabel")
+	_consort_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_consort_status.add_theme_font_size_override("font_size", 13)
+	_consort_status.add_theme_color_override("font_color", Palette.CRIMSON)
+	var action := UIKit.button(_detail_box, "PASAR TIEMPO CON LA CONSORTE (3 PG)", "SmallButton",
+		"Fertilidad +18% durante 3 trimestres y +2 de prestigio." if valid else reason.capitalize())
+	action.disabled = not valid
+	action.pressed.connect(_on_consort_action)
+	if not valid:
+		var why := UIKit.label(_detail_box, "No disponible: %s." % (reason if not reason.is_empty() else "consorte no válida"), "InkLabel")
+		why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		why.add_theme_font_size_override("font_size", 13)
+		why.add_theme_color_override("font_color", Palette.MUTED)
+
+
+func _on_consort_action() -> void:
+	var result := TSBGame.spend_time_with_consort(_faction_id)
+	var message := ""
+	if bool(result.get("ok", false)):
+		message = "Tiempo con la consorte: fertilidad hasta el turno %d; prestigio +%d." % [
+			int(result.get("fertility_bonus_until_turn", 0)), int(result.get("prestige_gain", 0))]
+	else:
+		message = "No se pudo: %s." % str(result.get("reason", "motivo desconocido"))
+	_rebuild_all()
+	if _consort_status != null:
+		_consort_status.text = message
 
 
 func _role_text(member: Dictionary) -> String:
