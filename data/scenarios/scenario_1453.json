@@ -1,0 +1,293 @@
+{
+  "id": "scenario_1453",
+  "title": "El Ocaso y el Alba",
+  "description": "1453: cae Constantinopla y termina la Guerra de los Cien Años; el Renacimiento y las guerras dinásticas anuncian una nueva era.",
+  "start_year": 1453,
+  "end_year": 1480,
+  "factions": [
+    "england",
+    "france",
+    "hre",
+    "bohemia",
+    "hungary",
+    "castile",
+    "aragon",
+    "poland",
+    "scotland",
+    "papacy",
+    "granada",
+    "mamluks",
+    "golden_horde",
+    "byzantium",
+    "brittany",
+    "burgundy",
+    "florence",
+    "genoa",
+    "milan",
+    "ottoman",
+    "venice"
+  ],
+  "playable_factions": [
+    "ottoman",
+    "byzantium",
+    "england",
+    "france",
+    "burgundy",
+    "aragon",
+    "hre",
+    "hungary"
+  ],
+  "initial_state": {
+    "characters": "characters.json",
+    "regions": "1453",
+    "treasuries": {
+      "england": 4000,
+      "france": 9000,
+      "hre": 6000,
+      "bohemia": 6000,
+      "hungary": 5000,
+      "castile": 7000,
+      "aragon": 12000,
+      "poland": 6000,
+      "scotland": 2000,
+      "papacy": 12000,
+      "granada": 3000,
+      "mamluks": 16000,
+      "golden_horde": 5000,
+      "byzantium": 1000,
+      "brittany": 3000,
+      "burgundy": 16000,
+      "florence": 18000,
+      "genoa": 9000,
+      "milan": 15000,
+      "ottoman": 22000,
+      "venice": 20000
+    },
+    "armies": {
+      "england": [
+        {
+          "unit": "longbowman",
+          "count": 1100,
+          "region": "region_inglaterra_norte"
+        },
+        {
+          "unit": "longbowman",
+          "count": 1050,
+          "region": "region_inglaterra_sur"
+        }
+      ],
+      "france": [
+        {
+          "unit": "men_at_arms",
+          "count": 700,
+          "region": "region_aquitania"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 1150,
+          "region": "region_ile_de_france"
+        }
+      ],
+      "hre": [
+        {
+          "unit": "men_at_arms",
+          "count": 800,
+          "region": "region_austria"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 850,
+          "region": "region_baviera"
+        }
+      ],
+      "bohemia": [
+        {
+          "unit": "crossbowmen",
+          "count": 1100,
+          "region": "region_moravia"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 1050,
+          "region": "region_praga"
+        }
+      ],
+      "hungary": [
+        {
+          "unit": "light_horseman",
+          "count": 700,
+          "region": "region_buda"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 1250,
+          "region": "region_transilvania"
+        }
+      ],
+      "castile": [
+        {
+          "unit": "light_horseman",
+          "count": 600,
+          "region": "region_burgos"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 1050,
+          "region": "region_sevilla"
+        }
+      ],
+      "aragon": [
+        {
+          "unit": "men_at_arms",
+          "count": 1000,
+          "region": "region_barcelona"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 650,
+          "region": "region_napoles"
+        }
+      ],
+      "poland": [
+        {
+          "unit": "men_at_arms",
+          "count": 600,
+          "region": "region_cracovia"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 950,
+          "region": "region_gran_polonia"
+        }
+      ],
+      "scotland": [
+        {
+          "unit": "militia_spearman",
+          "count": 900,
+          "region": "region_edimburgo"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 850,
+          "region": "region_escocia_occidental"
+        }
+      ],
+      "papacy": [
+        {
+          "unit": "crossbowmen",
+          "count": 1000,
+          "region": "region_avignon"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 1050,
+          "region": "region_roma"
+        }
+      ],
+      "granada": [
+        {
+          "unit": "light_horseman",
+          "count": 800,
+          "region": "region_granada"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 950,
+          "region": "region_malaga"
+        }
+      ],
+      "mamluks": [
+        {
+          "unit": "mamluk",
+          "count": 500,
+          "region": "region_alejandria"
+        },
+        {
+          "unit": "mamluk",
+          "count": 1050,
+          "region": "region_barqa"
+        }
+      ],
+      "golden_horde": [
+        {
+          "unit": "light_horseman",
+          "count": 800,
+          "region": "region_sarai"
+        }
+      ],
+      "byzantium": [
+        {
+          "unit": "men_at_arms",
+          "count": 500,
+          "region": "region_constantinopla"
+        }
+      ],
+      "brittany": [
+        {
+          "unit": "militia_spearman",
+          "count": 1000,
+          "region": "region_bretana"
+        }
+      ],
+      "burgundy": [
+        {
+          "unit": "men_at_arms",
+          "count": 700,
+          "region": "region_borgona"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 750,
+          "region": "region_flandes"
+        }
+      ],
+      "florence": [
+        {
+          "unit": "crossbowmen",
+          "count": 1000,
+          "region": "region_toscana"
+        }
+      ],
+      "genoa": [
+        {
+          "unit": "crossbowmen",
+          "count": 1100,
+          "region": "region_crimea"
+        }
+      ],
+      "milan": [
+        {
+          "unit": "men_at_arms",
+          "count": 900,
+          "region": "region_lombardia"
+        }
+      ],
+      "ottoman": [
+        {
+          "unit": "janissary",
+          "count": 500,
+          "region": "region_anatolia_occidental"
+        },
+        {
+          "unit": "janissary",
+          "count": 650,
+          "region": "region_tesalonica"
+        }
+      ],
+      "venice": [
+        {
+          "unit": "crossbowmen",
+          "count": 700,
+          "region": "region_croacia"
+        }
+      ]
+    }
+  },
+  "victory": {
+    "crowns": 2,
+    "prestige": 500,
+    "years_held": 10,
+    "control_pct": 70
+  },
+  "events_script": "events_1453.json"
+}

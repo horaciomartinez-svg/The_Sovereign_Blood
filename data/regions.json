@@ -23,6 +23,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/London"
+        },
+        "1402": {
+          "owner": "england",
+          "population": 100000,
+          "base_wealth": 73,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "shipyard",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "england",
+          "population": 120000,
+          "base_wealth": 81,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "shipyard",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -49,6 +75,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_England"
+        },
+        "1402": {
+          "owner": "england",
+          "population": 259000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "england",
+          "population": 285000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -73,6 +125,29 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_England"
+        },
+        "1402": {
+          "owner": "england",
+          "population": 218000,
+          "base_wealth": 44,
+          "buildings": [
+            "castle",
+            "walls",
+            "market"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "england",
+          "population": 240000,
+          "base_wealth": 49,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -99,6 +174,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Aquitaine"
+        },
+        "1402": {
+          "owner": "england",
+          "population": 264000,
+          "base_wealth": 58,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "france",
+          "population": 291000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -126,6 +227,34 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/%C3%8Ele-de-France"
+        },
+        "1402": {
+          "owner": "france",
+          "population": 600000,
+          "base_wealth": 82,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "france",
+          "population": 550000,
+          "base_wealth": 92,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -152,6 +281,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Normandy"
+        },
+        "1402": {
+          "owner": "france",
+          "population": 467000,
+          "base_wealth": 58,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "france",
+          "population": 514000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -178,6 +333,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/County_of_Flanders"
+        },
+        "1402": {
+          "owner": "burgundy",
+          "population": 408000,
+          "base_wealth": 95,
+          "buildings": [
+            "workshops",
+            "market",
+            "walls",
+            "shipyard"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "burgundy",
+          "population": 450000,
+          "base_wealth": 95,
+          "buildings": [
+            "workshops",
+            "market",
+            "walls",
+            "shipyard"
+          ],
+          "estimate": true
         }
       }
     },
@@ -201,6 +380,31 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Brittany"
+        },
+        "1402": {
+          "owner": "brittany",
+          "population": 256000,
+          "base_wealth": 44,
+          "buildings": [
+            "castle",
+            "shipyard",
+            "market",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "brittany",
+          "population": 282000,
+          "base_wealth": 49,
+          "buildings": [
+            "castle",
+            "shipyard",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -227,6 +431,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Burgundy"
+        },
+        "1402": {
+          "owner": "burgundy",
+          "population": 259000,
+          "base_wealth": 58,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "burgundy",
+          "population": 285000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -253,6 +483,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Languedoc"
+        },
+        "1402": {
+          "owner": "france",
+          "population": 348000,
+          "base_wealth": 53,
+          "buildings": [
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "france",
+          "population": 384000,
+          "base_wealth": 59,
+          "buildings": [
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -278,6 +532,30 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Avignon",
           "note": "Sede pontificia desde 1309."
+        },
+        "1402": {
+          "owner": "papacy",
+          "population": 70000,
+          "base_wealth": 58,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "papacy",
+          "population": 78000,
+          "base_wealth": 65,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -302,6 +580,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Bavaria"
+        },
+        "1402": {
+          "owner": "hre",
+          "population": 311000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hre",
+          "population": 343000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -327,6 +629,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Franconia"
+        },
+        "1402": {
+          "owner": "hre",
+          "population": 269000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hre",
+          "population": 297000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -354,6 +680,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Rhineland"
+        },
+        "1402": {
+          "owner": "hre",
+          "population": 363000,
+          "base_wealth": 68,
+          "buildings": [
+            "market",
+            "workshops",
+            "cathedral",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hre",
+          "population": 400000,
+          "base_wealth": 76,
+          "buildings": [
+            "market",
+            "workshops",
+            "cathedral",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -377,6 +727,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Lorraine"
+        },
+        "1402": {
+          "owner": "hre",
+          "population": 154000,
+          "base_wealth": 44,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hre",
+          "population": 169000,
+          "base_wealth": 49,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -404,6 +778,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Duchy_of_Austria"
+        },
+        "1402": {
+          "owner": "hre",
+          "population": 259000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hre",
+          "population": 285000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -434,6 +832,36 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Prague",
           "note": "Capital de Bohemia y sede imperial de los Wittelsbach (Luis IV residía en Múnich)."
+        },
+        "1402": {
+          "owner": "bohemia",
+          "population": 300000,
+          "base_wealth": 78,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "mine",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "bohemia",
+          "population": 280000,
+          "base_wealth": 86,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "mine",
+            "workshops",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -459,6 +887,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Moravia"
+        },
+        "1402": {
+          "owner": "bohemia",
+          "population": 220000,
+          "base_wealth": 48,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "bohemia",
+          "population": 242000,
+          "base_wealth": 54,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -485,6 +937,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Buda"
+        },
+        "1402": {
+          "owner": "hungary",
+          "population": 267000,
+          "base_wealth": 58,
+          "buildings": [
+            "castle",
+            "market",
+            "mine",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hungary",
+          "population": 294000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "mine",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -508,6 +986,31 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Transylvania"
+        },
+        "1402": {
+          "owner": "hungary",
+          "population": 224000,
+          "base_wealth": 39,
+          "buildings": [
+            "castle",
+            "granary",
+            "market",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "hungary",
+          "population": 247000,
+          "base_wealth": 43,
+          "buildings": [
+            "castle",
+            "granary",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -532,6 +1035,31 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Croatia_(1102%E2%80%931526)"
+        },
+        "1402": {
+          "owner": "hungary",
+          "population": 163000,
+          "base_wealth": 34,
+          "buildings": [
+            "castle",
+            "shipyard",
+            "market",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "venice",
+          "population": 180000,
+          "base_wealth": 38,
+          "buildings": [
+            "castle",
+            "shipyard",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -556,6 +1084,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Castile"
+        },
+        "1402": {
+          "owner": "castile",
+          "population": 299000,
+          "base_wealth": 58,
+          "buildings": [
+            "market",
+            "workshops",
+            "castle",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "castile",
+          "population": 329000,
+          "base_wealth": 65,
+          "buildings": [
+            "market",
+            "workshops",
+            "castle",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -582,6 +1134,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Toledo"
+        },
+        "1402": {
+          "owner": "castile",
+          "population": 345000,
+          "base_wealth": 58,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "castile",
+          "population": 380000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -608,6 +1184,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Seville"
+        },
+        "1402": {
+          "owner": "castile",
+          "population": 331000,
+          "base_wealth": 63,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "castile",
+          "population": 365000,
+          "base_wealth": 70,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -634,6 +1236,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Principality_of_Catalonia"
+        },
+        "1402": {
+          "owner": "aragon",
+          "population": 308000,
+          "base_wealth": 68,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "workshops",
+            "university"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "aragon",
+          "population": 340000,
+          "base_wealth": 76,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "workshops",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -659,6 +1287,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Valencia"
+        },
+        "1402": {
+          "owner": "aragon",
+          "population": 267000,
+          "base_wealth": 53,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "aragon",
+          "population": 294000,
+          "base_wealth": 59,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -684,6 +1338,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Sicily"
+        },
+        "1402": {
+          "owner": "aragon",
+          "population": 269000,
+          "base_wealth": 53,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "aragon",
+          "population": 297000,
+          "base_wealth": 59,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -711,6 +1391,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Emirate_of_Granada"
+        },
+        "1402": {
+          "owner": "granada",
+          "population": 272000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "granada",
+          "population": 300000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -734,6 +1438,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/M%C3%A1laga"
+        },
+        "1402": {
+          "owner": "granada",
+          "population": 171000,
+          "base_wealth": 44,
+          "buildings": [
+            "shipyard",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "granada",
+          "population": 188000,
+          "base_wealth": 49,
+          "buildings": [
+            "shipyard",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -760,6 +1488,34 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Krak%C3%B3w"
+        },
+        "1402": {
+          "owner": "poland",
+          "population": 216000,
+          "base_wealth": 53,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "mine",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "poland",
+          "population": 238000,
+          "base_wealth": 59,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "mine",
+            "workshops",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -783,6 +1539,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Greater_Poland"
+        },
+        "1402": {
+          "owner": "poland",
+          "population": 192000,
+          "base_wealth": 44,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "poland",
+          "population": 211000,
+          "base_wealth": 49,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -807,6 +1589,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Edinburgh"
+        },
+        "1402": {
+          "owner": "scotland",
+          "population": 176000,
+          "base_wealth": 34,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "scotland",
+          "population": 194000,
+          "base_wealth": 38,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -829,6 +1635,26 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Scottish_Highlands"
+        },
+        "1402": {
+          "owner": "scotland",
+          "population": 133000,
+          "base_wealth": 24,
+          "buildings": [
+            "castle",
+            "shipyard"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "scotland",
+          "population": 147000,
+          "base_wealth": 27,
+          "buildings": [
+            "castle",
+            "shipyard"
+          ],
+          "estimate": true
         }
       }
     },
@@ -854,6 +1680,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Papal_States"
+        },
+        "1402": {
+          "owner": "papacy",
+          "population": 269000,
+          "base_wealth": 65,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "papacy",
+          "population": 297000,
+          "base_wealth": 75,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral",
+            "university",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -880,6 +1732,34 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Kingdom_of_Naples",
           "note": "Reino de Nápoles, feudo papal (simplificación de facción en 1337)."
+        },
+        "1402": {
+          "owner": "naples",
+          "population": 317000,
+          "base_wealth": 63,
+          "buildings": [
+            "castle",
+            "market",
+            "shipyard",
+            "university",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "aragon",
+          "population": 350000,
+          "base_wealth": 70,
+          "buildings": [
+            "castle",
+            "market",
+            "shipyard",
+            "university",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -907,6 +1787,32 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Lombardy",
           "note": "Italia imperial nominal; señoríos urbanos de facto."
+        },
+        "1402": {
+          "owner": "milan",
+          "population": 427000,
+          "base_wealth": 85,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "castle",
+            "university"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "milan",
+          "population": 470000,
+          "base_wealth": 90,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "castle",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -933,6 +1839,30 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Tuscany",
           "note": "Italia imperial nominal; ciudades-Estado de facto."
+        },
+        "1402": {
+          "owner": "florence",
+          "population": 345000,
+          "base_wealth": 85,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "university"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "florence",
+          "population": 380000,
+          "base_wealth": 95,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -958,6 +1888,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Cairo"
+        },
+        "1402": {
+          "owner": "mamluks",
+          "population": 450000,
+          "base_wealth": 87,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary",
+            "university"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "mamluks",
+          "population": 500000,
+          "base_wealth": 97,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary",
+            "university"
+          ],
+          "estimate": true
         }
       }
     },
@@ -982,6 +1938,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Alexandria"
+        },
+        "1402": {
+          "owner": "mamluks",
+          "population": 220000,
+          "base_wealth": 68,
+          "buildings": [
+            "shipyard",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "mamluks",
+          "population": 242000,
+          "base_wealth": 76,
+          "buildings": [
+            "shipyard",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1005,6 +1985,24 @@
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Cyrenaica",
           "note": "Costa del norte de África bajo influencia mameluca (estimación de alcance)."
+        },
+        "1402": {
+          "owner": "mamluks",
+          "population": 71000,
+          "base_wealth": 24,
+          "buildings": [
+            "market"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "mamluks",
+          "population": 78000,
+          "base_wealth": 27,
+          "buildings": [
+            "market"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1030,6 +2028,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Damascus"
+        },
+        "1402": {
+          "owner": "tamerlane",
+          "population": 269000,
+          "base_wealth": 68,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "mamluks",
+          "population": 297000,
+          "base_wealth": 76,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1053,6 +2075,28 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Jerusalem"
+        },
+        "1402": {
+          "owner": "mamluks",
+          "population": 136000,
+          "base_wealth": 39,
+          "buildings": [
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "mamluks",
+          "population": 150000,
+          "base_wealth": 43,
+          "buildings": [
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1080,6 +2124,34 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Constantinople"
+        },
+        "1402": {
+          "owner": "byzantium",
+          "population": 150000,
+          "base_wealth": 55,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard",
+            "cathedral",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "byzantium",
+          "population": 70000,
+          "base_wealth": 40,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard",
+            "cathedral",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1104,6 +2176,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Thessaloniki"
+        },
+        "1402": {
+          "owner": "byzantium",
+          "population": 129000,
+          "base_wealth": 48,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "ottoman",
+          "population": 143000,
+          "base_wealth": 54,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1128,6 +2224,32 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Byzantine_Empire"
+        },
+        "1402": {
+          "owner": "ottoman",
+          "population": 218000,
+          "base_wealth": 44,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "ottoman",
+          "population": 240000,
+          "base_wealth": 49,
+          "buildings": [
+            "castle",
+            "market",
+            "granary",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1151,6 +2273,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Sarai_(city)"
+        },
+        "1402": {
+          "owner": "golden_horde",
+          "population": 264000,
+          "base_wealth": 63,
+          "buildings": [
+            "market",
+            "walls",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "golden_horde",
+          "population": 291000,
+          "base_wealth": 70,
+          "buildings": [
+            "market",
+            "walls",
+            "granary",
+            "workshops"
+          ],
+          "estimate": true
         }
       }
     },
@@ -1174,6 +2320,30 @@
           ],
           "estimate": true,
           "source": "https://en.wikipedia.org/wiki/Crimea"
+        },
+        "1402": {
+          "owner": "golden_horde",
+          "population": 107000,
+          "base_wealth": 48,
+          "buildings": [
+            "shipyard",
+            "market",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true
+        },
+        "1453": {
+          "owner": "genoa",
+          "population": 118000,
+          "base_wealth": 54,
+          "buildings": [
+            "shipyard",
+            "market",
+            "workshops",
+            "walls"
+          ],
+          "estimate": true
         }
       }
     }

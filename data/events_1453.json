@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "id": "caida_constantinopla_1453",
+      "year": 1453,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "ottoman",
+          "byzantium"
+        ]
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "ottoman",
+          "value": 40
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "byzantium",
+          "value": -100
+        },
+        {
+          "type": "army_loss",
+          "faction": "byzantium",
+          "value": 0.5
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "balkans",
+          "value": -20
+        }
+      ],
+      "news": "Constantinopla cae ante Mehmed II; el último emperador bizantino muere en la muralla.",
+      "source": "https://en.wikipedia.org/wiki/Fall_of_Constantinople"
+    },
+    {
+      "id": "batalla_castillon_1453",
+      "year": 1453,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "england",
+          "value": 0.2
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "france",
+          "value": 20
+        }
+      ],
+      "news": "La artillería francesa aniquila al ejército inglés en Castillon.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Castillon"
+    },
+    {
+      "id": "fin_guerra_cien_anos_1453",
+      "year": 1453,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "peace",
+          "faction": "england",
+          "target": "france",
+          "value": 1,
+          "duration": 30
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "france",
+          "value": 25
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": 30
+        }
+      ],
+      "news": "Salvo Calais, Inglaterra pierde sus posesiones continentales: termina la Guerra de los Cien Años.",
+      "source": "https://en.wikipedia.org/wiki/Hundred_Years%27_War"
+    },
+    {
+      "id": "guerra_dos_rosas_1455",
+      "year": 1455,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "england",
+          "value": -20
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": -15
+        },
+        {
+          "type": "army_loss",
+          "faction": "england",
+          "value": 0.05
+        }
+      ],
+      "news": "La rivalidad entre Lancaster y York estalla en la Guerra de las Dos Rosas.",
+      "source": "https://en.wikipedia.org/wiki/Wars_of_the_Roses"
+    },
+    {
+      "id": "muerte_hunyadi_1456",
+      "year": 1456,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "hungary",
+          "value": -15
+        },
+        {
+          "type": "stability_modifier",
+          "faction": "hungary",
+          "value": -10
+        }
+      ],
+      "news": "Muere Juan Hunyadi, héroe de la defensa de Belgrado y regente de Hungría.",
+      "source": "https://en.wikipedia.org/wiki/John_Hunyadi"
+    },
+    {
+      "id": "sitio_belgrado_1456",
+      "year": 1456,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "ottoman",
+          "hungary"
+        ]
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "hungary",
+          "value": 20
+        },
+        {
+          "type": "army_loss",
+          "faction": "ottoman",
+          "value": 0.1
+        }
+      ],
+      "news": "Hunyadi y las fuerzas húngaras rechazan al ejército otomano en Belgrado.",
+      "source": "https://en.wikipedia.org/wiki/Siege_of_Belgrade_(1456)"
+    },
+    {
+      "id": "caida_trebisonda_1461",
+      "year": 1461,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "ottoman",
+          "value": 20
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "balkans",
+          "value": -10
+        }
+      ],
+      "news": "El Imperio de Trebisonda cae ante Mehmed II: último resto del mundo bizantino.",
+      "source": "https://en.wikipedia.org/wiki/Siege_of_Trebizond_(1461)"
+    },
+    {
+      "id": "caida_caffa_1475",
+      "year": 1475,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "gold_modifier",
+          "faction": "genoa",
+          "value": -30
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "genoa",
+          "value": -20
+        }
+      ],
+      "news": "Los otomanos toman Caffa; Génova pierde sus colonias del mar Negro.",
+      "source": "https://en.wikipedia.org/wiki/Feodosia"
+    }
+  ]
+}

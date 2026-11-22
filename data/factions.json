@@ -140,6 +140,96 @@
       "playable": false,
       "profile": "survivor",
       "start_year": 1337
+    },
+    {
+      "id": "brittany",
+      "name": "Ducado de Bretaña",
+      "capital": "region_bretana",
+      "government": "monarchy",
+      "color": "#3f6b5a",
+      "playable": false,
+      "profile": "survivor",
+      "start_year": 1402
+    },
+    {
+      "id": "burgundy",
+      "name": "Ducado de Borgoña",
+      "capital": "region_borgona",
+      "government": "monarchy",
+      "color": "#6b2f4a",
+      "playable": false,
+      "profile": "dynastic",
+      "start_year": 1402
+    },
+    {
+      "id": "florence",
+      "name": "República de Florencia",
+      "capital": "region_toscana",
+      "government": "republic",
+      "color": "#7a3f5a",
+      "playable": false,
+      "profile": "merchant",
+      "start_year": 1402
+    },
+    {
+      "id": "genoa",
+      "name": "República de Génova",
+      "capital": "region_crimea",
+      "government": "republic",
+      "color": "#8a4a3a",
+      "playable": false,
+      "profile": "merchant",
+      "start_year": 1453
+    },
+    {
+      "id": "milan",
+      "name": "Ducado de Milán",
+      "capital": "region_lombardia",
+      "government": "monarchy",
+      "color": "#4a5a8a",
+      "playable": false,
+      "profile": "dynastic",
+      "start_year": 1402
+    },
+    {
+      "id": "naples",
+      "name": "Reino de Nápoles",
+      "capital": "region_napoles",
+      "government": "monarchy",
+      "color": "#a05a2a",
+      "playable": false,
+      "profile": "dynastic",
+      "start_year": 1402
+    },
+    {
+      "id": "ottoman",
+      "name": "Imperio Otomano",
+      "capital": "region_anatolia_occidental",
+      "government": "sultanate",
+      "color": "#3a7a6a",
+      "playable": false,
+      "profile": "aggressor",
+      "start_year": 1402
+    },
+    {
+      "id": "tamerlane",
+      "name": "Imperio de Tamerlán",
+      "capital": "region_damasco",
+      "government": "empire",
+      "color": "#6a4a8a",
+      "playable": false,
+      "profile": "aggressor",
+      "start_year": 1402
+    },
+    {
+      "id": "venice",
+      "name": "República de Venecia",
+      "capital": "region_croacia",
+      "government": "republic",
+      "color": "#b03050",
+      "playable": false,
+      "profile": "merchant",
+      "start_year": 1453
     }
   ]
 }

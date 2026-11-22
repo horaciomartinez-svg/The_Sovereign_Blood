@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "scenario.schema.json",
-  "title": "scenarios/scenario_1337.json — Dos Coronas (GDD §7.5)",
+  "title": "scenarios/scenario_YYYY.json — The Sovereign's Blood (Fase 3)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -16,23 +16,43 @@
   ],
   "properties": {
     "id": {
-      "const": "scenario_1337"
+      "type": "string",
+      "enum": [
+        "scenario_1337",
+        "scenario_1402",
+        "scenario_1453"
+      ]
     },
     "title": {
-      "const": "Dos Coronas"
+      "type": "string",
+      "enum": [
+        "Dos Coronas",
+        "El Choque de Imperios",
+        "El Ocaso y el Alba"
+      ]
     },
     "description": {
       "type": "string"
     },
     "start_year": {
-      "const": 1337
+      "type": "integer",
+      "enum": [
+        1337,
+        1402,
+        1453
+      ]
     },
     "end_year": {
-      "const": 1399
+      "type": "integer",
+      "enum": [
+        1399,
+        1460,
+        1480
+      ]
     },
     "factions": {
       "type": "array",
-      "minItems": 14,
+      "minItems": 1,
       "uniqueItems": true,
       "items": {
         "type": "string",
@@ -50,7 +70,50 @@
           "granada",
           "mamluks",
           "golden_horde",
-          "byzantium"
+          "byzantium",
+          "brittany",
+          "burgundy",
+          "florence",
+          "genoa",
+          "milan",
+          "naples",
+          "ottoman",
+          "tamerlane",
+          "venice"
+        ]
+      }
+    },
+    "playable_factions": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "england",
+          "france",
+          "hre",
+          "bohemia",
+          "hungary",
+          "castile",
+          "aragon",
+          "poland",
+          "scotland",
+          "papacy",
+          "granada",
+          "mamluks",
+          "golden_horde",
+          "byzantium",
+          "brittany",
+          "burgundy",
+          "florence",
+          "genoa",
+          "milan",
+          "naples",
+          "ottoman",
+          "tamerlane",
+          "venice"
         ]
       }
     },
@@ -68,509 +131,47 @@
           "const": "characters.json"
         },
         "regions": {
-          "const": "1337"
+          "type": "string",
+          "enum": [
+            "1337",
+            "1402",
+            "1453"
+          ]
         },
         "treasuries": {
           "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "england",
-            "france",
-            "hre",
-            "bohemia",
-            "hungary",
-            "castile",
-            "aragon",
-            "poland",
-            "scotland",
-            "papacy",
-            "granada",
-            "mamluks",
-            "golden_horde",
-            "byzantium"
-          ],
-          "properties": {
-            "england": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "france": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "hre": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "bohemia": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "hungary": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "castile": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "aragon": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "poland": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "scotland": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "papacy": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "granada": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "mamluks": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "golden_horde": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            },
-            "byzantium": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 1000000
-            }
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
           }
         },
         "armies": {
           "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "england",
-            "france",
-            "hre",
-            "bohemia",
-            "hungary",
-            "castile",
-            "aragon",
-            "poland",
-            "scotland",
-            "papacy",
-            "granada",
-            "mamluks",
-            "golden_horde",
-            "byzantium"
-          ],
-          "properties": {
-            "england": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "france": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "hre": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "bohemia": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "hungary": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "castile": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "aragon": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "poland": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "scotland": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "papacy": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "granada": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "mamluks": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "golden_horde": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
-                }
-              }
-            },
-            "byzantium": {
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "unit",
-                  "count",
-                  "region"
-                ],
-                "properties": {
-                  "unit": {
-                    "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
-                  },
-                  "count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 50000
-                  },
-                  "region": {
-                    "type": "string",
-                    "pattern": "^region_[a-z][a-z0-9_]*$"
-                  }
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "unit",
+                "count",
+                "region"
+              ],
+              "properties": {
+                "unit": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50000
+                },
+                "region": {
+                  "type": "string",
+                  "pattern": "^region_[a-z][a-z0-9_]*$"
                 }
               }
             }
@@ -588,18 +189,30 @@
       ],
       "properties": {
         "crowns": {
-          "const": 2
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
         },
         "prestige": {
-          "const": 500
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
         },
         "years_held": {
-          "const": 10
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "control_pct": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
         }
       }
     },
     "events_script": {
-      "const": "events_1337.json"
+      "type": "string",
+      "pattern": "^events_(1337|1402|1453)\\.json$"
     }
   }
 }

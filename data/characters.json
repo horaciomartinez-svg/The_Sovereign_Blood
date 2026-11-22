@@ -2620,6 +2620,2791 @@
         "spouse": null,
         "children": []
       }
+    },
+    {
+      "id": "henry_iv_england",
+      "name": "Enrique IV de Inglaterra",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1367,
+      "died": 1413,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "rey_usurpador",
+        "rey_enfermo"
+      ],
+      "claims": [
+        {
+          "target": "france",
+          "strength": 0.6
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Henry_IV_of_England",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "henry_v_england"
+        ]
+      },
+      "reign_start": 1399,
+      "reign_end": 1413
+    },
+    {
+      "id": "charles_vi_france",
+      "name": "Carlos VI de Francia",
+      "house": "valois",
+      "faction": "france",
+      "born": 1368,
+      "died": 1422,
+      "role": "ruler",
+      "stats": {
+        "command": 55,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 60
+      },
+      "traits": [
+        "rey_loco",
+        "rey_consagrado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_VI_of_France",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "louis_dauphin"
+        ]
+      },
+      "reign_start": 1380,
+      "reign_end": 1422
+    },
+    {
+      "id": "rupert_hre",
+      "name": "Ruperto de Baviera, rey de romanos",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1352,
+      "died": 1410,
+      "role": "ruler",
+      "stats": {
+        "command": 72,
+        "intrigue": 65,
+        "charisma": 65,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "rey_romanos",
+        "elector_palatino"
+      ],
+      "claims": [
+        {
+          "target": "hre",
+          "strength": 0.3
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Rupert,_King_of_Germany",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Rex Romanorum 1400-1410; el GDD §4.3 nombra a Segismundo para Hungría/Sacro Imperio: se mantiene a Ruperto para el HRE y a Segismundo para Hungría (corrección histórica documentada).",
+      "reign_start": 1400,
+      "reign_end": 1410
+    },
+    {
+      "id": "wenceslaus_iv_bohemia",
+      "name": "Wenceslao IV de Bohemia",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1361,
+      "died": 1419,
+      "role": "ruler",
+      "stats": {
+        "command": 55,
+        "intrigue": 60,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "rey_depuesto",
+        "rey_bohemia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Wenceslaus_IV_of_Bohemia",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1378,
+      "reign_end": 1419
+    },
+    {
+      "id": "sigismund_hungary",
+      "name": "Segismundo de Luxemburgo",
+      "house": "luxembourg",
+      "faction": "hungary",
+      "born": 1368,
+      "died": 1437,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 78,
+        "charisma": 72,
+        "loyalty": 70,
+        "education": 72
+      },
+      "traits": [
+        "rey_hungria",
+        "futuro_emperador"
+      ],
+      "claims": [
+        {
+          "target": "hre",
+          "strength": 0.4
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Sigismund,_Holy_Roman_Emperor",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1387,
+      "reign_end": 1437
+    },
+    {
+      "id": "henry_iii_castile",
+      "name": "Enrique III de Castilla",
+      "house": "trastamara",
+      "faction": "castile",
+      "born": 1379,
+      "died": 1406,
+      "role": "ruler",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "rey_menor",
+        "rey_enfermo"
+      ],
+      "claims": [
+        {
+          "target": "granada",
+          "strength": 0.6
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Henry_III_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "john_ii_castile"
+        ]
+      },
+      "reign_start": 1390,
+      "reign_end": 1406
+    },
+    {
+      "id": "martin_i_aragon",
+      "name": "Martín I de Aragón",
+      "house": "barcelona",
+      "faction": "aragon",
+      "born": 1356,
+      "died": 1410,
+      "role": "ruler",
+      "stats": {
+        "command": 68,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 62
+      },
+      "traits": [
+        "rey_humanista",
+        "rey_sicilia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Martin_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "El GDD §4.3 menciona a Fernando I como regente: históricamente Martín I era rey de Aragón en 1402; Fernando I (regente de Castilla) se incluye como pariente.",
+      "reign_start": 1396,
+      "reign_end": 1410
+    },
+    {
+      "id": "wladyslaw_ii_poland",
+      "name": "Władysław II Jagiełło",
+      "house": "jagiellon",
+      "faction": "poland",
+      "born": 1362,
+      "died": 1434,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 70,
+        "charisma": 68,
+        "loyalty": 75,
+        "education": 65
+      },
+      "traits": [
+        "gran_duque",
+        "rey_polonia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/W%C5%82adys%C5%82aw_II_Jagie%C5%82%C5%82o",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1386,
+      "reign_end": 1434
+    },
+    {
+      "id": "robert_iii_scotland",
+      "name": "Roberto III de Escocia",
+      "house": "bruce",
+      "faction": "scotland",
+      "born": 1337,
+      "died": 1406,
+      "role": "ruler",
+      "stats": {
+        "command": 50,
+        "intrigue": 55,
+        "charisma": 45,
+        "loyalty": 50,
+        "education": 50
+      },
+      "traits": [
+        "rey_debil",
+        "rey_escocia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Robert_III_of_Scotland",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "james_i_scotland"
+        ]
+      },
+      "reign_start": 1390,
+      "reign_end": 1406
+    },
+    {
+      "id": "boniface_ix_papacy",
+      "name": "Bonifacio IX",
+      "house": "tomacelli",
+      "faction": "papacy",
+      "born": 1356,
+      "died": 1404,
+      "role": "ruler",
+      "stats": {
+        "command": 55,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 75
+      },
+      "traits": [
+        "papa_roma",
+        "cisma"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Pope_Boniface_IX",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Papa de Roma durante el Cisma de Occidente; Benedicto XIII (Aviñón) se incluye como claimant.",
+      "reign_start": 1389,
+      "reign_end": 1404
+    },
+    {
+      "id": "muhammad_vii_granada",
+      "name": "Muhammad VII de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1370,
+      "died": 1408,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "sultan_nazari"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Muhammad_VII_of_Granada",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1392,
+      "reign_end": 1408
+    },
+    {
+      "id": "faraj_mamluks",
+      "name": "Al-Faraj",
+      "house": "burji",
+      "faction": "mamluks",
+      "born": 1389,
+      "died": 1412,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 50,
+        "education": 55
+      },
+      "traits": [
+        "sultan_mameluco"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Al-Faraj",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1399,
+      "reign_end": 1412
+    },
+    {
+      "id": "edigu_golden_horde",
+      "name": "Edigu",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1352,
+      "died": 1419,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "emir",
+        "regente_horda"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Edigu",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Rey de facto de la Horda de Oro (khanes títere); se usa como gobernante de la facción.",
+      "reign_start": 1399,
+      "reign_end": 1419
+    },
+    {
+      "id": "manuel_ii_byzantium",
+      "name": "Manuel II Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1350,
+      "died": 1425,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 72,
+        "charisma": 65,
+        "loyalty": 70,
+        "education": 70
+      },
+      "traits": [
+        "emperador",
+        "diplomatico"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Manuel_II_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "john_viii_palaiologos",
+          "constantine_xi_byzantium",
+          "demetrios_palaiologos",
+          "thomas_palaiologos"
+        ]
+      },
+      "reign_start": 1391,
+      "reign_end": 1425
+    },
+    {
+      "id": "john_vi_brittany",
+      "name": "Juan VI de Bretaña",
+      "house": "montfort",
+      "faction": "brittany",
+      "born": 1389,
+      "died": 1442,
+      "role": "ruler",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "duque",
+        "rey_inglaterra_aliado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_VI,_Duke_of_Brittany",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1399,
+      "reign_end": 1442
+    },
+    {
+      "id": "philip_ii_burgundy",
+      "name": "Felipe II el Temerario",
+      "house": "valois_bourgogne",
+      "faction": "burgundy",
+      "born": 1342,
+      "died": 1404,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 72,
+        "charisma": 68,
+        "loyalty": 70,
+        "education": 70
+      },
+      "traits": [
+        "duque",
+        "tio_rey_francia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Philip_the_Bold",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "john_the_fearless"
+        ]
+      },
+      "reign_start": 1363,
+      "reign_end": 1404
+    },
+    {
+      "id": "maso_albizzi_florence",
+      "name": "Maso degli Albizzi",
+      "house": "albizzi",
+      "faction": "florence",
+      "born": 1343,
+      "died": 1417,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "republica",
+        "oligarca"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Maso_degli_Albizzi",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Florencia es república: se usa al líder de la oligarquía como gobernante de facción.",
+      "reign_start": 1382,
+      "reign_end": 1417
+    },
+    {
+      "id": "gian_galeazzo_milan",
+      "name": "Gian Galeazzo Visconti",
+      "house": "visconti",
+      "faction": "milan",
+      "born": 1351,
+      "died": 1402,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 85,
+        "charisma": 70,
+        "loyalty": 60,
+        "education": 75
+      },
+      "traits": [
+        "duque",
+        "tirano"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Gian_Galeazzo_Visconti",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "giovanni_maria_visconti",
+          "filippo_maria_visconti"
+        ]
+      },
+      "reign_start": 1395,
+      "reign_end": 1402
+    },
+    {
+      "id": "ladislaus_naples",
+      "name": "Ladislao de Nápoles",
+      "house": "anjou_durazzo",
+      "faction": "naples",
+      "born": 1377,
+      "died": 1414,
+      "role": "ruler",
+      "stats": {
+        "command": 72,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 55,
+        "education": 60
+      },
+      "traits": [
+        "rey_napoles",
+        "ambicioso"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ladislaus_of_Naples",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1386,
+      "reign_end": 1414
+    },
+    {
+      "id": "bayezid_i_ottoman",
+      "name": "Bayezid I",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1360,
+      "died": 1403,
+      "role": "ruler",
+      "stats": {
+        "command": 82,
+        "intrigue": 75,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 60
+      },
+      "traits": [
+        "sultan",
+        "rayo"
+      ],
+      "claims": [
+        {
+          "target": "byzantium",
+          "strength": 0.6
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Bayezid_I",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "mehmed_i_ottoman",
+          "suleyman_celebi",
+          "musa_celebi"
+        ]
+      },
+      "note": "Capturado en Ankara (1402); el interregno otomano se representa con sus hijos como claimants.",
+      "reign_start": 1389,
+      "reign_end": 1403
+    },
+    {
+      "id": "timur_tamerlane",
+      "name": "Tamerlán",
+      "house": "timurid",
+      "faction": "tamerlane",
+      "born": 1336,
+      "died": 1405,
+      "role": "ruler",
+      "stats": {
+        "command": 95,
+        "intrigue": 85,
+        "charisma": 75,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "conquistador",
+        "cojo"
+      ],
+      "claims": [
+        {
+          "target": "ottoman",
+          "strength": 0.4
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Timur",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "shah_rukh",
+          "miran_shah"
+        ]
+      },
+      "reign_start": 1370,
+      "reign_end": 1405
+    },
+    {
+      "id": "henry_v_england",
+      "name": "Enrique V de Inglaterra",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1387,
+      "died": 1422,
+      "role": "heir",
+      "stats": {
+        "command": 90,
+        "intrigue": 65,
+        "charisma": 80,
+        "loyalty": 80,
+        "education": 70
+      },
+      "traits": [
+        "principe_guerrero",
+        "heredero"
+      ],
+      "claims": [
+        {
+          "target": "france",
+          "strength": 0.8
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Henry_V_of_England",
+      "estimate": true,
+      "family": {
+        "father": "henry_iv_england",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "louis_dauphin",
+      "name": "Luis de Valois, delfín de Francia",
+      "house": "valois",
+      "faction": "france",
+      "born": 1397,
+      "died": 1415,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 50,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "delfin",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis,_Dauphin_of_France_(1397%E2%80%931415)",
+      "estimate": true,
+      "family": {
+        "father": "charles_vi_france",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "charles_orleans",
+      "name": "Carlos de Valois, duque de Orleans",
+      "house": "valois",
+      "faction": "france",
+      "born": 1394,
+      "died": 1465,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 70
+      },
+      "traits": [
+        "poeta",
+        "principe"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles,_Duke_of_Orl%C3%A9ans",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Capturado en Agincourt (1415); rol de príncipe y poeta."
+    },
+    {
+      "id": "louis_iii_palatine",
+      "name": "Luis III del Palatinado",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1378,
+      "died": 1436,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 65
+      },
+      "traits": [
+        "elector_palatino"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_III,_Elector_Palatine",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "nicholas_garai",
+      "name": "Nicolás Garai",
+      "house": "garai",
+      "faction": "hungary",
+      "born": 1366,
+      "died": 1433,
+      "role": "advisor",
+      "stats": {
+        "command": 65,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "regente",
+        "noble_hungaro"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Nicholas_Garai",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "ferdinand_i_aragon",
+      "name": "Fernando I de Aragón",
+      "house": "trastamara",
+      "faction": "castile",
+      "born": 1380,
+      "died": 1416,
+      "role": "regent",
+      "stats": {
+        "command": 75,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 65,
+        "education": 65
+      },
+      "traits": [
+        "regente_castilla",
+        "futuro_rey_aragon"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ferdinand_I_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Regente de Castilla tras la muerte de Enrique III y futuro rey de Aragón (1412)."
+    },
+    {
+      "id": "james_i_scotland",
+      "name": "Jacobo I de Escocia",
+      "house": "stewart",
+      "faction": "scotland",
+      "born": 1394,
+      "died": 1437,
+      "role": "heir",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "cautivo_ingles"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/James_I_of_Scotland",
+      "estimate": true,
+      "family": {
+        "father": "robert_iii_scotland",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "benedict_xiii",
+      "name": "Benedicto XIII (antipapa de Aviñón)",
+      "house": "luna",
+      "faction": "papacy",
+      "born": 1328,
+      "died": 1423,
+      "role": "claimant",
+      "stats": {
+        "command": 65,
+        "intrigue": 85,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 80
+      },
+      "traits": [
+        "antipapa",
+        "cisma"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Antipope_Benedict_XIII",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Antipapa de Aviñón; la facción Papado cubre Roma y Aviñón en el mapa (simplificación del Cisma).",
+      "reign_start": 1394,
+      "reign_end": 1423
+    },
+    {
+      "id": "yusuf_iii_nazari",
+      "name": "Yusuf III de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1376,
+      "died": 1417,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 50
+      },
+      "traits": [
+        "heredero",
+        "noble_nazari"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Yusuf_III_of_Granada",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "yashbak_min_mahdi",
+      "name": "Yashbak min Mahdi",
+      "house": "burji",
+      "faction": "mamluks",
+      "born": 1375,
+      "died": 1406,
+      "role": "general",
+      "stats": {
+        "command": 75,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "emir",
+        "comandante"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Yashbak_min_Mahdi",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Nacimiento aproximado (estimate)."
+    },
+    {
+      "id": "tokhtamysh",
+      "name": "Tokhtamysh",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1342,
+      "died": 1406,
+      "role": "claimant",
+      "stats": {
+        "command": 70,
+        "intrigue": 65,
+        "charisma": 55,
+        "loyalty": 50,
+        "education": 45
+      },
+      "traits": [
+        "khan",
+        "rival"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Tokhtamysh",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "john_viii_palaiologos",
+      "name": "Juan VIII Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1392,
+      "died": 1448,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "diplomatico"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_VIII_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "manuel_ii_byzantium",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "arthur_iii_brittany",
+      "name": "Arturo III de Bretaña",
+      "house": "montfort",
+      "faction": "brittany",
+      "born": 1393,
+      "died": 1458,
+      "role": "relative",
+      "stats": {
+        "command": 68,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "condestable",
+        "noble_breton"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Arthur_III,_Duke_of_Brittany",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "john_the_fearless",
+      "name": "Juan I de Borgoña, el Temerario",
+      "house": "valois_bourgogne",
+      "faction": "burgundy",
+      "born": 1371,
+      "died": 1419,
+      "role": "heir",
+      "stats": {
+        "command": 80,
+        "intrigue": 80,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "asesino"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_the_Fearless",
+      "estimate": true,
+      "family": {
+        "father": "philip_ii_burgundy",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "coluccio_salutati",
+      "name": "Coluccio Salutati",
+      "house": "salutati",
+      "faction": "florence",
+      "born": 1331,
+      "died": 1406,
+      "role": "advisor",
+      "stats": {
+        "command": 40,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 90
+      },
+      "traits": [
+        "canciller",
+        "humanista"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Coluccio_Salutati",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "giovanni_maria_visconti",
+      "name": "Giovanni Maria Visconti",
+      "house": "visconti",
+      "faction": "milan",
+      "born": 1388,
+      "died": 1412,
+      "role": "heir",
+      "stats": {
+        "command": 55,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 50,
+        "education": 50
+      },
+      "traits": [
+        "heredero",
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Giovanni_Maria_Visconti",
+      "estimate": true,
+      "family": {
+        "father": "gian_galeazzo_milan",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "filippo_maria_visconti",
+      "name": "Filippo Maria Visconti",
+      "house": "visconti",
+      "faction": "milan",
+      "born": 1392,
+      "died": 1447,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 65,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "duque",
+        "principe"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Filippo_Maria_Visconti",
+      "estimate": true,
+      "family": {
+        "father": "gian_galeazzo_milan",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "joan_ii_naples",
+      "name": "Juana II de Nápoles",
+      "house": "anjou_durazzo",
+      "faction": "naples",
+      "born": 1373,
+      "died": 1435,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 70,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 60
+      },
+      "traits": [
+        "reina",
+        "heredera"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Joan_II_of_Naples",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "mehmed_i_ottoman",
+      "name": "Mehmed I",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1386,
+      "died": 1421,
+      "role": "heir",
+      "stats": {
+        "command": 80,
+        "intrigue": 70,
+        "charisma": 70,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "heredero",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Mehmed_I",
+      "estimate": true,
+      "family": {
+        "father": "bayezid_i_ottoman",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "suleyman_celebi",
+      "name": "Süleyman Çelebi",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1377,
+      "died": 1411,
+      "role": "claimant",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 50,
+        "education": 50
+      },
+      "traits": [
+        "principe",
+        "pretendiente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/S%C3%BCleyman_%C3%87elebi",
+      "estimate": true,
+      "family": {
+        "father": "bayezid_i_ottoman",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "musa_celebi",
+      "name": "Musa Çelebi",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1388,
+      "died": 1413,
+      "role": "claimant",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 45,
+        "education": 45
+      },
+      "traits": [
+        "principe",
+        "pretendiente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Musa_%C3%87elebi",
+      "estimate": true,
+      "family": {
+        "father": "bayezid_i_ottoman",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "shah_rukh",
+      "name": "Shah Rukh",
+      "house": "timurid",
+      "faction": "tamerlane",
+      "born": 1377,
+      "died": 1447,
+      "role": "heir",
+      "stats": {
+        "command": 75,
+        "intrigue": 65,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 60
+      },
+      "traits": [
+        "heredero",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Shah_Rukh",
+      "estimate": true,
+      "family": {
+        "father": "timur_tamerlane",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "miran_shah",
+      "name": "Miran Shah",
+      "house": "timurid",
+      "faction": "tamerlane",
+      "born": 1366,
+      "died": 1408,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 45,
+        "education": 45
+      },
+      "traits": [
+        "principe",
+        "comandante"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Miran_Shah",
+      "estimate": true,
+      "family": {
+        "father": "timur_tamerlane",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "henry_vi_england",
+      "name": "Enrique VI de Inglaterra",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1421,
+      "died": 1471,
+      "role": "ruler",
+      "stats": {
+        "command": 45,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 45,
+        "education": 55
+      },
+      "traits": [
+        "rey_debil",
+        "rey_pio"
+      ],
+      "claims": [
+        {
+          "target": "france",
+          "strength": 0.7
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Henry_VI_of_England",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "margaret_anjou",
+        "children": [
+          "edward_westminster"
+        ]
+      },
+      "reign_start": 1422,
+      "reign_end": 1461
+    },
+    {
+      "id": "charles_vii_france",
+      "name": "Carlos VII de Francia",
+      "house": "valois",
+      "faction": "france",
+      "born": 1403,
+      "died": 1461,
+      "role": "ruler",
+      "stats": {
+        "command": 75,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 65,
+        "education": 70
+      },
+      "traits": [
+        "rey_vencedor",
+        "rey_prudente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_VII_of_France",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "louis_xi_france"
+        ]
+      },
+      "reign_start": 1422,
+      "reign_end": 1461
+    },
+    {
+      "id": "frederick_iii_hre",
+      "name": "Federico III de Habsburgo",
+      "house": "habsburg",
+      "faction": "hre",
+      "born": 1415,
+      "died": 1493,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 65,
+        "education": 65
+      },
+      "traits": [
+        "emperador",
+        "rey_romanos"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Frederick_III,_Holy_Roman_Emperor",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1440,
+      "reign_end": 1493
+    },
+    {
+      "id": "george_podebrady_bohemia",
+      "name": "Jorge de Poděbrady",
+      "house": "podebrady",
+      "faction": "bohemia",
+      "born": 1420,
+      "died": 1471,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "regente",
+        "rey_bohemia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/George_of_Pod%C4%9Bbrady",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Regente/administrador de Bohemia desde 1452; rey desde 1458 (reign_start 1452).",
+      "reign_start": 1452,
+      "reign_end": 1471
+    },
+    {
+      "id": "ladislaus_v_hungary",
+      "name": "Ladislao V el Póstumo",
+      "house": "habsburg",
+      "faction": "hungary",
+      "born": 1440,
+      "died": 1457,
+      "role": "ruler",
+      "stats": {
+        "command": 45,
+        "intrigue": 50,
+        "charisma": 45,
+        "loyalty": 50,
+        "education": 50
+      },
+      "traits": [
+        "rey_menor",
+        "rey_hungria"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ladislaus_the_Posthumous",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1444,
+      "reign_end": 1457
+    },
+    {
+      "id": "john_ii_castile",
+      "name": "Juan II de Castilla",
+      "house": "trastamara",
+      "faction": "castile",
+      "born": 1405,
+      "died": 1454,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 60
+      },
+      "traits": [
+        "rey_castilla",
+        "valido"
+      ],
+      "claims": [
+        {
+          "target": "granada",
+          "strength": 0.5
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/John_II_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "henry_iv_castile"
+        ]
+      },
+      "reign_start": 1406,
+      "reign_end": 1454
+    },
+    {
+      "id": "alfonso_v_aragon",
+      "name": "Alfonso V el Magnánimo",
+      "house": "trastamara",
+      "faction": "aragon",
+      "born": 1396,
+      "died": 1458,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 72,
+        "charisma": 75,
+        "loyalty": 65,
+        "education": 70
+      },
+      "traits": [
+        "rey_magnanimo",
+        "rey_napoles"
+      ],
+      "claims": [
+        {
+          "target": "naples",
+          "strength": 0.7
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Alfonso_V_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "ferrante_naples"
+        ]
+      },
+      "reign_start": 1416,
+      "reign_end": 1458
+    },
+    {
+      "id": "casimir_iv_poland",
+      "name": "Casimiro IV Jagellón",
+      "house": "jagiellon",
+      "faction": "poland",
+      "born": 1427,
+      "died": 1492,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 72,
+        "charisma": 70,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "rey_polonia",
+        "rey_prusiano"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Casimir_IV_Jagiellon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1447,
+      "reign_end": 1492
+    },
+    {
+      "id": "james_ii_scotland",
+      "name": "Jacobo II de Escocia",
+      "house": "stewart",
+      "faction": "scotland",
+      "born": 1430,
+      "died": 1460,
+      "role": "ruler",
+      "stats": {
+        "command": 75,
+        "intrigue": 60,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "rey_escocia",
+        "rey_artillero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/James_II_of_Scotland",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "james_iii_scotland"
+        ]
+      },
+      "reign_start": 1437,
+      "reign_end": 1460
+    },
+    {
+      "id": "nicholas_v_papacy",
+      "name": "Nicolás V",
+      "house": "parentucelli",
+      "faction": "papacy",
+      "born": 1397,
+      "died": 1455,
+      "role": "ruler",
+      "stats": {
+        "command": 55,
+        "intrigue": 70,
+        "charisma": 70,
+        "loyalty": 70,
+        "education": 85
+      },
+      "traits": [
+        "papa",
+        "humanista"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Pope_Nicholas_V",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1447,
+      "reign_end": 1455
+    },
+    {
+      "id": "muhammad_xi_granada",
+      "name": "Muhammad XI de Granada (Sa'd)",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1396,
+      "died": 1462,
+      "role": "ruler",
+      "stats": {
+        "command": 55,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 50,
+        "education": 45
+      },
+      "traits": [
+        "sultan_nazari",
+        "rey_depuesto"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Muhammad_XI_of_Granada",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Fechas aproximadas (estimate); sultán en 1453-1455 y 1455-1462.",
+      "reign_start": 1453,
+      "reign_end": 1462
+    },
+    {
+      "id": "inal_mamluks",
+      "name": "Al-Ashraf Inal",
+      "house": "burji",
+      "faction": "mamluks",
+      "born": 1380,
+      "died": 1461,
+      "role": "ruler",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "sultan_mameluco"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Al-Ashraf_Inal",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1453,
+      "reign_end": 1461
+    },
+    {
+      "id": "kuchuk_muhammad_golden_horde",
+      "name": "Küchük Muhammad",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1391,
+      "died": 1459,
+      "role": "ruler",
+      "stats": {
+        "command": 65,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 50,
+        "education": 45
+      },
+      "traits": [
+        "khan",
+        "horda"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/K%C3%BC%C3%A7%C3%BCk_Muhammad",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1435,
+      "reign_end": 1459
+    },
+    {
+      "id": "constantine_xi_byzantium",
+      "name": "Constantino XI Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1405,
+      "died": 1453,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 65,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 65
+      },
+      "traits": [
+        "emperador",
+        "ultimo_romano"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Constantine_XI_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "manuel_ii_byzantium",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1449,
+      "reign_end": 1453
+    },
+    {
+      "id": "peter_ii_brittany",
+      "name": "Pedro II de Bretaña",
+      "house": "montfort",
+      "faction": "brittany",
+      "born": 1418,
+      "died": 1457,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "duque",
+        "noble_breton"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Peter_II,_Duke_of_Brittany",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "reign_start": 1450,
+      "reign_end": 1457
+    },
+    {
+      "id": "philip_iii_burgundy",
+      "name": "Felipe III el Bueno",
+      "house": "valois_bourgogne",
+      "faction": "burgundy",
+      "born": 1396,
+      "died": 1467,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 75,
+        "charisma": 75,
+        "loyalty": 70,
+        "education": 75
+      },
+      "traits": [
+        "duque",
+        "mecenas"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Philip_the_Good",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "charles_the_bold"
+        ]
+      },
+      "reign_start": 1419,
+      "reign_end": 1467
+    },
+    {
+      "id": "cosimo_medici_florence",
+      "name": "Cosimo de' Medici",
+      "house": "medici",
+      "faction": "florence",
+      "born": 1389,
+      "died": 1464,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 80,
+        "charisma": 70,
+        "loyalty": 65,
+        "education": 80
+      },
+      "traits": [
+        "republica",
+        "banquero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Cosimo_de%27_Medici",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "piero_medici"
+        ]
+      },
+      "note": "República de Florencia: gobernante de facto (no título dinástico).",
+      "reign_start": 1434,
+      "reign_end": 1464
+    },
+    {
+      "id": "pietro_fregoso_genoa",
+      "name": "Pietro Fregoso",
+      "house": "fregoso",
+      "faction": "genoa",
+      "born": 1417,
+      "died": 1459,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 65,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "dogo",
+        "republica"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Pietro_Fregoso",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Dogo de Génova; capital de facción = Caffa (Crimea), única región genovesa en el mapa.",
+      "reign_start": 1450,
+      "reign_end": 1458
+    },
+    {
+      "id": "francesco_sforza_milan",
+      "name": "Francesco Sforza",
+      "house": "sforza",
+      "faction": "milan",
+      "born": 1401,
+      "died": 1466,
+      "role": "ruler",
+      "stats": {
+        "command": 85,
+        "intrigue": 75,
+        "charisma": 70,
+        "loyalty": 65,
+        "education": 65
+      },
+      "traits": [
+        "condottiero",
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Francesco_I_Sforza",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "galeazzo_maria_sforza"
+        ]
+      },
+      "reign_start": 1450,
+      "reign_end": 1466
+    },
+    {
+      "id": "mehmed_ii_ottoman",
+      "name": "Mehmed II",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1432,
+      "died": 1481,
+      "role": "ruler",
+      "stats": {
+        "command": 92,
+        "intrigue": 85,
+        "charisma": 75,
+        "loyalty": 70,
+        "education": 75
+      },
+      "traits": [
+        "conquistador",
+        "sultan"
+      ],
+      "claims": [
+        {
+          "target": "byzantium",
+          "strength": 0.9
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Mehmed_II",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "bayezid_ii"
+        ]
+      },
+      "reign_start": 1451,
+      "reign_end": 1481
+    },
+    {
+      "id": "francesco_foscari_venice",
+      "name": "Francesco Foscari",
+      "house": "foscari",
+      "faction": "venice",
+      "born": 1373,
+      "died": 1457,
+      "role": "ruler",
+      "stats": {
+        "command": 60,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "dogo",
+        "republica"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Francesco_Foscari",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Dogo de Venecia; capital de facción = Croacia/Dalmacia (región veneciana en el mapa).",
+      "reign_start": 1423,
+      "reign_end": 1457
+    },
+    {
+      "id": "edward_westminster",
+      "name": "Eduardo de Westminster",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1453,
+      "died": 1471,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 50,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 50
+      },
+      "traits": [
+        "principe_gales",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Edward_of_Westminster",
+      "estimate": true,
+      "family": {
+        "father": "henry_vi_england",
+        "mother": "margaret_anjou",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "richard_york",
+      "name": "Ricardo de York",
+      "house": "york",
+      "faction": "england",
+      "born": 1411,
+      "died": 1460,
+      "role": "claimant",
+      "stats": {
+        "command": 80,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "pretendiente",
+        "protector"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Richard_of_York,_3rd_Duke_of_York",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Pretendiente rival de la casa de Lancaster (preludio de las Dos Rosas)."
+    },
+    {
+      "id": "margaret_anjou",
+      "name": "Margarita de Anjou",
+      "house": "anjou",
+      "faction": "england",
+      "born": 1430,
+      "died": 1482,
+      "role": "regent",
+      "stats": {
+        "command": 55,
+        "intrigue": 75,
+        "charisma": 70,
+        "loyalty": 65,
+        "education": 65
+      },
+      "traits": [
+        "reina",
+        "regente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Margaret_of_Anjou",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "henry_vi_england",
+        "children": [
+          "edward_westminster"
+        ]
+      }
+    },
+    {
+      "id": "louis_xi_france",
+      "name": "Luis XI de Francia",
+      "house": "valois",
+      "faction": "france",
+      "born": 1423,
+      "died": 1483,
+      "role": "heir",
+      "stats": {
+        "command": 80,
+        "intrigue": 85,
+        "charisma": 65,
+        "loyalty": 65,
+        "education": 70
+      },
+      "traits": [
+        "delfin",
+        "aracnido"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_XI_of_France",
+      "estimate": true,
+      "family": {
+        "father": "charles_vii_france",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "jean_bureau",
+      "name": "Jean Bureau",
+      "house": "bureau",
+      "faction": "france",
+      "born": 1390,
+      "died": 1468,
+      "role": "general",
+      "stats": {
+        "command": 75,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 80,
+        "education": 65
+      },
+      "traits": [
+        "artillero",
+        "maestro_artilleria"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Jean_Bureau",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Nacimiento aproximado (estimate)."
+    },
+    {
+      "id": "john_hunyadi",
+      "name": "John Hunyadi",
+      "house": "hunyadi",
+      "faction": "hungary",
+      "born": 1406,
+      "died": 1456,
+      "role": "regent",
+      "stats": {
+        "command": 90,
+        "intrigue": 75,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 65
+      },
+      "traits": [
+        "regente",
+        "heroe_belgrado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_Hunyadi",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "laszlo_hunyadi"
+        ]
+      },
+      "note": "Regente/gobernador de Hungría durante la minoría de Ladislao V."
+    },
+    {
+      "id": "laszlo_hunyadi",
+      "name": "Ladislao Hunyadi",
+      "house": "hunyadi",
+      "faction": "hungary",
+      "born": 1433,
+      "died": 1457,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "noble_hungaro"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ladislaus_Hunyadi",
+      "estimate": true,
+      "family": {
+        "father": "john_hunyadi",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "henry_iv_castile",
+      "name": "Enrique IV de Castilla",
+      "house": "trastamara",
+      "faction": "castile",
+      "born": 1425,
+      "died": 1474,
+      "role": "heir",
+      "stats": {
+        "command": 55,
+        "intrigue": 60,
+        "charisma": 50,
+        "loyalty": 50,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "rey_debil"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Henry_IV_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": "john_ii_castile",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "alvaro_de_luna",
+      "name": "Álvaro de Luna",
+      "house": "luna",
+      "faction": "castile",
+      "born": 1390,
+      "died": 1453,
+      "role": "advisor",
+      "stats": {
+        "command": 60,
+        "intrigue": 80,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 65
+      },
+      "traits": [
+        "valido",
+        "condestable"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/%C3%81lvaro_de_Luna",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "ferrante_naples",
+      "name": "Fernando I de Nápoles",
+      "house": "trastamara",
+      "faction": "aragon",
+      "born": 1423,
+      "died": 1494,
+      "role": "heir",
+      "stats": {
+        "command": 70,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 60
+      },
+      "traits": [
+        "heredero",
+        "rey_napoles"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ferdinand_I_of_Naples",
+      "estimate": true,
+      "family": {
+        "father": "alfonso_v_aragon",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "john_ii_aragon",
+      "name": "Juan II de Aragón",
+      "house": "trastamara",
+      "faction": "aragon",
+      "born": 1398,
+      "died": 1479,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 65
+      },
+      "traits": [
+        "pariente",
+        "rey_navarra"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_II_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "james_iii_scotland",
+      "name": "Jacobo III de Escocia",
+      "house": "stewart",
+      "faction": "scotland",
+      "born": 1451,
+      "died": 1488,
+      "role": "heir",
+      "stats": {
+        "command": 50,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "rey_escocia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/James_III_of_Scotland",
+      "estimate": true,
+      "family": {
+        "father": "james_ii_scotland",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bessarion",
+      "name": "Bessarion",
+      "house": "bessarion",
+      "faction": "papacy",
+      "born": 1403,
+      "died": 1472,
+      "role": "advisor",
+      "stats": {
+        "command": 45,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 70,
+        "education": 90
+      },
+      "traits": [
+        "cardenal",
+        "humanista"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bessarion",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "qaitbay",
+      "name": "Qaitbay",
+      "house": "burji",
+      "faction": "mamluks",
+      "born": 1416,
+      "died": 1496,
+      "role": "general",
+      "stats": {
+        "command": 75,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 55,
+        "education": 55
+      },
+      "traits": [
+        "mameluco",
+        "futuro_sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Qaitbay",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Sultán desde 1468; en 1453 es un mameluco de alto rango (GDD §4.4: usar regente previo)."
+    },
+    {
+      "id": "demetrios_palaiologos",
+      "name": "Demetrio Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1407,
+      "died": 1470,
+      "role": "relative",
+      "stats": {
+        "command": 50,
+        "intrigue": 55,
+        "charisma": 45,
+        "loyalty": 40,
+        "education": 50
+      },
+      "traits": [
+        "principe",
+        "despota"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Demetrios_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "manuel_ii_byzantium",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "thomas_palaiologos",
+      "name": "Tomás Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1409,
+      "died": 1465,
+      "role": "relative",
+      "stats": {
+        "command": 50,
+        "intrigue": 50,
+        "charisma": 45,
+        "loyalty": 45,
+        "education": 45
+      },
+      "traits": [
+        "principe",
+        "despota"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Thomas_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "manuel_ii_byzantium",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "loukas_notaras",
+      "name": "Loukas Notaras",
+      "house": "notaras",
+      "faction": "byzantium",
+      "born": 1405,
+      "died": 1453,
+      "role": "advisor",
+      "stats": {
+        "command": 55,
+        "intrigue": 70,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 70
+      },
+      "traits": [
+        "megas_dux",
+        "ultimo_ministro"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Loukas_Notaras",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Nacimiento aproximado (estimate)."
+    },
+    {
+      "id": "francis_ii_brittany",
+      "name": "Francisco II de Bretaña",
+      "house": "montfort",
+      "faction": "brittany",
+      "born": 1433,
+      "died": 1488,
+      "role": "heir",
+      "stats": {
+        "command": 55,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Francis_II,_Duke_of_Brittany",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "charles_the_bold",
+      "name": "Carlos el Temerario",
+      "house": "valois_bourgogne",
+      "faction": "burgundy",
+      "born": 1433,
+      "died": 1477,
+      "role": "heir",
+      "stats": {
+        "command": 85,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_the_Bold",
+      "estimate": true,
+      "family": {
+        "father": "philip_iii_burgundy",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "piero_medici",
+      "name": "Piero de' Medici",
+      "house": "medici",
+      "faction": "florence",
+      "born": 1416,
+      "died": 1469,
+      "role": "heir",
+      "stats": {
+        "command": 50,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "banquero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Piero_di_Cosimo_de%27_Medici",
+      "estimate": true,
+      "family": {
+        "father": "cosimo_medici_florence",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "galeazzo_maria_sforza",
+      "name": "Galeazzo Maria Sforza",
+      "house": "sforza",
+      "faction": "milan",
+      "born": 1444,
+      "died": 1476,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 50,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Galeazzo_Maria_Sforza",
+      "estimate": true,
+      "family": {
+        "father": "francesco_sforza_milan",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bayezid_ii",
+      "name": "Bayezid II",
+      "house": "osman",
+      "faction": "ottoman",
+      "born": 1447,
+      "died": 1512,
+      "role": "heir",
+      "stats": {
+        "command": 70,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 60,
+        "education": 60
+      },
+      "traits": [
+        "heredero",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bayezid_II",
+      "estimate": true,
+      "family": {
+        "father": "mehmed_ii_ottoman",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "candarli_halil",
+      "name": "Çandarlı Halil Pasha",
+      "house": "candarli",
+      "faction": "ottoman",
+      "born": 1400,
+      "died": 1453,
+      "role": "advisor",
+      "stats": {
+        "command": 50,
+        "intrigue": 75,
+        "charisma": 55,
+        "loyalty": 55,
+        "education": 65
+      },
+      "traits": [
+        "gran_visir",
+        "traidor"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/%C3%87andarl%C4%B1_Halil_Pasha",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      },
+      "note": "Nacimiento aproximado (estimate)."
+    },
+    {
+      "id": "bartolomeo_colleoni",
+      "name": "Bartolomeo Colleoni",
+      "house": "colleoni",
+      "faction": "venice",
+      "born": 1400,
+      "died": 1475,
+      "role": "general",
+      "stats": {
+        "command": 85,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "condottiero",
+        "capitan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bartolomeo_Colleoni",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
     }
   ]
 }

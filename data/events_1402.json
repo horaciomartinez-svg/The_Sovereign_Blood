@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "id": "batalla_ankara_1402",
+      "year": 1402,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "ottoman",
+          "tamerlane"
+        ]
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "ottoman",
+          "value": 0.3
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "tamerlane",
+          "value": 30
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "ottoman",
+          "value": -20
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "ottoman",
+          "target": "tamerlane",
+          "value": -50,
+          "duration": 24
+        }
+      ],
+      "news": "Tamerlán derrota y captura a Bayezid I en Ankara; el Imperio otomano entra en el interregno.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Ankara"
+    },
+    {
+      "id": "muerte_tamerlan_1405",
+      "year": 1405,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "tamerlane",
+          "value": -40
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "timurid",
+          "value": -20
+        }
+      ],
+      "news": "Muere Tamerlán camino de China; su imperio se reparte entre sus herederos.",
+      "source": "https://en.wikipedia.org/wiki/Timur"
+    },
+    {
+      "id": "locura_carlos_vi_1405",
+      "year": 1405,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "france",
+          "value": -15
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "france",
+          "value": -10
+        }
+      ],
+      "news": "Nuevos episodios de locura de Carlos VI sumen a Francia en la inestabilidad y la regencia.",
+      "source": "https://en.wikipedia.org/wiki/Charles_VI_of_France"
+    },
+    {
+      "id": "guerra_civil_armagnac_borgona_1407",
+      "year": 1407,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "relation_modifier",
+          "faction": "burgundy",
+          "target": "france",
+          "value": -50
+        },
+        {
+          "type": "casus_belli",
+          "faction": "burgundy",
+          "target": "france",
+          "value": 1
+        },
+        {
+          "type": "stability_modifier",
+          "faction": "france",
+          "value": -20
+        }
+      ],
+      "news": "El asesinato de Luis de Orleans desata la guerra civil entre armagnacs y borgoñones.",
+      "source": "https://en.wikipedia.org/wiki/Armagnac%E2%80%93Burgundian_Civil_War"
+    },
+    {
+      "id": "concilio_constanza_1414",
+      "year": 1414,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "papacy",
+          "value": 15
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "europe_west",
+          "value": -5
+        }
+      ],
+      "news": "El Concilio de Constanza intenta poner fin al Cisma de Occidente.",
+      "source": "https://en.wikipedia.org/wiki/Council_of_Constance"
+    },
+    {
+      "id": "guerras_husitas_1420",
+      "year": 1420,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "bohemia",
+          "value": -20
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "hre",
+          "value": -10
+        },
+        {
+          "type": "army_loss",
+          "faction": "hre",
+          "value": 0.05
+        }
+      ],
+      "news": "Las guerras husitas asuelan Bohemia y desafían la autoridad imperial.",
+      "source": "https://en.wikipedia.org/wiki/Hussite_Wars"
+    },
+    {
+      "id": "sitio_orleans_1429",
+      "year": 1429,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "france",
+          "value": 15
+        },
+        {
+          "type": "army_loss",
+          "faction": "england",
+          "value": 0.1
+        }
+      ],
+      "news": "Juana de Arco levanta el sitio de Orleans y cambia el rumbo de la Guerra de los Cien Años.",
+      "source": "https://en.wikipedia.org/wiki/Siege_of_Orl%C3%A9ans"
+    },
+    {
+      "id": "ejecucion_juana_arco_1431",
+      "year": 1431,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "france",
+          "value": 10
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": -10
+        }
+      ],
+      "news": "Juana de Arco es ejecutada en Ruan; su memoria se convierte en símbolo de Francia.",
+      "source": "https://en.wikipedia.org/wiki/Joan_of_Arc"
+    },
+    {
+      "id": "paz_arras_1435",
+      "year": 1435,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "relation_modifier",
+          "faction": "burgundy",
+          "target": "france",
+          "value": 40
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "burgundy",
+          "target": "england",
+          "value": -30
+        }
+      ],
+      "news": "La Paz de Arrás reconcilia a Borgoña con Francia y aísla a Inglaterra.",
+      "source": "https://en.wikipedia.org/wiki/Congress_of_Arras"
+    },
+    {
+      "id": "tregua_tours_1444",
+      "year": 1444,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "peace",
+          "faction": "england",
+          "target": "france",
+          "value": 1,
+          "duration": 5
+        }
+      ],
+      "news": "La Tregua de Tours da un respiro a la Guerra de los Cien Años.",
+      "source": "https://en.wikipedia.org/wiki/Truce_of_Tours"
+    }
+  ]
+}

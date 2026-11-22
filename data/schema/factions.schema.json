@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "factions.schema.json",
-  "title": "factions.json — The Sovereign's Blood (Escenario 1, 1337)",
+  "title": "factions.json — The Sovereign's Blood (23 facciones, 1337/1402/1453)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,7 @@
     },
     "factions": {
       "type": "array",
-      "minItems": 14,
+      "minItems": 23,
       "uniqueItems": true,
       "items": {
         "type": "object",
@@ -46,7 +46,16 @@
               "granada",
               "mamluks",
               "golden_horde",
-              "byzantium"
+              "byzantium",
+              "brittany",
+              "burgundy",
+              "florence",
+              "genoa",
+              "milan",
+              "naples",
+              "ottoman",
+              "tamerlane",
+              "venice"
             ]
           },
           "name": {
@@ -64,7 +73,8 @@
               "theocracy",
               "sultanate",
               "khanate",
-              "empire"
+              "empire",
+              "republic"
             ]
           },
           "color": {
@@ -85,7 +95,12 @@
             ]
           },
           "start_year": {
-            "const": 1337
+            "type": "integer",
+            "enum": [
+              1337,
+              1402,
+              1453
+            ]
           }
         }
       }

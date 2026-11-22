@@ -5,8 +5,8 @@
 | **Entregable** | `data/sources.md` (GDD §7.8 / §4.1) |
 | **Autor** | AG-1 (Historian / Data) |
 | **Fecha** | 2026-11-21 |
-| **Alcance** | Escenario 1 — «Dos Coronas», año 1337 (GDD §4.2), Fase 0; módulo Mapa §10.1 (`map_borders.json`, 3 años) y campo `portrait` §10.2 (Fase 2) |
-| **Datasets cubiertos** | `factions.json`, `regions.json`, `characters.json`, `units.json`, `events_1337.json`, `scenarios/scenario_1337.json`, `map_borders.json`, `schema/*.schema.json` |
+| **Alcance** | Fase 0: Escenario 1 «Dos Coronas» (1337); Fase 2: Mapa §10.1 (`map_borders.json`) y `portrait` §10.2; Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11) |
+| **Datasets cubiertos** | `factions.json` (23), `regions.json` (47×3 años), `characters.json` (175), `units.json`, `events_1337/1402/1453.json`, `scenarios/scenario_1337/1402/1453.json`, `map_borders.json`, `schema/*.schema.json` |
 
 ## 1. Regla de oro y método
 
@@ -383,9 +383,169 @@ atribuye la autoría CC BY-SA de las dos obras usadas (Petolaszlo) aunque no se 
 - Atribución: retratos por Kimi (encargo del usuario, proyecto propio); no se usa material de Koei
   ni de terceros. Coherente con GDD §10 y §1.2.
 
+## 11. Escenarios 1402 y 1453 (Fase 3 — GDD §4.3/§4.4/§4.5, D-057/D-058/D-060)
+
+### 11.1 Datos añadidos
+
+| Dataset | Recuento | Cambio |
+|---|---|---|
+| `factions.json` | 23 facciones | +9 nuevas (`brittany`, `burgundy`, `florence`, `genoa`, `milan`, `naples`, `ottoman`, `tamerlane`, `venice`); las 14 de 1337 no cambian |
+| `characters.json` | 175 personajes | +89 nuevos (42 gobernantes de 1402/1453 + 47 herederos/regentes/generales/pretendientes); los 86 de 1337 no se alteran |
+| `regions.json` | 47 regiones × 3 años | `year_data` de 1402 y 1453 añadidos con owner de `map_borders.json`; 1337 intacto |
+| `scenarios/scenario_1402.json` | 21 facciones, 8 jugables | inicio 1402, fin 1460 (D-060) |
+| `scenarios/scenario_1453.json` | 21 facciones, 8 jugables | inicio 1453, fin 1480 (D-060) |
+| `events_1402.json` | 10 eventos | Ankara, Tamerlán, Carlos VI, Armagnac-Borgoña, Constanza, husitas, Orleans, Juana de Arco, Arrás, Tours |
+| `events_1453.json` | 8 eventos | Constantinopla, Castillon, fin de los Cien Años, Dos Rosas, Hunyadi, Belgrado, Trebisonda, Caffa |
+
+### 11.2 Facciones nuevas
+
+| id | Nombre | Capital (región existente) | Gobierno | Perfil | start_year |
+|---|---|---|---|---|---|
+| `brittany` | Ducado de Bretaña | `region_bretana` | monarchy | survivor | 1402 |
+| `burgundy` | Ducado de Borgoña | `region_borgona` | monarchy | dynastic | 1402 |
+| `florence` | República de Florencia | `region_toscana` | republic | merchant | 1402 |
+| `genoa` | República de Génova | `region_crimea` | republic | merchant | 1453 |
+| `milan` | Ducado de Milán | `region_lombardia` | monarchy | dynastic | 1402 |
+| `naples` | Reino de Nápoles | `region_napoles` | monarchy | dynastic | 1402 |
+| `ottoman` | Imperio Otomano | `region_anatolia_occidental` | sultanate | aggressor | 1402 |
+| `tamerlane` | Imperio de Tamerlán | `region_damasco` | empire | aggressor | 1402 |
+| `venice` | República de Venecia | `region_croacia` | republic | merchant | 1453 |
+
+`playable: false` en las 9 nuevas; las 8 jugables de 1337 siguen con `playable: true` (D-057).
+Capitales especiales: Génova usa `region_crimea` (Caffa, única región genovesa del mapa) y Venecia
+usa `region_croacia` (Dalmacia veneciana); no existen regiones de Liguria/Venecia en el mapa de 47.
+
+### 11.3 Gobernantes por escenario (fuente en cada ficha)
+
+| Escenario | Facción | Gobernante | Nac.-Fall. | Reinado | Fuente |
+|---|---|---|---|---|---|
+| 1402 | `england` | Enrique IV de Inglaterra | 1367-1413 | 1399-1413 | https://en.wikipedia.org/wiki/Henry_IV_of_England |
+| 1402 | `france` | Carlos VI de Francia | 1368-1422 | 1380-1422 | https://en.wikipedia.org/wiki/Charles_VI_of_France |
+| 1402 | `hre` | Ruperto de Baviera, rey de romanos | 1352-1410 | 1400-1410 | https://en.wikipedia.org/wiki/Rupert,_King_of_Germany |
+| 1402 | `bohemia` | Wenceslao IV de Bohemia | 1361-1419 | 1378-1419 | https://en.wikipedia.org/wiki/Wenceslaus_IV_of_Bohemia |
+| 1402 | `hungary` | Segismundo de Luxemburgo | 1368-1437 | 1387-1437 | https://en.wikipedia.org/wiki/Sigismund,_Holy_Roman_Emperor |
+| 1402 | `castile` | Enrique III de Castilla | 1379-1406 | 1390-1406 | https://en.wikipedia.org/wiki/Henry_III_of_Castile |
+| 1402 | `aragon` | Martín I de Aragón | 1356-1410 | 1396-1410 | https://en.wikipedia.org/wiki/Martin_of_Aragon |
+| 1402 | `poland` | Władysław II Jagiełło | 1362-1434 | 1386-1434 | https://en.wikipedia.org/wiki/W%C5%82adys%C5%82aw_II_Jagie%C5%82%C5%82o |
+| 1402 | `scotland` | Roberto III de Escocia | 1337-1406 | 1390-1406 | https://en.wikipedia.org/wiki/Robert_III_of_Scotland |
+| 1402 | `papacy` | Bonifacio IX | 1356-1404 | 1389-1404 | https://en.wikipedia.org/wiki/Pope_Boniface_IX |
+| 1402 | `granada` | Muhammad VII de Granada | 1370-1408 | 1392-1408 | https://en.wikipedia.org/wiki/Muhammad_VII_of_Granada |
+| 1402 | `mamluks` | Al-Faraj | 1389-1412 | 1399-1412 | https://en.wikipedia.org/wiki/Al-Faraj |
+| 1402 | `golden_horde` | Edigu | 1352-1419 | 1399-1419 | https://en.wikipedia.org/wiki/Edigu |
+| 1402 | `byzantium` | Manuel II Paleólogo | 1350-1425 | 1391-1425 | https://en.wikipedia.org/wiki/Manuel_II_Palaiologos |
+| 1402 | `brittany` | Juan VI de Bretaña | 1389-1442 | 1399-1442 | https://en.wikipedia.org/wiki/John_VI,_Duke_of_Brittany |
+| 1402 | `burgundy` | Felipe II el Temerario | 1342-1404 | 1363-1404 | https://en.wikipedia.org/wiki/Philip_the_Bold |
+| 1402 | `florence` | Maso degli Albizzi | 1343-1417 | 1382-1417 | https://en.wikipedia.org/wiki/Maso_degli_Albizzi |
+| 1402 | `milan` | Gian Galeazzo Visconti | 1351-1402 | 1395-1402 | https://en.wikipedia.org/wiki/Gian_Galeazzo_Visconti |
+| 1402 | `naples` | Ladislao de Nápoles | 1377-1414 | 1386-1414 | https://en.wikipedia.org/wiki/Ladislaus_of_Naples |
+| 1402 | `ottoman` | Bayezid I | 1360-1403 | 1389-1403 | https://en.wikipedia.org/wiki/Bayezid_I |
+| 1402 | `tamerlane` | Tamerlán | 1336-1405 | 1370-1405 | https://en.wikipedia.org/wiki/Timur |
+| 1453 | `england` | Enrique VI de Inglaterra | 1421-1471 | 1422-1461 | https://en.wikipedia.org/wiki/Henry_VI_of_England |
+| 1453 | `france` | Carlos VII de Francia | 1403-1461 | 1422-1461 | https://en.wikipedia.org/wiki/Charles_VII_of_France |
+| 1453 | `hre` | Federico III de Habsburgo | 1415-1493 | 1440-1493 | https://en.wikipedia.org/wiki/Frederick_III,_Holy_Roman_Emperor |
+| 1453 | `bohemia` | Jorge de Poděbrady | 1420-1471 | 1452-1471 | https://en.wikipedia.org/wiki/George_of_Pod%C4%9Bbrady |
+| 1453 | `hungary` | Ladislao V el Póstumo | 1440-1457 | 1444-1457 | https://en.wikipedia.org/wiki/Ladislaus_the_Posthumous |
+| 1453 | `castile` | Juan II de Castilla | 1405-1454 | 1406-1454 | https://en.wikipedia.org/wiki/John_II_of_Castile |
+| 1453 | `aragon` | Alfonso V el Magnánimo | 1396-1458 | 1416-1458 | https://en.wikipedia.org/wiki/Alfonso_V_of_Aragon |
+| 1453 | `poland` | Casimiro IV Jagellón | 1427-1492 | 1447-1492 | https://en.wikipedia.org/wiki/Casimir_IV_Jagiellon |
+| 1453 | `scotland` | Jacobo II de Escocia | 1430-1460 | 1437-1460 | https://en.wikipedia.org/wiki/James_II_of_Scotland |
+| 1453 | `papacy` | Nicolás V | 1397-1455 | 1447-1455 | https://en.wikipedia.org/wiki/Pope_Nicholas_V |
+| 1453 | `granada` | Muhammad XI de Granada (Sa'd) | 1396-1462 | 1453-1462 | https://en.wikipedia.org/wiki/Muhammad_XI_of_Granada |
+| 1453 | `mamluks` | Al-Ashraf Inal | 1380-1461 | 1453-1461 | https://en.wikipedia.org/wiki/Al-Ashraf_Inal |
+| 1453 | `golden_horde` | Küchük Muhammad | 1391-1459 | 1435-1459 | https://en.wikipedia.org/wiki/K%C3%BC%C3%A7%C3%BCk_Muhammad |
+| 1453 | `byzantium` | Constantino XI Paleólogo | 1405-1453 | 1449-1453 | https://en.wikipedia.org/wiki/Constantine_XI_Palaiologos |
+| 1453 | `brittany` | Pedro II de Bretaña | 1418-1457 | 1450-1457 | https://en.wikipedia.org/wiki/Peter_II,_Duke_of_Brittany |
+| 1453 | `burgundy` | Felipe III el Bueno | 1396-1467 | 1419-1467 | https://en.wikipedia.org/wiki/Philip_the_Good |
+| 1453 | `florence` | Cosimo de' Medici | 1389-1464 | 1434-1464 | https://en.wikipedia.org/wiki/Cosimo_de%27_Medici |
+| 1453 | `genoa` | Pietro Fregoso | 1417-1459 | 1450-1458 | https://en.wikipedia.org/wiki/Pietro_Fregoso |
+| 1453 | `milan` | Francesco Sforza | 1401-1466 | 1450-1466 | https://en.wikipedia.org/wiki/Francesco_I_Sforza |
+| 1453 | `ottoman` | Mehmed II | 1432-1481 | 1451-1481 | https://en.wikipedia.org/wiki/Mehmed_II |
+| 1453 | `venice` | Francesco Foscari | 1373-1457 | 1423-1457 | https://en.wikipedia.org/wiki/Francesco_Foscari |
+
+### 11.4 Eventos
+
+| Fichero | id | Año | Fuente |
+|---|---|---|---|
+| `events_1402.json` | `batalla_ankara_1402` | 1402 | https://en.wikipedia.org/wiki/Battle_of_Ankara |
+| `events_1402.json` | `muerte_tamerlan_1405` | 1405 | https://en.wikipedia.org/wiki/Timur |
+| `events_1402.json` | `locura_carlos_vi_1405` | 1405 | https://en.wikipedia.org/wiki/Charles_VI_of_France |
+| `events_1402.json` | `guerra_civil_armagnac_borgona_1407` | 1407 | https://en.wikipedia.org/wiki/Armagnac%E2%80%93Burgundian_Civil_War |
+| `events_1402.json` | `concilio_constanza_1414` | 1414 | https://en.wikipedia.org/wiki/Council_of_Constance |
+| `events_1402.json` | `guerras_husitas_1420` | 1420 | https://en.wikipedia.org/wiki/Hussite_Wars |
+| `events_1402.json` | `sitio_orleans_1429` | 1429 | https://en.wikipedia.org/wiki/Siege_of_Orl%C3%A9ans |
+| `events_1402.json` | `ejecucion_juana_arco_1431` | 1431 | https://en.wikipedia.org/wiki/Joan_of_Arc |
+| `events_1402.json` | `paz_arras_1435` | 1435 | https://en.wikipedia.org/wiki/Congress_of_Arras |
+| `events_1402.json` | `tregua_tours_1444` | 1444 | https://en.wikipedia.org/wiki/Truce_of_Tours |
+| `events_1453.json` | `caida_constantinopla_1453` | 1453 | https://en.wikipedia.org/wiki/Fall_of_Constantinople |
+| `events_1453.json` | `batalla_castillon_1453` | 1453 | https://en.wikipedia.org/wiki/Battle_of_Castillon |
+| `events_1453.json` | `fin_guerra_cien_anos_1453` | 1453 | https://en.wikipedia.org/wiki/Hundred_Years%27_War |
+| `events_1453.json` | `guerra_dos_rosas_1455` | 1455 | https://en.wikipedia.org/wiki/Wars_of_the_Roses |
+| `events_1453.json` | `muerte_hunyadi_1456` | 1456 | https://en.wikipedia.org/wiki/John_Hunyadi |
+| `events_1453.json` | `sitio_belgrado_1456` | 1456 | https://en.wikipedia.org/wiki/Siege_of_Belgrade_(1456) |
+| `events_1453.json` | `caida_trebisonda_1461` | 1461 | https://en.wikipedia.org/wiki/Siege_of_Trebizond_(1461) |
+| `events_1453.json` | `caida_caffa_1475` | 1475 | https://en.wikipedia.org/wiki/Feodosia |
+
+### 11.5 Owners, jugables y fuente de fronteras
+
+- Owners de 1402 y 1453 tomados **exactamente** de `data/map_borders.json` (misma geometría y
+  licencias documentadas en §9); las 47 regiones tienen owner válido en los tres años.
+- Facciones por escenario = conjunto de owners de ese año: **21** en 1402 (base + brittany,
+  burgundy, florence, milan, naples, ottoman, tamerlane) y **21** en 1453 (base + brittany,
+  burgundy, florence, genoa, milan, ottoman, venice).
+- `playable_factions` (elección de diseño de AG-1; ajustable por AG-0, el validador solo exige 8 ⊆ factions):
+  - 1402: `ottoman`, `tamerlane`, `england`, `france`, `hre`, `hungary`, `castile`, `aragon`.
+  - 1453: `ottoman`, `byzantium`, `england`, `france`, `burgundy`, `aragon`, `hre`, `hungary`.
+- Fuentes históricas de fronteras: William R. Shepherd, *Historical Atlas* 1923-26 (PD), y mapas
+  anuales de Wikimedia Commons verificados en §9.2 (1337, 1400 para 1402, 1444 para 1453).
+
+### 11.6 Esquemas actualizados (Fase 3)
+
+- `factions.schema.json`: enum de 23 ids; `government` admite `republic`; `start_year` ∈ {1337,1402,1453}.
+- `characters.schema.json`: enum de facción y de `claims.target` de 23 ids; `born` ≤ 1460; `died`
+  histórico real hasta 1520 o `null`; campos opcionales `reign_start`/`reign_end` (D-058).
+- `regions.schema.json`: `year_data` exige 1337/1402/1453; owner de los 23 ids; mismos campos e
+  `estimate`/`source` por año.
+- `scenario.schema.json`: genérico para los 3 escenarios; `playable_factions` (8 exactos),
+  `initial_state.regions` ∈ {1337,1402,1453}, `victory.control_pct` opcional (70 en 1402/1453).
+- `events.schema.json`: año 1337-1500, facciones de 23 ids, `source` obligatorio; aplica a los 3 ficheros.
+
+### 11.7 Estimaciones, correcciones históricas y limitaciones
+
+1. **Población, riqueza y edificios 1402/1453**: estimaciones de diseño (`estimate: true`) obtenidas
+   escalando los valores de 1337 y con ajustes por región (Constantinopla 70.000 en 1453, París
+   550.000-600.000, El Cairo 450.000-500.000, Lombardía/Toscana/Flandes al alza); no son censos.
+2. **Tesorerías y ejércitos iniciales**: balance de diseño derivado de la riqueza relativa; todos los
+   ejércitos están en regiones propias de su facción ese año y usan unidades existentes de era III.
+3. **Correcciones históricas a las tablas del GDD** (se prioriza exactitud de gobernante en el año):
+   - HRE 1402: Ruperto de Baviera (el GDD cita a Segismundo por la corona dual; Segismundo queda
+     como rey de Hungría y se le asigna claim al HRE).
+   - Aragón 1402: Martín I (el GDD cita a Fernando I como regente; Fernando I se incluye como
+     regente de Castilla y futuro rey de Aragón).
+   - Castilla 1453: Juan II (el GDD cita a Enrique IV; en 1453 Enrique era aún heredero y se incluye
+     como tal; reina desde 1454).
+   - Otomanos 1402: Bayezid I (capturado en Ankara) con el interregno representado por sus hijos
+     Mehmed I, Süleyman y Musa como herederos/pretendientes.
+   - Mamelucos 1453: Al-Ashraf Inal (el GDD cita a Qaitbay, que no es sultán hasta 1468; Qaitbay
+     figura como general de alto rango).
+   - Hungría 1453: Ladislao V el Póstumo con Juan Hunyadi como regente/gobernador.
+   - Bohemia 1453: Jorge de Poděbrady como regente/administrador (rey desde 1458).
+4. **Personajes de 1337 con `died: null`** no se modifican (D-057): D-058 debe priorizar los nuevos
+   `reign_start`/`reign_end` al seleccionar gobernante por año; aviso a AG-2 para el filtro de vivos.
+5. **Valaquia** (GDD §4.4) no se incluye: no tiene región ni owner en el mapa de 47; futura Fase 4.
+6. **Repúblicas**: Florencia, Génova y Venecia usan como gobernante a su líder/dogo (no dinastía),
+   marcado en `note`; Milán y Nápoles son monarquías.
+7. **Eventos**: fechas y contenidos contrastados con Wikipedia (URL por evento en la tabla §11.4);
+   `news` es redacción propia; los efectos usan los tipos admitidos por el esquema §7.6.
+8. **Muerte futura**: todos los personajes nuevos usan `died` histórico real (no `null`), salvo que
+   no haya dato fiable; el motor filtra vivos por año con D-058.
+9. **Facciones por año**: Génova y Venecia solo aparecen como facción/owner en 1453; Nápoles y
+   Tamerlán solo en 1402 (no tienen región en el otro año según `map_borders.json`). El GDD §4.3
+   menciona a Venecia/Génova en 1402, pero el mapa de contratos no les asigna región: se excluyen
+   de `scenario_1402` para no inventar territorios.
+
 ---
 
-*Generado por AG-1. Fase 0: datasets del Escenario 1. Fase 2: `map_borders.json` (§9) y campo
-`portrait` (§10). Cualquier corrección de dato debe mantener la URL de fuente o marcar
-`"estimate": true`; las reglas de validación están en `tools/validate_data.gd` (D-004/D-009) y los
-criterios en GDD §12-§13.*
+*Generado por AG-1. Fase 0: Escenario 1. Fase 2: `map_borders.json` (§9) y `portrait` (§10).
+Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11).
+Cualquier corrección de dato debe mantener la URL de fuente o marcar `"estimate": true`; las
+reglas de validación están en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en GDD §12-§13.*

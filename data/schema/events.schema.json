@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "events.schema.json",
-  "title": "events_1337.json — eventos históricos 1337-1399 (GDD §7.6)",
+  "title": "events_YYYY.json — eventos históricos (Fase 3)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,7 +14,7 @@
     },
     "events": {
       "type": "array",
-      "minItems": 15,
+      "minItems": 5,
       "uniqueItems": true,
       "items": {
         "type": "object",
@@ -35,7 +35,7 @@
           "year": {
             "type": "integer",
             "minimum": 1337,
-            "maximum": 1399
+            "maximum": 1500
           },
           "trigger": {
             "type": "object",
@@ -71,7 +71,16 @@
                     "granada",
                     "mamluks",
                     "golden_horde",
-                    "byzantium"
+                    "byzantium",
+                    "brittany",
+                    "burgundy",
+                    "florence",
+                    "genoa",
+                    "milan",
+                    "naples",
+                    "ottoman",
+                    "tamerlane",
+                    "venice"
                   ]
                 }
               }
@@ -126,7 +135,16 @@
                     "granada",
                     "mamluks",
                     "golden_horde",
-                    "byzantium"
+                    "byzantium",
+                    "brittany",
+                    "burgundy",
+                    "florence",
+                    "genoa",
+                    "milan",
+                    "naples",
+                    "ottoman",
+                    "tamerlane",
+                    "venice"
                   ]
                 },
                 "target": {
@@ -145,7 +163,16 @@
                     "granada",
                     "mamluks",
                     "golden_horde",
-                    "byzantium"
+                    "byzantium",
+                    "brittany",
+                    "burgundy",
+                    "florence",
+                    "genoa",
+                    "milan",
+                    "naples",
+                    "ottoman",
+                    "tamerlane",
+                    "venice"
                   ]
                 },
                 "region": {

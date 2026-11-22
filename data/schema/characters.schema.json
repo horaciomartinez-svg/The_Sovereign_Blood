@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "characters.schema.json",
-  "title": "characters.json — The Sovereign's Blood (Escenario 1, 1337)",
+  "title": "characters.json — The Sovereign's Blood (personajes 1337/1402/1453)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -66,20 +66,29 @@
               "granada",
               "mamluks",
               "golden_horde",
-              "byzantium"
+              "byzantium",
+              "brittany",
+              "burgundy",
+              "florence",
+              "genoa",
+              "milan",
+              "naples",
+              "ottoman",
+              "tamerlane",
+              "venice"
             ]
           },
           "born": {
             "type": "integer",
             "minimum": 1200,
-            "maximum": 1345
+            "maximum": 1460
           },
           "died": {
             "oneOf": [
               {
                 "type": "integer",
                 "minimum": 1200,
-                "maximum": 1337
+                "maximum": 1520
               },
               {
                 "type": "null"
@@ -226,7 +235,16 @@
                     "granada",
                     "mamluks",
                     "golden_horde",
-                    "byzantium"
+                    "byzantium",
+                    "brittany",
+                    "burgundy",
+                    "florence",
+                    "genoa",
+                    "milan",
+                    "naples",
+                    "ottoman",
+                    "tamerlane",
+                    "venice"
                   ]
                 },
                 "strength": {
@@ -257,6 +275,16 @@
                 "type": "null"
               }
             ]
+          },
+          "reign_start": {
+            "type": "integer",
+            "minimum": 1200,
+            "maximum": 1520
+          },
+          "reign_end": {
+            "type": "integer",
+            "minimum": 1200,
+            "maximum": 1520
           }
         }
       }

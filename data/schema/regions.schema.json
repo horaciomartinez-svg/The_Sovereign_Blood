@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "regions.schema.json",
-  "title": "regions.json — The Sovereign's Blood (Escenario 1, 1337)",
+  "title": "regions.json — The Sovereign's Blood (3 años: 1337/1402/1453)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -61,7 +61,9 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "1337"
+              "1337",
+              "1402",
+              "1453"
             ],
             "properties": {
               "1337": {
@@ -91,7 +93,174 @@
                       "granada",
                       "mamluks",
                       "golden_horde",
-                      "byzantium"
+                      "byzantium",
+                      "brittany",
+                      "burgundy",
+                      "florence",
+                      "genoa",
+                      "milan",
+                      "naples",
+                      "ottoman",
+                      "tamerlane",
+                      "venice"
+                    ]
+                  },
+                  "population": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 5000000
+                  },
+                  "base_wealth": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "buildings": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "granary",
+                        "workshops",
+                        "market",
+                        "walls",
+                        "castle",
+                        "shipyard",
+                        "university",
+                        "cathedral",
+                        "mine"
+                      ]
+                    }
+                  },
+                  "estimate": {
+                    "type": "boolean"
+                  },
+                  "source": {
+                    "type": "string",
+                    "pattern": "^https://[^ ]+$"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "1402": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "owner",
+                  "population",
+                  "base_wealth",
+                  "buildings",
+                  "estimate"
+                ],
+                "properties": {
+                  "owner": {
+                    "type": "string",
+                    "enum": [
+                      "england",
+                      "france",
+                      "hre",
+                      "bohemia",
+                      "hungary",
+                      "castile",
+                      "aragon",
+                      "poland",
+                      "scotland",
+                      "papacy",
+                      "granada",
+                      "mamluks",
+                      "golden_horde",
+                      "byzantium",
+                      "brittany",
+                      "burgundy",
+                      "florence",
+                      "genoa",
+                      "milan",
+                      "naples",
+                      "ottoman",
+                      "tamerlane",
+                      "venice"
+                    ]
+                  },
+                  "population": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 5000000
+                  },
+                  "base_wealth": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "buildings": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "granary",
+                        "workshops",
+                        "market",
+                        "walls",
+                        "castle",
+                        "shipyard",
+                        "university",
+                        "cathedral",
+                        "mine"
+                      ]
+                    }
+                  },
+                  "estimate": {
+                    "type": "boolean"
+                  },
+                  "source": {
+                    "type": "string",
+                    "pattern": "^https://[^ ]+$"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "1453": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "owner",
+                  "population",
+                  "base_wealth",
+                  "buildings",
+                  "estimate"
+                ],
+                "properties": {
+                  "owner": {
+                    "type": "string",
+                    "enum": [
+                      "england",
+                      "france",
+                      "hre",
+                      "bohemia",
+                      "hungary",
+                      "castile",
+                      "aragon",
+                      "poland",
+                      "scotland",
+                      "papacy",
+                      "granada",
+                      "mamluks",
+                      "golden_horde",
+                      "byzantium",
+                      "brittany",
+                      "burgundy",
+                      "florence",
+                      "genoa",
+                      "milan",
+                      "naples",
+                      "ottoman",
+                      "tamerlane",
+                      "venice"
                     ]
                   },
                   "population": {
