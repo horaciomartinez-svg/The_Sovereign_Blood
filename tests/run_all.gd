@@ -30,6 +30,7 @@ const TestCloseCombatScript = preload("res://tests/test_close_combat.gd")
 const TestEspionageScript = preload("res://tests/test_espionage.gd")
 const TestCrecyScript = preload("res://tests/test_crecy.gd")
 const TestSpritesScript = preload("res://tests/test_sprites.gd")
+const TestBattleTilesScript = preload("res://tests/test_battle_tiles.gd")
 const HarnessScript = preload("res://tests/harness.gd")
 const ValidatorCore = preload("res://tools/validator_core.gd")
 
@@ -67,6 +68,8 @@ func _initialize() -> void:
 	TestCrecyScript.new().run(runner, harness)
 	# Fase 3 (D-040/D-042): sprites de unidades, animación y proyectiles.
 	TestSpritesScript.new().run(runner, harness)
+	# Fase 3 §10.4 (D-053): tiles de batalla y reglas tácticas N2/N3.
+	TestBattleTilesScript.new().run(runner, harness)
 	_run_data_validation(runner)
 
 	var summary: Dictionary = runner.summary()

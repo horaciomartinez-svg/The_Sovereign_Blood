@@ -17,6 +17,8 @@ const FACTION_FILE: String = "res://data/factions.json"
 const REGION_FILE: String = "res://data/regions.json"
 const CHARACTER_FILE: String = "res://data/characters.json"
 const UNIT_FILE: String = "res://data/units.json"
+## Fase 3 §10.4 (D-053): tabla de tiles del campo de batalla N3.
+const BATTLE_TILES_FILE: String = "res://data/battle_tiles.json"
 
 # Índices id → diccionario crudo (serializable, GDD §8.3).
 var factions: Dictionary = {}
@@ -25,6 +27,8 @@ var characters: Dictionary = {}
 var units: Dictionary = {}
 var scenarios: Dictionary = {}
 var events: Dictionary = {}
+## Tabla `clave → {tile, move_cost, defense, passable, flags}` (D-053).
+var battle_tiles: Dictionary = {}
 var is_loaded: bool = false
 var last_errors: Array[String] = []
 
@@ -44,6 +48,8 @@ func load_all() -> bool:
 	if not _load_scenarios():
 		ok = false
 	if not _load_events():
+		ok = false
+	if not _load_battle_tiles():
 		ok = false
 	is_loaded = ok and not factions.is_empty() and not regions.is_empty()
 	return is_loaded
@@ -87,6 +93,8 @@ func load_dataset(path: String, kind: String) -> bool:
 			return _load_entities(path, "units", units)
 		"events":
 			return _load_events_file(path)
+		"battle_tiles":
+			return _load_battle_tiles_file(path)
 		"scenarios", "scenario":
 			return _load_scenario_file(path)
 		_:
@@ -131,6 +139,27 @@ func has_unit_sprite(id: String) -> bool:
 func get_scenario(id: String) -> Dictionary:
 	var entry: Dictionary = scenarios.get(id, {})
 	return entry
+
+
+# --- Fase 3 §10.4: tiles de batalla (D-053) ------------------------------
+
+func get_battle_tiles() -> Dictionary:
+	return battle_tiles
+
+
+func get_battle_tile(key: String) -> Dictionary:
+	var entry: Variant = battle_tiles.get(key, null)
+	if entry is Dictionary:
+		return entry
+	return {}
+
+
+func has_battle_tile(key: String) -> bool:
+	return battle_tiles.has(key)
+
+
+func get_battle_tile_keys() -> Array[String]:
+	return SafeDict.sorted_keys(battle_tiles)
 
 
 func get_event(id: String) -> Dictionary:
@@ -203,6 +232,7 @@ func reset() -> void:
 	units = {}
 	scenarios = {}
 	events = {}
+	battle_tiles = {}
 	is_loaded = false
 	last_errors = []
 
@@ -230,6 +260,26 @@ func _load_entities(path: String, envelope_key: String, target: Dictionary) -> b
 		emit_signal("data_load_failed", path, message)
 		return false
 	emit_signal("data_loaded", envelope_key, indexed)
+	return true
+
+
+## Carga el envelope `{schema_version, battle_tiles: {clave: {...}}}` (D-009).
+func _load_battle_tiles() -> bool:
+	return _load_battle_tiles_file(BATTLE_TILES_FILE)
+
+
+func _load_battle_tiles_file(path: String) -> bool:
+	var root: Dictionary = load_json(path)
+	if root.is_empty():
+		return false
+	var table: Dictionary = SafeDict.as_dict(root.get("battle_tiles", null))
+	if table.is_empty():
+		var message := "sin tabla 'battle_tiles'"
+		last_errors.append("%s: %s" % [path, message])
+		emit_signal("data_load_failed", path, message)
+		return false
+	battle_tiles = table
+	emit_signal("data_loaded", "battle_tiles", table.size())
 	return true
 
 

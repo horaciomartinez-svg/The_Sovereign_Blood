@@ -456,3 +456,33 @@ func unit_ids() -> Array[String]:
 		for item in value:
 			result.append(str(item))
 	return result
+
+
+# --- Fase 3 §10.4: tiles de batalla (D-053) ------------------------------
+
+func battle_tiles() -> Dictionary:
+	var value: Variant = dl.call("get_battle_tiles")
+	if value is Dictionary:
+		return value
+	return {}
+
+
+func battle_tile(key: String) -> Dictionary:
+	var value: Variant = dl.call("get_battle_tile", key)
+	if value is Dictionary:
+		return value
+	return {}
+
+
+func battle_tile_keys() -> Array[String]:
+	var value: Variant = dl.call("get_battle_tile_keys")
+	var result: Array[String] = []
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result
+
+
+func rng_snapshot() -> Dictionary:
+	var dict: Dictionary = to_dict()
+	return SafeDict.as_dict(dict.get("rng", null))

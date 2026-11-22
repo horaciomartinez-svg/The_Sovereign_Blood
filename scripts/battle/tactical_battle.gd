@@ -24,6 +24,7 @@ const ARMY_SCRIPT = preload("res://scripts/model/army.gd")
 const REGION_SCRIPT = preload("res://scripts/model/region_state.gd")
 const CLOSE_COMBAT_SCRIPT = preload("res://scripts/battle/close_combat.gd")
 const BATTLE_SPRITES = preload("res://scripts/battle/battle_sprites.gd")
+const BATTLE_TILES_SCRIPT = preload("res://scripts/battle/battle_tiles.gd")
 
 const TERRAINS: Array[String] = ["plains", "forest", "hills", "river", "city"]
 
@@ -63,6 +64,8 @@ var _applied: bool = false
 var _animation_ms: float = 0.0
 var _projectiles: Array[Dictionary] = []
 var _projectile_seq: int = 0
+## Fase 3 §10.4 (D-053): reglas de tiles (vacío → comportamiento legado).
+var _battle_tiles: BATTLE_TILES_SCRIPT = null
 
 
 ## Configura la batalla a partir de los modelos del sistema militar.
@@ -94,6 +97,8 @@ func setup(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, region: REGIO
 	_animation_ms = 0.0
 	_projectiles = []
 	_projectile_seq = 0
+	# Fase 3 §10.4: tabla de tiles del campo (si falta, se usa el legado).
+	_battle_tiles = BATTLE_TILES_SCRIPT.new(DataLoader.get_battle_tiles())
 	_commander_stat = {
 		"attacker": _commander_stat_for(attacker_army.leader_id, attacker_faction),
 		"defender": _commander_stat_for(defender_army.leader_id, defender_faction),
@@ -232,16 +237,16 @@ func get_reachable_hexes(unit_id: String) -> Array[Dictionary]:
 		return result
 	var origin_q: int = SafeDict.as_int(unit.get("q"), 0)
 	var origin_r: int = SafeDict.as_int(unit.get("r"), 0)
-	var moves: int = SafeDict.as_int(unit.get("moves_left"), 0)
-	if moves <= 0:
+	var moves: float = SafeDict.as_float(unit.get("moves_left"), 0.0)
+	if moves <= 0.0:
 		return result
 	var visited: Dictionary = {}
-	var frontier: Array[Dictionary] = [{"q": origin_q, "r": origin_r, "cost": 0}]
+	var frontier: Array[Dictionary] = [{"q": origin_q, "r": origin_r, "cost": 0.0}]
 	while not frontier.is_empty():
 		var current: Dictionary = SafeDict.as_dict(frontier.pop_front())
 		var current_q: int = SafeDict.as_int(current.get("q"), 0)
 		var current_r: int = SafeDict.as_int(current.get("r"), 0)
-		var current_cost: int = SafeDict.as_int(current.get("cost"), 0)
+		var current_cost: float = SafeDict.as_float(current.get("cost"), 0.0)
 		for neighbour in _neighbours(current_q, current_r):
 			var next_q: int = SafeDict.as_int(neighbour.get("q"), 0)
 			var next_r: int = SafeDict.as_int(neighbour.get("r"), 0)
@@ -250,19 +255,19 @@ func get_reachable_hexes(unit_id: String) -> Array[Dictionary]:
 				continue
 			if not _is_hex_free(next_q, next_r, unit_id):
 				continue
-			var hex: Dictionary = SafeDict.as_dict(_hexes.get(key, null))
-			var terrain: String = SafeDict.as_string(hex.get("terrain"), "plains")
-			var step_cost: int = SafeDict.as_int(Constants.TACTICAL_MOVE_COST.get(terrain), 1)
-			var total_cost: int = current_cost + step_cost
+			var step_cost: float = _tile_move_cost_at(next_q, next_r, unit)
+			if step_cost < 0.0:
+				continue
+			var total_cost: float = current_cost + step_cost
 			if total_cost > moves:
 				continue
-			var previous_cost: int = SafeDict.as_int(visited.get(key), 999)
+			var previous_cost: float = SafeDict.as_float(visited.get(key), 999.0)
 			if total_cost >= previous_cost:
 				continue
 			visited[key] = total_cost
 			frontier.append({"q": next_q, "r": next_r, "cost": total_cost})
 	for key in SafeDict.sorted_keys(visited):
-		var cost: int = SafeDict.as_int(visited.get(key, 0), 0)
+		var cost: float = SafeDict.as_float(visited.get(key, 0.0), 0.0)
 		var parts: PackedStringArray = str(key).split(",")
 		if parts.size() != 2:
 			continue
@@ -273,7 +278,8 @@ func get_reachable_hexes(unit_id: String) -> Array[Dictionary]:
 			"q": q,
 			"r": r,
 			"terrain": SafeDict.as_string(hex.get("terrain"), "plains"),
-			"cost": cost,
+			"tile": SafeDict.as_string(hex.get("tile"), ""),
+			"cost": snappedf(cost, 0.1),
 			"objective": SafeDict.as_string(hex.get("objective"), ""),
 			"occupied": false,
 		})
@@ -293,12 +299,10 @@ func move_unit(unit_id: String, q: int, r: int) -> bool:
 		return false
 	var origin_q: int = SafeDict.as_int(unit.get("q"), 0)
 	var origin_r: int = SafeDict.as_int(unit.get("r"), 0)
-	var destination: Dictionary = SafeDict.as_dict(_hexes.get(_hex_key(q, r), null))
-	var terrain: String = SafeDict.as_string(destination.get("terrain"), "plains")
-	var cost: int = SafeDict.as_int(Constants.TACTICAL_MOVE_COST.get(terrain), 1)
+	var cost: float = _tile_move_cost_at(q, r, unit)
 	unit["q"] = q
 	unit["r"] = r
-	unit["moves_left"] = maxi(0, SafeDict.as_int(unit.get("moves_left"), 0) - cost)
+	unit["moves_left"] = maxf(0.0, SafeDict.as_float(unit.get("moves_left"), 0.0) - maxf(0.0, cost))
 	# Fase 3 (D-042): orientación según el movimiento y ciclo de marcha.
 	var facing: String = BATTLE_SPRITES.facing_from_delta(q - origin_q, r - origin_r)
 	unit["facing"] = facing
@@ -348,11 +352,9 @@ func attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	var attack_power: float = _unit_power(attacker) * _commander_bonus_for(_side_of_unit(attacker))
 	if distance > 1:
 		attack_power *= Constants.TACTICAL_RANGED_PENALTY
-	var defense_hex: Dictionary = SafeDict.as_dict(_hexes.get(_hex_key(
-		SafeDict.as_int(defender.get("q"), 0), SafeDict.as_int(defender.get("r"), 0)), null))
-	var defense_terrain: String = SafeDict.as_string(defense_hex.get("terrain"), "plains")
 	var defense_power: float = _unit_power(defender) * _commander_bonus_for(_side_of_unit(defender)) \
-		* SafeDict.as_float(Constants.TACTICAL_DEFENSE_TERRAIN.get(defense_terrain), 1.0)
+		* _terrain_defense_multiplier_at(
+			SafeDict.as_int(defender.get("q"), 0), SafeDict.as_int(defender.get("r"), 0))
 	var roll: float = rng.gaussian(1.0, 0.15)
 	var ratio: float = attack_power / maxf(attack_power + defense_power, 1.0)
 	var defender_loss_fraction: float = clampf(ratio * 0.5 * roll, 0.0, 0.5)
@@ -563,13 +565,48 @@ func _build_map(region: REGION_SCRIPT) -> void:
 				hex_terrain = "forest"
 			if has_city and _hex_distance(0, 0, q, r) <= 1:
 				hex_terrain = "city"
-			_hexes[_hex_key(q, r)] = {"q": q, "r": r, "terrain": hex_terrain, "objective": ""}
+			_hexes[_hex_key(q, r)] = {
+				"q": q,
+				"r": r,
+				"terrain": hex_terrain,
+				"objective": "",
+				"tile": BATTLE_TILES_SCRIPT.tile_key_for_terrain(hex_terrain),
+			}
+	# Un río de orilla a orilla solo se cruza por 1-2 puentes (D-053/§10.4).
+	var river_hexes: Array[Dictionary] = []
+	for key in SafeDict.sorted_keys(_hexes):
+		var hex: Dictionary = SafeDict.as_dict(_hexes.get(key, null))
+		if SafeDict.as_string(hex.get("tile"), "") != "rio":
+			continue
+		river_hexes.append(hex.duplicate(true))
+	river_hexes.sort_custom(_compare_hexes_by_distance)
+	var bridge_hexes: Array[Dictionary] = []
+	if not river_hexes.is_empty():
+		bridge_hexes.append(river_hexes[0])
+		if river_hexes.size() >= 2:
+			bridge_hexes.append(river_hexes[river_hexes.size() / 2])
+	for bridge_index in bridge_hexes.size():
+		var bridge_hex: Dictionary = SafeDict.as_dict(bridge_hexes[bridge_index])
+		var bridge_q: int = SafeDict.as_int(bridge_hex.get("q"), 0)
+		var bridge_r: int = SafeDict.as_int(bridge_hex.get("r"), 0)
+		var bridge_key: String = "puente"
+		if has_city and bridge_index == 0 \
+				and _hex_distance(0, 0, bridge_q, bridge_r) <= 2:
+			bridge_key = "puente_villa"
+		bridge_hex["tile"] = bridge_key
+		_hexes[_hex_key(bridge_q, bridge_r)] = bridge_hex
 	_add_objective("obj_city", "Ciudad" if has_city else "Campamento", 0, 0, "city",
 		Constants.TACTICAL_OBJECTIVE_CITY_VALUE, "")
 	var bridge_q: int = 0
-	while not _hexes.has(_hex_key(bridge_q, river_offset)):
-		bridge_q += 1
-	_add_objective("obj_bridge", "Puente", bridge_q, river_offset, "bridge",
+	var bridge_r: int = river_offset
+	if not bridge_hexes.is_empty():
+		var first_bridge: Dictionary = SafeDict.as_dict(bridge_hexes[0])
+		bridge_q = SafeDict.as_int(first_bridge.get("q"), 0)
+		bridge_r = SafeDict.as_int(first_bridge.get("r"), river_offset)
+	else:
+		while not _hexes.has(_hex_key(bridge_q, bridge_r)):
+			bridge_q += 1
+	_add_objective("obj_bridge", "Puente", bridge_q, bridge_r, "bridge",
 		Constants.TACTICAL_OBJECTIVE_BRIDGE_VALUE, "")
 	_add_objective("obj_rear_attacker", "Retaguardia atacante", -radius, 0, "rearguard",
 		Constants.TACTICAL_OBJECTIVE_REAR_VALUE, "attacker")
@@ -677,9 +714,9 @@ func _compare_spawn_hexes(left: Dictionary, right: Dictionary) -> bool:
 
 
 func _compare_hexes(left: Dictionary, right: Dictionary) -> bool:
-	var left_cost: int = SafeDict.as_int(left.get("cost"), 0)
-	var right_cost: int = SafeDict.as_int(right.get("cost"), 0)
-	if left_cost != right_cost:
+	var left_cost: float = SafeDict.as_float(left.get("cost"), 0.0)
+	var right_cost: float = SafeDict.as_float(right.get("cost"), 0.0)
+	if not is_equal_approx(left_cost, right_cost):
 		return left_cost < right_cost
 	return _hex_key(SafeDict.as_int(left.get("q"), 0), SafeDict.as_int(left.get("r"), 0)) \
 		< _hex_key(SafeDict.as_int(right.get("q"), 0), SafeDict.as_int(right.get("r"), 0))
@@ -830,15 +867,14 @@ func _best_step_towards(unit_id: String, target: Dictionary) -> Dictionary:
 	var best: Dictionary = {}
 	var best_distance: int = _hex_distance(
 		SafeDict.as_int(unit.get("q"), 0), SafeDict.as_int(unit.get("r"), 0), target_q, target_r)
-	var moves: int = SafeDict.as_int(unit.get("moves_left"), 0)
+	var moves: float = SafeDict.as_float(unit.get("moves_left"), 0.0)
 	for neighbour in _neighbours(SafeDict.as_int(unit.get("q"), 0), SafeDict.as_int(unit.get("r"), 0)):
 		var q: int = SafeDict.as_int(neighbour.get("q"), 0)
 		var r: int = SafeDict.as_int(neighbour.get("r"), 0)
 		if not _can_move_unit(unit_id, q, r):
 			continue
-		var terrain: String = _terrain_at(q, r)
-		var cost: int = SafeDict.as_int(Constants.TACTICAL_MOVE_COST.get(terrain), 1)
-		if cost > moves:
+		var cost: float = _tile_move_cost_at(q, r, unit)
+		if cost < 0.0 or cost > moves:
 			continue
 		var distance: int = _hex_distance(q, r, target_q, target_r)
 		if distance < best_distance:
@@ -967,9 +1003,10 @@ func _can_move_unit(unit_id: String, q: int, r: int) -> bool:
 		return false
 	if not _is_hex_free(q, r, unit_id):
 		return false
-	var terrain: String = _terrain_at(q, r)
-	var cost: int = SafeDict.as_int(Constants.TACTICAL_MOVE_COST.get(terrain), 1)
-	return SafeDict.as_int(unit.get("moves_left"), 0) >= cost
+	var cost: float = _tile_move_cost_at(q, r, unit)
+	if cost < 0.0:
+		return false
+	return SafeDict.as_float(unit.get("moves_left"), 0.0) >= cost
 
 
 func _is_hex_free(q: int, r: int, ignore_unit_id: String) -> bool:
@@ -985,6 +1022,81 @@ func _is_hex_free(q: int, r: int, ignore_unit_id: String) -> bool:
 func _terrain_at(q: int, r: int) -> String:
 	var hex: Dictionary = SafeDict.as_dict(_hexes.get(_hex_key(q, r), null))
 	return SafeDict.as_string(hex.get("terrain"), "plains")
+
+
+## Fase 3 §10.4: utilidades de tiles del campo (D-053). El cálculo de movimiento
+## y defensa usa `BattleTiles`; si la tabla está vacía cae al comportamiento
+## legado por `terrain`, manteniendo el determinismo sin tiles.
+func _tile_key_at(q: int, r: int) -> String:
+	var hex: Dictionary = SafeDict.as_dict(_hexes.get(_hex_key(q, r), null))
+	return SafeDict.as_string(hex.get("tile"), "")
+
+
+## Coste de movimiento a un hex: -1.0 si es intransitable (río/montaña sin puente).
+func _tile_move_cost_at(q: int, r: int, unit: Dictionary) -> float:
+	var key: String = _tile_key_at(q, r)
+	var unit_type: String = SafeDict.as_string(unit.get("type"), "infantry")
+	if _battle_tiles != null and not _battle_tiles.is_empty() and _battle_tiles.has_tile(key):
+		return _battle_tiles.get_move_cost(key, unit_type)
+	return float(SafeDict.as_int(Constants.TACTICAL_MOVE_COST.get(_terrain_at(q, r)), 1))
+
+
+## Multiplicador de defensa del terreno ocupado (1.0 sin bonus).
+func _terrain_defense_multiplier_at(q: int, r: int) -> float:
+	var key: String = _tile_key_at(q, r)
+	if _battle_tiles != null and not _battle_tiles.is_empty() and _battle_tiles.has_tile(key):
+		return _battle_tiles.get_defense_multiplier(key)
+	var terrain: String = _terrain_at(q, r)
+	return SafeDict.as_float(Constants.TACTICAL_DEFENSE_TERRAIN.get(terrain), 1.0)
+
+
+func _compare_hexes_by_distance(left: Dictionary, right: Dictionary) -> bool:
+	var left_distance: int = _hex_distance(0, 0,
+		SafeDict.as_int(left.get("q"), 0), SafeDict.as_int(left.get("r"), 0))
+	var right_distance: int = _hex_distance(0, 0,
+		SafeDict.as_int(right.get("q"), 0), SafeDict.as_int(right.get("r"), 0))
+	if left_distance != right_distance:
+		return left_distance < right_distance
+	return _hex_key(SafeDict.as_int(left.get("q"), 0), SafeDict.as_int(left.get("r"), 0)) \
+		< _hex_key(SafeDict.as_int(right.get("q"), 0), SafeDict.as_int(right.get("r"), 0))
+
+
+# --- Fase 3 §10.4: API pública de tiles (para AG-3/AG-4) -------------------
+
+func get_battle_tiles() -> Dictionary:
+	if _battle_tiles == null:
+		return {}
+	return _battle_tiles.tiles.duplicate(true)
+
+
+func get_battle_tile(key: String) -> Dictionary:
+	if _battle_tiles == null:
+		return {}
+	return _battle_tiles.get_tile(key)
+
+
+func get_battle_tile_keys() -> Array[String]:
+	if _battle_tiles == null:
+		return []
+	return _battle_tiles.keys()
+
+
+func get_tile_move_cost(key: String, unit_type: String = "infantry") -> float:
+	if _battle_tiles == null:
+		return -1.0
+	return _battle_tiles.get_move_cost(key, unit_type)
+
+
+func get_tile_defense(key: String) -> int:
+	if _battle_tiles == null:
+		return 0
+	return _battle_tiles.get_defense(key)
+
+
+func is_tile_passable(key: String) -> bool:
+	if _battle_tiles == null:
+		return true
+	return _battle_tiles.is_passable(key)
 
 
 ## Copia pública de una unidad con la animación calculada para el render; no

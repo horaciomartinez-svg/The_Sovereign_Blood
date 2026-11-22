@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "battle_tiles.schema.json",
+  "title": "battle_tiles.json — The Sovereign's Blood (GDD v1.7 §10.4 / D-053)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "battle_tiles"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "battle_tiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pastizal",
+        "pastizal_arbustos",
+        "pradera",
+        "rio",
+        "puente",
+        "puente_villa",
+        "colina",
+        "bosque",
+        "montana",
+        "villa",
+        "villa_calle",
+        "camino"
+      ],
+      "properties": {
+        "pastizal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "pastizal_arbustos": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "pradera": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "rio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "puente": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "puente_villa": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "colina": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "bosque": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "montana": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "villa": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "villa_calle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        },
+        "camino": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile",
+            "move_cost",
+            "defense",
+            "passable"
+          ],
+          "properties": {
+            "tile": {
+              "type": "string",
+              "pattern": "^res://assets/art/battle/tiles/tile_[a-z0-9_]+\\.png$"
+            },
+            "move_cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "passable": {
+              "type": "boolean"
+            },
+            "cavalry_penalty": {
+              "type": "boolean"
+            },
+            "move_bonus": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

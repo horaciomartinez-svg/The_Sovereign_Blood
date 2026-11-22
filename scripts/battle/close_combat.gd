@@ -19,6 +19,7 @@ const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
 const SeededRNGScript = preload("res://scripts/utils/rng.gd")
 const BATTLE_SPRITES = preload("res://scripts/battle/battle_sprites.gd")
+const BATTLE_TILES_SCRIPT = preload("res://scripts/battle/battle_tiles.gd")
 
 ## Proyectil disparado en el duelo (Fase 3 §3).
 signal projectile_fired(payload: Dictionary)
@@ -42,6 +43,8 @@ var _max_rounds: int = Constants.CLOSE_COMBAT_MAX_ROUNDS
 var _animation_ms: float = 0.0
 var _projectiles: Array[Dictionary] = []
 var _projectile_seq: int = 0
+## Fase 3 §10.4 (D-053): reglas de tiles; vacío → comportamiento legado.
+var _battle_tiles: BATTLE_TILES_SCRIPT = null
 
 
 ## Configura el duelo a partir de dos dicts de unidad del estado/ejército.
@@ -59,6 +62,7 @@ func setup(attacker_unit: Dictionary, defender_unit: Dictionary) -> void:
 	_animation_ms = 0.0
 	_projectiles = []
 	_projectile_seq = 0
+	_battle_tiles = BATTLE_TILES_SCRIPT.new(DataLoader.get_battle_tiles())
 	var attacker_command: int = SafeDict.as_int(attacker.get("commander_stat"), Constants.BATTLE_COMMANDER_STAT_BASE)
 	var defender_command: int = SafeDict.as_int(defender.get("commander_stat"), Constants.BATTLE_COMMANDER_STAT_BASE)
 	_orders_per_round["attacker"] = Constants.CLOSE_COMBAT_HAND_BASE
@@ -247,10 +251,16 @@ func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 	var defense_reduction_a: float = _defense_reduction(attacker_card)
 	var defender_loss_fraction: float = clampf(damage_a / maxf(defender_power, 1.0) * 0.4, 0.0, 0.5) * defense_reduction_d
 	var attacker_loss_fraction: float = clampf(damage_d / maxf(attacker_power, 1.0) * 0.4, 0.0, 0.5) * defense_reduction_a
-	# El terreno del defensor protege (llanura/ciudad...).
-	var defender_terrain: String = SafeDict.as_string(defender.get("terrain"), "plains")
-	if defender_terrain == "hills" or defender_terrain == "city":
-		defender_loss_fraction *= 0.85
+	# §10.4/D-053: el terreno (tile) del defensor protege; sin tabla, legado.
+	var defender_tile: String = SafeDict.as_string(defender.get("tile"), "")
+	var tile_defense_applied: bool = _battle_tiles != null and not _battle_tiles.is_empty() \
+		and _battle_tiles.has_tile(defender_tile)
+	if tile_defense_applied:
+		defender_loss_fraction /= _battle_tiles.get_defense_multiplier(defender_tile)
+	else:
+		var defender_terrain: String = SafeDict.as_string(defender.get("terrain"), "plains")
+		if defender_terrain == "hills" or defender_terrain == "city":
+			defender_loss_fraction *= 0.85
 	var defender_losses: int = _apply_damage(defender, defender_loss_fraction * maxf(defender_power, 1.0))
 	var attacker_losses: int = _apply_damage(attacker, attacker_loss_fraction * maxf(attacker_power, 1.0))
 	if attacker_card == "finta":
@@ -389,7 +399,15 @@ func _unit_power(unit: Dictionary) -> float:
 	var veterancy: float = 1.0 + (float(experience) - 50.0) / 200.0
 	var commander_stat: int = SafeDict.as_int(unit.get("commander_stat"), Constants.BATTLE_COMMANDER_STAT_BASE)
 	var commander_bonus: float = 1.0 + (float(commander_stat) - 50.0) / Constants.BATTLE_COMMANDER_STAT_RANGE
-	return maxf(0.0, float(strength) * (float(size) / 100.0) * morale * veterancy * commander_bonus)
+	var power: float = float(strength) * (float(size) / 100.0) * morale * veterancy * commander_bonus
+	# §6.4/D-053: penalización de caballería en bosque (movimiento/defensa/ataque).
+	var unit_type: String = SafeDict.as_string(unit.get("type"), "infantry")
+	var tile_key: String = SafeDict.as_string(unit.get("tile"), "")
+	if _battle_tiles != null and not _battle_tiles.is_empty() \
+			and _battle_tiles.has_cavalry_penalty(tile_key) \
+			and BATTLE_TILES_SCRIPT.is_cavalry(unit_type):
+		power *= 0.6
+	return maxf(0.0, power)
 
 
 ## Aplica daño en puntos de poder; devuelve efectivos perdidos.
@@ -455,6 +473,10 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 	var sprite_sheet: Dictionary = SafeDict.as_dict(definition.get("sprite_sheet", null))
 	var frames: Array[String] = BATTLE_SPRITES.frames_of(sprite_sheet)
 	var facing: String = "E" if unit_side == "attacker" else "W"
+	var unit_terrain: String = SafeDict.as_string(unit.get("terrain"), "plains")
+	var tile_key: String = SafeDict.as_string(unit.get("tile"), "")
+	if tile_key == "":
+		tile_key = BATTLE_TILES_SCRIPT.tile_key_for_terrain(unit_terrain)
 	return {
 		"id": SafeDict.as_string(unit.get("id"), "unit_%s" % unit_side),
 		"side": unit_side,
@@ -466,7 +488,8 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		"morale": clampf(SafeDict.as_float(unit.get("morale"), 1.0), 0.0, 1.0),
 		"experience": SafeDict.as_int(unit.get("experience"), 0),
 		"commander_stat": commander_stat,
-		"terrain": SafeDict.as_string(unit.get("terrain"), "plains"),
+		"terrain": unit_terrain,
+		"tile": tile_key,
 		"facing": facing,
 		"mirror": BATTLE_SPRITES.mirror_for(facing),
 		"moving": false,
@@ -474,6 +497,44 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		"sprite_frame_path": frames[0] if not frames.is_empty() else "",
 		"sprite_sheet": _sprite_or_null(sprite_sheet),
 	}
+
+
+# --- Fase 3 §10.4: API pública de tiles (para AG-3/AG-4) -------------------
+
+func get_battle_tiles() -> Dictionary:
+	if _battle_tiles == null:
+		return {}
+	return _battle_tiles.tiles.duplicate(true)
+
+
+func get_battle_tile(key: String) -> Dictionary:
+	if _battle_tiles == null:
+		return {}
+	return _battle_tiles.get_tile(key)
+
+
+func get_battle_tile_keys() -> Array[String]:
+	if _battle_tiles == null:
+		return []
+	return _battle_tiles.keys()
+
+
+func get_tile_move_cost(key: String, unit_type: String = "infantry") -> float:
+	if _battle_tiles == null:
+		return -1.0
+	return _battle_tiles.get_move_cost(key, unit_type)
+
+
+func get_tile_defense(key: String) -> int:
+	if _battle_tiles == null:
+		return 0
+	return _battle_tiles.get_defense(key)
+
+
+func is_tile_passable(key: String) -> bool:
+	if _battle_tiles == null:
+		return true
+	return _battle_tiles.is_passable(key)
 
 
 ## Dict de sprite o null (fallback) como en TacticalBattle.

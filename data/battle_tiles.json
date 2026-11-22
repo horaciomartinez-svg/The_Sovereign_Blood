@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "battle_tiles": {
+    "pastizal": {
+      "tile": "res://assets/art/battle/tiles/tile_pastizal.png",
+      "move_cost": 1,
+      "defense": 0,
+      "passable": true
+    },
+    "pastizal_arbustos": {
+      "tile": "res://assets/art/battle/tiles/tile_pastizal_arbustos.png",
+      "move_cost": 1,
+      "defense": 0,
+      "passable": true
+    },
+    "pradera": {
+      "tile": "res://assets/art/battle/tiles/tile_pradera.png",
+      "move_cost": 1,
+      "defense": 0,
+      "passable": true
+    },
+    "rio": {
+      "tile": "res://assets/art/battle/tiles/tile_rio.png",
+      "move_cost": null,
+      "defense": 0,
+      "passable": false
+    },
+    "puente": {
+      "tile": "res://assets/art/battle/tiles/tile_puente.png",
+      "move_cost": 1,
+      "defense": 0,
+      "passable": true
+    },
+    "puente_villa": {
+      "tile": "res://assets/art/battle/tiles/tile_puente_villa.png",
+      "move_cost": 1,
+      "defense": 1,
+      "passable": true
+    },
+    "colina": {
+      "tile": "res://assets/art/battle/tiles/tile_colina.png",
+      "move_cost": 2,
+      "defense": 1,
+      "passable": true
+    },
+    "bosque": {
+      "tile": "res://assets/art/battle/tiles/tile_bosque.png",
+      "move_cost": 2,
+      "defense": 1,
+      "passable": true,
+      "cavalry_penalty": true
+    },
+    "montana": {
+      "tile": "res://assets/art/battle/tiles/tile_montana.png",
+      "move_cost": null,
+      "defense": 0,
+      "passable": false
+    },
+    "villa": {
+      "tile": "res://assets/art/battle/tiles/tile_villa.png",
+      "move_cost": 1,
+      "defense": 1,
+      "passable": true
+    },
+    "villa_calle": {
+      "tile": "res://assets/art/battle/tiles/tile_villa_calle.png",
+      "move_cost": 1,
+      "defense": 0,
+      "passable": true,
+      "move_bonus": true
+    },
+    "camino": {
+      "tile": "res://assets/art/battle/tiles/tile_camino.png",
+      "move_cost": 0.5,
+      "defense": 0,
+      "passable": true,
+      "move_bonus": true
+    }
+  }
+}

@@ -34,6 +34,28 @@ const SCHEMA_DIR: String = "res://data/schema"
 ## geometría de presentación del mapa §10.1.
 const NON_SIMULATION_DATASETS: Array[String] = ["map_layout.json", "map_borders.json"]
 
+## Fase 3 §10.4 (D-053): claves y balance de `data/battle_tiles.json`. Es un
+## dataset de JUEGO (no presentación): reglas tácticas N2/N3.
+const BATTLE_TILES_KEYS: Array[String] = [
+	"pastizal", "pastizal_arbustos", "pradera", "rio", "puente", "puente_villa",
+	"colina", "bosque", "montana", "villa", "villa_calle", "camino",
+]
+const BATTLE_TILES_ROUTE_PREFIX: String = "res://assets/art/battle/tiles/tile_"
+const BATTLE_TILES_EXPECTED: Dictionary = {
+	"pastizal": {"move_cost": 1.0, "defense": 0, "passable": true},
+	"pastizal_arbustos": {"move_cost": 1.0, "defense": 0, "passable": true},
+	"pradera": {"move_cost": 1.0, "defense": 0, "passable": true},
+	"rio": {"move_cost": null, "defense": 0, "passable": false},
+	"puente": {"move_cost": 1.0, "defense": 0, "passable": true},
+	"puente_villa": {"move_cost": 1.0, "defense": 1, "passable": true},
+	"colina": {"move_cost": 2.0, "defense": 1, "passable": true},
+	"bosque": {"move_cost": 2.0, "defense": 1, "passable": true, "cavalry_penalty": true},
+	"montana": {"move_cost": null, "defense": 0, "passable": false},
+	"villa": {"move_cost": 1.0, "defense": 1, "passable": true},
+	"villa_calle": {"move_cost": 1.0, "defense": 0, "passable": true, "move_bonus": true},
+	"camino": {"move_cost": 0.5, "defense": 0, "passable": true, "move_bonus": true},
+}
+
 ## Raíces efectivas de la validación. Por defecto res://data; los tests pueden
 ## pasar un directorio temporal a validate(base_dir).
 var _data_root: String = DATA_DIR
@@ -628,6 +650,9 @@ func _index_entities() -> void:
 		if kind == "":
 			warnings.append("[WARN] %s :: $ :: tipo de dataset no reconocido (se valida contra schema pero sin reglas cruzadas)" % _rel(dataset_path))
 			continue
+		# battle_tiles no es una lista de entidades: lo valida su regla cruzada.
+		if kind == "battle_tiles":
+			continue
 		var root: Variant = _datasets[dataset_path]["data"]
 		var list := _entities_of(root, kind)
 		if list.is_empty():
@@ -658,6 +683,8 @@ func _index_entities() -> void:
 
 func _kind_of(dataset_path: String) -> String:
 	var stem := dataset_path.get_file().get_basename().to_lower()
+	if stem.begins_with("battle_tiles") or stem.begins_with("battle_tile"):
+		return "battle_tiles"
 	if stem.begins_with("scenario"):
 		return "scenario"
 	if stem.begins_with("event"):
@@ -699,6 +726,7 @@ func _cross_rules() -> void:
 	_check_character_references()
 	_check_regions_owned_per_scenario()
 	_check_playable_1337()
+	_check_battle_tiles()
 
 
 func _has_kind(kind: String) -> bool:
@@ -959,6 +987,112 @@ func _check_playable_1337() -> void:
 		checks += 1
 		if playable_count != 8:
 			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".factions", "hay %d facciones playable=true en 1337 (se esperaban exactamente 8)" % playable_count))
+
+
+# ---------------------------------------------------------------------------
+# Regla cruzada: tiles de batalla N3 (Fase 3 §10.4 / D-053)
+# ---------------------------------------------------------------------------
+
+## Valida `data/battle_tiles.json`: 12 claves exactas, balance D-053,
+## pasabilidad/flags coherentes y rutas `res://assets/art/battle/tiles/tile_<clave>.png`.
+func _check_battle_tiles() -> void:
+	var dataset_path: String = ""
+	for path in dataset_paths:
+		if _kind_of(path) == "battle_tiles":
+			dataset_path = path
+			break
+	if dataset_path == "":
+		skips.append("[SKIP] regla battle_tiles §10.4: requiere data/battle_tiles.json")
+		return
+	var root: Variant = _datasets[dataset_path]["data"]
+	var file := _rel(dataset_path)
+	if not (root is Dictionary):
+		errors.append(_format_error(file, "$", "el dataset debe ser un objeto envelope D-009"))
+		return
+	var envelope: Dictionary = root
+	checks += 1
+	var schema_version: Variant = envelope.get("schema_version", null)
+	if not (schema_version is int or schema_version is float) or int(schema_version) != 1:
+		errors.append(_format_error(file, "$.schema_version", "schema_version debe ser 1"))
+	var tiles_value: Variant = envelope.get("battle_tiles", null)
+	if not (tiles_value is Dictionary):
+		errors.append(_format_error(file, "$.battle_tiles", "battle_tiles debe ser un objeto (clave → tile)"))
+		return
+	var tiles: Dictionary = tiles_value
+	for key in BATTLE_TILES_KEYS:
+		checks += 1
+		if not tiles.has(key):
+			errors.append(_format_error(file, "$.battle_tiles", "falta la clave '%s' (deben ser 12 exactas)" % key))
+	for key in tiles.keys():
+		if not BATTLE_TILES_KEYS.has(str(key)):
+			errors.append(_format_error(file, "$.battle_tiles", "clave no permitida '%s' (las 12 del contrato §B)" % str(key)))
+	var routes_seen: Dictionary = {}
+	for key in BATTLE_TILES_KEYS:
+		if not tiles.has(key):
+			continue
+		var base := "$.battle_tiles.%s" % key
+		var entry_value: Variant = tiles.get(key)
+		if not (entry_value is Dictionary):
+			errors.append(_format_error(file, base, "el tile debe ser un objeto"))
+			continue
+		var entry: Dictionary = entry_value
+		var expected: Dictionary = BATTLE_TILES_EXPECTED[key]
+		var missing_field: bool = false
+		for field in ["tile", "move_cost", "defense", "passable"]:
+			if not entry.has(field):
+				errors.append(_format_error(file, base, "falta el campo '%s'" % field))
+				missing_field = true
+		if missing_field:
+			continue
+		# Ruta del tile.
+		checks += 1
+		var route := _as_id(entry.get("tile", null))
+		var expected_route := "%s%s.png" % [BATTLE_TILES_ROUTE_PREFIX, key]
+		if route != expected_route:
+			errors.append(_format_error(file, base + ".tile", "ruta '%s' (esperada '%s')" % [route, expected_route]))
+		if routes_seen.has(route):
+			errors.append(_format_error(file, base + ".tile", "ruta duplicada (ya usada por '%s')" % str(routes_seen[route])))
+		routes_seen[route] = key
+		# move_cost: null si es intransitable, número > 0 si es transitable.
+		checks += 1
+		var move_cost: Variant = entry.get("move_cost", null)
+		var expected_cost: Variant = expected.get("move_cost", null)
+		if expected_cost == null:
+			if move_cost != null:
+				errors.append(_format_error(file, base + ".move_cost", "debe ser null (tile intransitable)"))
+		elif not (move_cost is int or move_cost is float) or not is_equal_approx(float(move_cost), float(expected_cost)):
+			errors.append(_format_error(file, base + ".move_cost", "valor %s (esperado %s según D-053)" % [str(move_cost), str(expected_cost)]))
+		# defense entero.
+		checks += 1
+		var defense_value: Variant = entry.get("defense", null)
+		if not (defense_value is int or (defense_value is float and float(defense_value) == floorf(float(defense_value)))):
+			errors.append(_format_error(file, base + ".defense", "debe ser un entero"))
+		elif int(defense_value) != int(expected.get("defense", 0)):
+			errors.append(_format_error(file, base + ".defense", "valor %d (esperado %d)" % [int(defense_value), int(expected.get("defense", 0))]))
+		# passable bool.
+		checks += 1
+		var passable_value: Variant = entry.get("passable", null)
+		var passable_ok: bool = passable_value is bool
+		if not passable_ok:
+			errors.append(_format_error(file, base + ".passable", "debe ser booleano"))
+		elif bool(passable_value) != bool(expected.get("passable", false)):
+			errors.append(_format_error(file, base + ".passable", "valor %s (esperado %s)" % [str(passable_value), str(expected.get("passable", false))]))
+		# Flags coherentes (sólo en transitable y con el valor del contrato).
+		for flag in ["cavalry_penalty", "move_bonus"]:
+			checks += 1
+			var expected_flag: bool = bool(expected.get(flag, false))
+			var actual_flag: bool = false
+			if entry.has(flag):
+				var flag_value: Variant = entry.get(flag)
+				if not (flag_value is bool):
+					errors.append(_format_error(file, "%s.%s" % [base, flag], "debe ser booleano"))
+				else:
+					actual_flag = bool(flag_value)
+			if actual_flag != expected_flag:
+				errors.append(_format_error(file, "%s.%s" % [base, flag], "flag %s (esperado %s según D-053)" % [str(actual_flag), str(expected_flag)]))
+			if actual_flag and passable_ok and not bool(passable_value):
+				errors.append(_format_error(file, "%s.%s" % [base, flag], "flag incoherente en tile intransitable"))
+	infos.append("[INFO] battle_tiles: 12 tiles validados (claves, balance D-053, pasabilidad, flags y rutas §10.4)")
 
 
 # ---------------------------------------------------------------------------
