@@ -333,20 +333,19 @@ func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 		_finish_with("defender")
 	elif attacker_destroyed and defender_destroyed:
 		_finish_with("defender")
-	# D-064: reacción PROGRAMADA en attack_2 (hit/death) para que el ataque se vea.
-	# La reacción visual se retrasa hasta impacto + 1 cuadro de ataque (≈222,2 ms)
-	# para que `attack_2` tenga ventana visible; el daño ya está resuelto arriba.
+	# D-065: reacción PROGRAMADA en attack_4 (impact/death) para que el ataque se vea.
+	# La reacción visual se retrasa hasta impacto + 1 cuadro de ataque (≈444,4 ms).
 	if defender_destroyed:
 		defender["anim_reaction_state"] = "dead"
 		defender["anim_reaction_at_ms"] = _animation_ms + defender_reaction_delay_ms
 	elif defender_losses > 0:
-		defender["anim_reaction_state"] = "hit"
+		defender["anim_reaction_state"] = "impact"
 		defender["anim_reaction_at_ms"] = _animation_ms + defender_reaction_delay_ms
 	if attacker_destroyed:
 		attacker["anim_reaction_state"] = "dead"
 		attacker["anim_reaction_at_ms"] = _animation_ms + attacker_reaction_delay_ms
 	elif attacker_losses > 0:
-		attacker["anim_reaction_state"] = "hit"
+		attacker["anim_reaction_state"] = "impact"
 		attacker["anim_reaction_at_ms"] = _animation_ms + attacker_reaction_delay_ms
 	result["finished"] = finished
 	result["winner"] = winner
@@ -670,6 +669,9 @@ func _fire_projectile(shooter: Dictionary, target: Dictionary, shooter_side: Str
 		return
 	_projectile_seq += 1
 	var shooter_left: bool = shooter_side == "attacker"
+	var attack_impact_ms: float = BATTLE_SPRITES.attack_impact_ms(
+		SafeDict.as_dict(shooter.get("sprite_sheet", null)))
+	var launch_ms: float = _animation_ms + attack_impact_ms
 	var payload: Dictionary = {
 		"id": "duel_proj_%d" % _projectile_seq,
 		"type": SafeDict.as_string(spec.get("type"), ""),
@@ -680,8 +682,11 @@ func _fire_projectile(shooter: Dictionary, target: Dictionary, shooter_side: Str
 		"duration_ms": SafeDict.as_int(spec.get("duration_ms"), 0),
 		"arc_height": SafeDict.as_float(spec.get("arc_height"), 0.0),
 		"ballistic": SafeDict.as_bool(spec.get("ballistic"), true),
-		"started_ms": _animation_ms,
-		"impact_ms": BATTLE_SPRITES.attack_impact_ms(
+		# D-065: el proyectil se lanza en attack_4 (≈333,3 ms).
+		"started_ms": launch_ms,
+		"launch_ms": launch_ms,
+		"impact_ms": attack_impact_ms,
+		"attack_frame_ms": BATTLE_SPRITES.attack_frame_ms(
 			SafeDict.as_dict(shooter.get("sprite_sheet", null))),
 		"target_id": SafeDict.as_string(target.get("id"), ""),
 	}

@@ -26,31 +26,31 @@ const FACING_BY_SIGN: Dictionary = {
 const MARCH_FPS_DEFAULT: float = 6.0
 const MARCH_FRAME_COUNT: int = 3
 
-## Fase 3.1 / D-064: estados de animación de combate y sus mapas en `anim`.
-const ANIM_STATES: Array[String] = ["idle", "march", "attack", "hit", "dead"]
+## Fase 3.1/3.2 (D-064/D-065): estados de animación de combate y sus mapas.
+const ANIM_STATES: Array[String] = ["idle", "march", "attack", "impact", "dead"]
 const STATE_ANIM_KEY: Dictionary = {
 	"idle": "idle",
 	"march": "march",
 	"attack": "attack",
-	"hit": "hit",
+	"impact": "impact",
 	"dead": "death",
 }
 const STATE_FPS_KEY: Dictionary = {
 	"idle": "fps",
 	"march": "fps",
 	"attack": "fps_attack",
-	"hit": "fps_hit",
+	"impact": "fps_impact",
 	"dead": "fps_death",
 }
 const STATE_DEFAULT_FPS: Dictionary = {
 	"idle": 2.0,
 	"march": 6.0,
 	"attack": 9.0,
-	"hit": 8.0,
+	"impact": 8.0,
 	"dead": 6.0,
 }
-## `attack_2` es el cuadro de impacto (segundo del estado attack, D-064).
-const ATTACK_IMPACT_FRAME_OFFSET: int = 1
+## `attack_4` (índice absoluto 8) es el disparo/golpe (D-065): 4º cuadro de attack.
+const ATTACK_4_FRAME_OFFSET: int = 3
 
 ## Proyectiles D-042/D-048: por `unit_id`; virote/flecha/piedra con su sprite,
 ## duración y altura de arco. La trayectoria es paramétrica (sin RNG de combate).
@@ -164,7 +164,7 @@ static func march_frame(sprite_sheet: Dictionary, elapsed_ms: float, moving: boo
 	return posmod(index, cycle)
 
 
-# --- Fase 3.1 (D-064): estados idle/march/attack/hit/dead ------------------
+# --- Fase 3.1/3.2 (D-064/D-065): estados idle/march/attack/impact/dead -----
 
 static func anim_data(sprite_sheet: Dictionary) -> Dictionary:
 	return SafeDict.as_dict(sprite_sheet.get("anim", null))
@@ -192,7 +192,7 @@ static func state_is_loop(state: String) -> bool:
 
 
 static func state_is_oneshot(state: String) -> bool:
-	return state == "attack" or state == "hit"
+	return state == "attack" or state == "impact"
 
 
 ## Índice *dentro del estado* (0..n-1) para `elapsed_ms` desde su inicio.
@@ -216,28 +216,28 @@ static func state_frame_path(sprite_sheet: Dictionary, state: String, elapsed_ms
 	return frame_path(sprite_sheet, indices[index_in_state])
 
 
-## Índice absoluto en `frames` del cuadro `attack_2` (impacto).
+## Índice absoluto en `frames` del cuadro `attack_4` (disparo/golpe, D-065).
 static func attack_impact_index(sprite_sheet: Dictionary) -> int:
 	var indices: Array[int] = state_frame_indices(sprite_sheet, "attack")
 	if indices.is_empty():
 		return -1
-	return indices[mini(ATTACK_IMPACT_FRAME_OFFSET, indices.size() - 1)]
+	return indices[mini(ATTACK_4_FRAME_OFFSET, indices.size() - 1)]
 
 
-## ms desde el inicio del ataque hasta `attack_2` (impacto), con fps_attack.
+## ms desde el inicio del ataque hasta `attack_4` (disparo/golpe), fps_attack.
 static func attack_impact_ms(sprite_sheet: Dictionary) -> float:
 	var fps: float = maxf(1.0, state_fps(sprite_sheet, "attack"))
-	return roundf(float(ATTACK_IMPACT_FRAME_OFFSET) / fps * 1000.0 * 10.0) / 10.0
+	return roundf(float(ATTACK_4_FRAME_OFFSET) / fps * 1000.0 * 10.0) / 10.0
 
 
-## Duración de un cuadro de ataque (1000/fps_attack): ventana mínima de attack_2.
+## Duración de un cuadro de ataque (1000/fps_attack): ventana mínima de attack_4.
 static func attack_frame_ms(sprite_sheet: Dictionary) -> float:
 	var fps: float = maxf(1.0, state_fps(sprite_sheet, "attack"))
 	return roundf(1000.0 / fps * 10.0) / 10.0
 
 
-## Retraso visual de la reacción (hit/dead) para que `attack_2` tenga ventana:
-## impacto + un cuadro de ataque (≈222,2 ms con fps_attack=9). El daño lógico NO
+## Retraso visual de la reacción (impact/dead) tras la ventana de `attack_4`:
+## impacto + un cuadro de ataque (≈444,4 ms con fps_attack=9). El daño lógico NO
 ## se retrasa; sólo el cambio de estado visual en el render.
 static func reaction_delay_ms(sprite_sheet: Dictionary) -> float:
 	return roundf((attack_impact_ms(sprite_sheet) + attack_frame_ms(sprite_sheet)) * 10.0) / 10.0
@@ -252,7 +252,7 @@ static func state_duration_ms(sprite_sheet: Dictionary, state: String) -> float:
 	return roundf(float(indices.size()) / fps * 1000.0 * 10.0) / 10.0
 
 
-## Estado al que se pasa al agotar un one-shot (ataque/hit → idle).
+## Estado al que se pasa al agotar un one-shot (attack/impact → idle).
 static func state_after_elapsed(sprite_sheet: Dictionary, state: String, elapsed_ms: float) -> String:
 	if state == "dead":
 		return "dead"

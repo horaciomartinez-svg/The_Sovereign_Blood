@@ -29,8 +29,8 @@
           "res://assets/art/sprites/units/militia_spearman_attack_2.png",
           "res://assets/art/sprites/units/militia_spearman_attack_3.png",
           "res://assets/art/sprites/units/militia_spearman_attack_4.png",
-          "res://assets/art/sprites/units/militia_spearman_hit_1.png",
-          "res://assets/art/sprites/units/militia_spearman_hit_2.png",
+          "res://assets/art/sprites/units/militia_spearman_impact_1.png",
+          "res://assets/art/sprites/units/militia_spearman_impact_2.png",
           "res://assets/art/sprites/units/militia_spearman_death_1.png",
           "res://assets/art/sprites/units/militia_spearman_death_2.png"
         ],
@@ -50,7 +50,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -61,7 +61,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -105,8 +105,8 @@
           "res://assets/art/sprites/units/scottish_schiltron_attack_2.png",
           "res://assets/art/sprites/units/scottish_schiltron_attack_3.png",
           "res://assets/art/sprites/units/scottish_schiltron_attack_4.png",
-          "res://assets/art/sprites/units/scottish_schiltron_hit_1.png",
-          "res://assets/art/sprites/units/scottish_schiltron_hit_2.png",
+          "res://assets/art/sprites/units/scottish_schiltron_impact_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_impact_2.png",
           "res://assets/art/sprites/units/scottish_schiltron_death_1.png",
           "res://assets/art/sprites/units/scottish_schiltron_death_2.png"
         ],
@@ -126,7 +126,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -137,7 +137,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -183,8 +183,10 @@
           "res://assets/art/sprites/units/crossbowmen_attack_2.png",
           "res://assets/art/sprites/units/crossbowmen_attack_3.png",
           "res://assets/art/sprites/units/crossbowmen_attack_4.png",
-          "res://assets/art/sprites/units/crossbowmen_hit_1.png",
-          "res://assets/art/sprites/units/crossbowmen_hit_2.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_5.png",
+          "res://assets/art/sprites/units/crossbowmen_attack_6.png",
+          "res://assets/art/sprites/units/crossbowmen_impact_1.png",
+          "res://assets/art/sprites/units/crossbowmen_impact_2.png",
           "res://assets/art/sprites/units/crossbowmen_death_1.png",
           "res://assets/art/sprites/units/crossbowmen_death_2.png"
         ],
@@ -202,20 +204,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -259,8 +263,10 @@
           "res://assets/art/sprites/units/longbowman_attack_2.png",
           "res://assets/art/sprites/units/longbowman_attack_3.png",
           "res://assets/art/sprites/units/longbowman_attack_4.png",
-          "res://assets/art/sprites/units/longbowman_hit_1.png",
-          "res://assets/art/sprites/units/longbowman_hit_2.png",
+          "res://assets/art/sprites/units/longbowman_attack_5.png",
+          "res://assets/art/sprites/units/longbowman_attack_6.png",
+          "res://assets/art/sprites/units/longbowman_impact_1.png",
+          "res://assets/art/sprites/units/longbowman_impact_2.png",
           "res://assets/art/sprites/units/longbowman_death_1.png",
           "res://assets/art/sprites/units/longbowman_death_2.png"
         ],
@@ -278,20 +284,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -333,8 +341,8 @@
           "res://assets/art/sprites/units/mounted_sergeants_attack_2.png",
           "res://assets/art/sprites/units/mounted_sergeants_attack_3.png",
           "res://assets/art/sprites/units/mounted_sergeants_attack_4.png",
-          "res://assets/art/sprites/units/mounted_sergeants_hit_1.png",
-          "res://assets/art/sprites/units/mounted_sergeants_hit_2.png",
+          "res://assets/art/sprites/units/mounted_sergeants_impact_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_impact_2.png",
           "res://assets/art/sprites/units/mounted_sergeants_death_1.png",
           "res://assets/art/sprites/units/mounted_sergeants_death_2.png"
         ],
@@ -354,7 +362,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -365,7 +373,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -416,8 +424,8 @@
           "res://assets/art/sprites/units/men_at_arms_attack_2.png",
           "res://assets/art/sprites/units/men_at_arms_attack_3.png",
           "res://assets/art/sprites/units/men_at_arms_attack_4.png",
-          "res://assets/art/sprites/units/men_at_arms_hit_1.png",
-          "res://assets/art/sprites/units/men_at_arms_hit_2.png",
+          "res://assets/art/sprites/units/men_at_arms_impact_1.png",
+          "res://assets/art/sprites/units/men_at_arms_impact_2.png",
           "res://assets/art/sprites/units/men_at_arms_death_1.png",
           "res://assets/art/sprites/units/men_at_arms_death_2.png"
         ],
@@ -437,7 +445,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -448,7 +456,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -494,8 +502,8 @@
           "res://assets/art/sprites/units/light_horseman_attack_2.png",
           "res://assets/art/sprites/units/light_horseman_attack_3.png",
           "res://assets/art/sprites/units/light_horseman_attack_4.png",
-          "res://assets/art/sprites/units/light_horseman_hit_1.png",
-          "res://assets/art/sprites/units/light_horseman_hit_2.png",
+          "res://assets/art/sprites/units/light_horseman_impact_1.png",
+          "res://assets/art/sprites/units/light_horseman_impact_2.png",
           "res://assets/art/sprites/units/light_horseman_death_1.png",
           "res://assets/art/sprites/units/light_horseman_death_2.png"
         ],
@@ -515,7 +523,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -526,7 +534,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -570,8 +578,10 @@
           "res://assets/art/sprites/units/steppe_cavalry_attack_2.png",
           "res://assets/art/sprites/units/steppe_cavalry_attack_3.png",
           "res://assets/art/sprites/units/steppe_cavalry_attack_4.png",
-          "res://assets/art/sprites/units/steppe_cavalry_hit_1.png",
-          "res://assets/art/sprites/units/steppe_cavalry_hit_2.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_5.png",
+          "res://assets/art/sprites/units/steppe_cavalry_attack_6.png",
+          "res://assets/art/sprites/units/steppe_cavalry_impact_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_impact_2.png",
           "res://assets/art/sprites/units/steppe_cavalry_death_1.png",
           "res://assets/art/sprites/units/steppe_cavalry_death_2.png"
         ],
@@ -589,20 +599,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -647,8 +659,8 @@
           "res://assets/art/sprites/units/almogavar_attack_2.png",
           "res://assets/art/sprites/units/almogavar_attack_3.png",
           "res://assets/art/sprites/units/almogavar_attack_4.png",
-          "res://assets/art/sprites/units/almogavar_hit_1.png",
-          "res://assets/art/sprites/units/almogavar_hit_2.png",
+          "res://assets/art/sprites/units/almogavar_impact_1.png",
+          "res://assets/art/sprites/units/almogavar_impact_2.png",
           "res://assets/art/sprites/units/almogavar_death_1.png",
           "res://assets/art/sprites/units/almogavar_death_2.png"
         ],
@@ -668,7 +680,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -679,7 +691,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -724,8 +736,8 @@
           "res://assets/art/sprites/units/mamluk_attack_2.png",
           "res://assets/art/sprites/units/mamluk_attack_3.png",
           "res://assets/art/sprites/units/mamluk_attack_4.png",
-          "res://assets/art/sprites/units/mamluk_hit_1.png",
-          "res://assets/art/sprites/units/mamluk_hit_2.png",
+          "res://assets/art/sprites/units/mamluk_impact_1.png",
+          "res://assets/art/sprites/units/mamluk_impact_2.png",
           "res://assets/art/sprites/units/mamluk_death_1.png",
           "res://assets/art/sprites/units/mamluk_death_2.png"
         ],
@@ -745,7 +757,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -756,7 +768,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -801,8 +813,8 @@
           "res://assets/art/sprites/units/swiss_pikeman_attack_2.png",
           "res://assets/art/sprites/units/swiss_pikeman_attack_3.png",
           "res://assets/art/sprites/units/swiss_pikeman_attack_4.png",
-          "res://assets/art/sprites/units/swiss_pikeman_hit_1.png",
-          "res://assets/art/sprites/units/swiss_pikeman_hit_2.png",
+          "res://assets/art/sprites/units/swiss_pikeman_impact_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_impact_2.png",
           "res://assets/art/sprites/units/swiss_pikeman_death_1.png",
           "res://assets/art/sprites/units/swiss_pikeman_death_2.png"
         ],
@@ -822,7 +834,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -833,7 +845,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -879,8 +891,8 @@
           "res://assets/art/sprites/units/dismounted_men_at_arms_attack_2.png",
           "res://assets/art/sprites/units/dismounted_men_at_arms_attack_3.png",
           "res://assets/art/sprites/units/dismounted_men_at_arms_attack_4.png",
-          "res://assets/art/sprites/units/dismounted_men_at_arms_hit_1.png",
-          "res://assets/art/sprites/units/dismounted_men_at_arms_hit_2.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_impact_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_impact_2.png",
           "res://assets/art/sprites/units/dismounted_men_at_arms_death_1.png",
           "res://assets/art/sprites/units/dismounted_men_at_arms_death_2.png"
         ],
@@ -900,7 +912,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -911,7 +923,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -960,8 +972,10 @@
           "res://assets/art/sprites/units/bombarda_attack_2.png",
           "res://assets/art/sprites/units/bombarda_attack_3.png",
           "res://assets/art/sprites/units/bombarda_attack_4.png",
-          "res://assets/art/sprites/units/bombarda_hit_1.png",
-          "res://assets/art/sprites/units/bombarda_hit_2.png",
+          "res://assets/art/sprites/units/bombarda_attack_5.png",
+          "res://assets/art/sprites/units/bombarda_attack_6.png",
+          "res://assets/art/sprites/units/bombarda_impact_1.png",
+          "res://assets/art/sprites/units/bombarda_impact_2.png",
           "res://assets/art/sprites/units/bombarda_death_1.png",
           "res://assets/art/sprites/units/bombarda_death_2.png"
         ],
@@ -979,20 +993,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -1039,8 +1055,10 @@
           "res://assets/art/sprites/units/arquebusier_attack_2.png",
           "res://assets/art/sprites/units/arquebusier_attack_3.png",
           "res://assets/art/sprites/units/arquebusier_attack_4.png",
-          "res://assets/art/sprites/units/arquebusier_hit_1.png",
-          "res://assets/art/sprites/units/arquebusier_hit_2.png",
+          "res://assets/art/sprites/units/arquebusier_attack_5.png",
+          "res://assets/art/sprites/units/arquebusier_attack_6.png",
+          "res://assets/art/sprites/units/arquebusier_impact_1.png",
+          "res://assets/art/sprites/units/arquebusier_impact_2.png",
           "res://assets/art/sprites/units/arquebusier_death_1.png",
           "res://assets/art/sprites/units/arquebusier_death_2.png"
         ],
@@ -1058,20 +1076,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -1118,8 +1138,10 @@
           "res://assets/art/sprites/units/hussite_war_wagon_attack_2.png",
           "res://assets/art/sprites/units/hussite_war_wagon_attack_3.png",
           "res://assets/art/sprites/units/hussite_war_wagon_attack_4.png",
-          "res://assets/art/sprites/units/hussite_war_wagon_hit_1.png",
-          "res://assets/art/sprites/units/hussite_war_wagon_hit_2.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_5.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_attack_6.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_impact_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_impact_2.png",
           "res://assets/art/sprites/units/hussite_war_wagon_death_1.png",
           "res://assets/art/sprites/units/hussite_war_wagon_death_2.png"
         ],
@@ -1137,20 +1159,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -1193,8 +1217,10 @@
           "res://assets/art/sprites/units/janissary_attack_2.png",
           "res://assets/art/sprites/units/janissary_attack_3.png",
           "res://assets/art/sprites/units/janissary_attack_4.png",
-          "res://assets/art/sprites/units/janissary_hit_1.png",
-          "res://assets/art/sprites/units/janissary_hit_2.png",
+          "res://assets/art/sprites/units/janissary_attack_5.png",
+          "res://assets/art/sprites/units/janissary_attack_6.png",
+          "res://assets/art/sprites/units/janissary_impact_1.png",
+          "res://assets/art/sprites/units/janissary_impact_2.png",
           "res://assets/art/sprites/units/janissary_death_1.png",
           "res://assets/art/sprites/units/janissary_death_2.png"
         ],
@@ -1212,20 +1238,22 @@
             5,
             6,
             7,
-            8
-          ],
-          "hit": [
+            8,
             9,
             10
           ],
-          "death": [
+          "impact": [
             11,
             12
+          ],
+          "death": [
+            13,
+            14
           ],
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },
@@ -1268,8 +1296,8 @@
           "res://assets/art/sprites/units/teutonic_knights_attack_2.png",
           "res://assets/art/sprites/units/teutonic_knights_attack_3.png",
           "res://assets/art/sprites/units/teutonic_knights_attack_4.png",
-          "res://assets/art/sprites/units/teutonic_knights_hit_1.png",
-          "res://assets/art/sprites/units/teutonic_knights_hit_2.png",
+          "res://assets/art/sprites/units/teutonic_knights_impact_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_impact_2.png",
           "res://assets/art/sprites/units/teutonic_knights_death_1.png",
           "res://assets/art/sprites/units/teutonic_knights_death_2.png"
         ],
@@ -1289,7 +1317,7 @@
             7,
             8
           ],
-          "hit": [
+          "impact": [
             9,
             10
           ],
@@ -1300,7 +1328,7 @@
           "fps": 6,
           "loop": true,
           "fps_attack": 9,
-          "fps_hit": 8,
+          "fps_impact": 8,
           "fps_death": 6,
           "death_hold": true
         },

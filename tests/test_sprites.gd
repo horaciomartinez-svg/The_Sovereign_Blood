@@ -14,6 +14,11 @@ const CAVALRY_UNITS: Array[String] = [
 	"mamluk", "teutonic_knights", "steppe_cavalry",
 ]
 const PANORAMIC_UNITS: Array[String] = ["bombarda", "hussite_war_wagon"]
+## D-065: 7 unidades a distancia/artillería con 15 frames (attack 6 cuadros).
+const RANGED_UNITS: Array[String] = [
+	"janissary", "arquebusier", "crossbowmen", "longbowman",
+	"steppe_cavalry", "bombarda", "hussite_war_wagon",
+]
 const REGION: String = "region_normandia"
 
 var _projectile_events: int = 0
@@ -41,6 +46,7 @@ func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check("units.json carga las 17 unidades", all_units.size() == EXPECTED_UNIT_COUNT,
 		str(all_units.size()))
 	var sprite_sheets_present: int = 0
+	var total_frames: int = 0
 	for unit_id in all_units:
 		var definition: Dictionary = h.unit_definition(unit_id)
 		runner.check("existe la unidad %s" % unit_id, not definition.is_empty())
@@ -50,7 +56,11 @@ func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 			continue
 		sprite_sheets_present += 1
 		var frames: Array = SafeDict.as_array(sprite.get("frames", null))
-		runner.check_eq("13 frames en %s (D-064)" % unit_id, 13, frames.size())
+		var ranged: bool = RANGED_UNITS.has(unit_id)
+		var expected_frame_count: int = 15 if ranged else 13
+		runner.check_eq("%d frames en %s (D-065)" % [expected_frame_count, unit_id],
+			expected_frame_count, frames.size())
+		total_frames += frames.size()
 		var expected_size: Array = _expected_size(unit_id)
 		var size_value: Array = _int_array(SafeDict.as_array(sprite.get("size", null)))
 		runner.check_eq("size %s en %s" % [JSON.stringify(expected_size), unit_id],
@@ -63,15 +73,21 @@ func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 			JSON.stringify(_int_array(SafeDict.as_array(anim.get("march", null)))))
 		runner.check_eq("anim.idle [3,4] en %s" % unit_id, "[3,4]",
 			JSON.stringify(_int_array(SafeDict.as_array(anim.get("idle", null)))))
-		runner.check_eq("anim.attack [5,6,7,8] en %s" % unit_id, "[5,6,7,8]",
+		var expected_attack: String = "[5,6,7,8,9,10]" if ranged else "[5,6,7,8]"
+		runner.check_eq("anim.attack %s en %s" % [expected_attack, unit_id], expected_attack,
 			JSON.stringify(_int_array(SafeDict.as_array(anim.get("attack", null)))))
-		runner.check_eq("anim.hit [9,10] en %s" % unit_id, "[9,10]",
-			JSON.stringify(_int_array(SafeDict.as_array(anim.get("hit", null)))))
-		runner.check_eq("anim.death [11,12] en %s" % unit_id, "[11,12]",
+		var impact_base: int = 11 if ranged else 9
+		runner.check_eq("anim.impact [%d,%d] en %s" % [impact_base, impact_base + 1, unit_id],
+			"[%d,%d]" % [impact_base, impact_base + 1],
+			JSON.stringify(_int_array(SafeDict.as_array(anim.get("impact", null)))))
+		var death_base: int = 13 if ranged else 11
+		runner.check_eq("anim.death [%d,%d] en %s" % [death_base, death_base + 1, unit_id],
+			"[%d,%d]" % [death_base, death_base + 1],
 			JSON.stringify(_int_array(SafeDict.as_array(anim.get("death", null)))))
+		runner.check("sin clave 'hit' obsoleta en %s" % unit_id, not anim.has("hit"))
 		runner.check_eq("anim.fps 6 en %s" % unit_id, 6, SafeDict.as_int(anim.get("fps"), 0))
 		runner.check_eq("anim.fps_attack 9 en %s" % unit_id, 9, SafeDict.as_int(anim.get("fps_attack"), 0))
-		runner.check_eq("anim.fps_hit 8 en %s" % unit_id, 8, SafeDict.as_int(anim.get("fps_hit"), 0))
+		runner.check_eq("anim.fps_impact 8 en %s" % unit_id, 8, SafeDict.as_int(anim.get("fps_impact"), 0))
 		runner.check_eq("anim.fps_death 6 en %s" % unit_id, 6, SafeDict.as_int(anim.get("fps_death"), 0))
 		runner.check("anim.loop true en %s" % unit_id, SafeDict.as_bool(anim.get("loop"), false))
 		runner.check("anim.death_hold true en %s" % unit_id, SafeDict.as_bool(anim.get("death_hold"), false))
@@ -102,6 +118,7 @@ func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 		runner.check("dimensiones %dx%d para %s" % [int(expected_size[0]), int(expected_size[1]), unit_id],
 			dimensions_ok)
 	runner.check_eq("17/17 sprite_sheet válidos", EXPECTED_UNIT_COUNT, sprite_sheets_present)
+	runner.check_eq("235 frames de producción (10x13 + 7x15)", 235, total_frames)
 
 
 func _check_fallback(runner: TestRunnerScript, h: HarnessScript) -> void:
@@ -225,28 +242,43 @@ func _check_animation_state_helpers(runner: TestRunnerScript, h: HarnessScript) 
 		BattleSpritesScript.state_frame_indices(sheet, "march").size())
 	runner.check_eq("state_frame_indices idle = 2", 2,
 		BattleSpritesScript.state_frame_indices(sheet, "idle").size())
-	runner.check_eq("state_frame_indices attack = 4", 4,
+	runner.check_eq("state_frame_indices attack = 6 (ranged, D-065)", 6,
 		BattleSpritesScript.state_frame_indices(sheet, "attack").size())
-	runner.check_eq("state_frame_indices hit = 2", 2,
-		BattleSpritesScript.state_frame_indices(sheet, "hit").size())
+	var melee_sheet: Dictionary = h.unit_sprite("men_at_arms")
+	runner.check_eq("state_frame_indices attack = 4 (choque)", 4,
+		BattleSpritesScript.state_frame_indices(melee_sheet, "attack").size())
+	runner.check_eq("state_frame_indices impact = 2", 2,
+		BattleSpritesScript.state_frame_indices(sheet, "impact").size())
 	runner.check_eq("state_frame_indices dead = 2", 2,
 		BattleSpritesScript.state_frame_indices(sheet, "dead").size())
 	runner.check_eq("fps attack = 9", 9.0, BattleSpritesScript.state_fps(sheet, "attack"))
-	runner.check_eq("fps hit = 8", 8.0, BattleSpritesScript.state_fps(sheet, "hit"))
+	runner.check_eq("fps impact = 8", 8.0, BattleSpritesScript.state_fps(sheet, "impact"))
 	runner.check_eq("fps dead = 6", 6.0, BattleSpritesScript.state_fps(sheet, "dead"))
-	runner.check_eq("attack_impact_index = attack_2 (abs 6)", 6,
+	runner.check_eq("attack_impact_index = attack_4 (abs 8)", 8,
 		BattleSpritesScript.attack_impact_index(sheet))
-	runner.check("attack_impact_ms ≈ 111.1",
-		absf(BattleSpritesScript.attack_impact_ms(sheet) - 111.1) < 0.2,
+	runner.check("attack_impact_ms ≈ 333.3",
+		absf(BattleSpritesScript.attack_impact_ms(sheet) - 333.3) < 0.3,
 		str(BattleSpritesScript.attack_impact_ms(sheet)))
+	runner.check("reaction_delay_ms ≈ 444.4 (attack_4 + cuadro)",
+		absf(BattleSpritesScript.reaction_delay_ms(sheet) - 444.4) < 0.3,
+		str(BattleSpritesScript.reaction_delay_ms(sheet)))
 	runner.check("attack frame 0 = attack_1",
 		BattleSpritesScript.state_frame_path(sheet, "attack", 0.0).ends_with("_attack_1.png"))
 	runner.check("attack a 250 ms = attack_3 (9 fps)",
 		BattleSpritesScript.state_frame_path(sheet, "attack", 250.0).ends_with("_attack_3.png"))
-	runner.check_eq("attack agotado (1000 ms) vuelve a idle", "idle",
+	runner.check("attack a 340 ms = attack_4 (disparo/golpe)",
+		BattleSpritesScript.state_frame_path(sheet, "attack", 340.0).ends_with("_attack_4.png"))
+	runner.check("attack a 600 ms = attack_6 (recoil/recarga)",
+		BattleSpritesScript.state_frame_path(sheet, "attack", 600.0).ends_with("_attack_6.png"))
+	runner.check("ataque ranged dura 6 cuadros (666.7 ms)",
+		absf(BattleSpritesScript.state_duration_ms(sheet, "attack") - 666.7) < 0.3,
+		str(BattleSpritesScript.state_duration_ms(sheet, "attack")))
+	runner.check("ataque choque dura 4 cuadros (444.4 ms)",
+		absf(BattleSpritesScript.state_duration_ms(melee_sheet, "attack") - 444.4) < 0.3)
+	runner.check_eq("ataque agotado (1000 ms) vuelve a idle", "idle",
 		BattleSpritesScript.state_after_elapsed(sheet, "attack", 1000.0))
-	runner.check_eq("hit agotado (300 ms) vuelve a idle", "idle",
-		BattleSpritesScript.state_after_elapsed(sheet, "hit", 300.0))
+	runner.check_eq("impact agotado (300 ms) vuelve a idle", "idle",
+		BattleSpritesScript.state_after_elapsed(sheet, "impact", 300.0))
 	runner.check_eq("muerte nunca vuelve a idle (death_hold)", "dead",
 		BattleSpritesScript.state_after_elapsed(sheet, "dead", 99999.0))
 	var idle_info: Dictionary = BattleSpritesScript.animation_frame_info(sheet, "idle", 0.0)
@@ -287,21 +319,36 @@ func _check_combat_animation_states(runner: TestRunnerScript, h: HarnessScript) 
 	defender_internal["r"] = 0
 	var attack: Dictionary = SafeDict.as_dict(node.call("attack_unit", archer_id, crossbow_id))
 	runner.check("ataque para animación", bool(attack.get("ok")), str(attack))
-	runner.check("resultado con attack_impact_ms ≈111",
-		absf(SafeDict.as_float(attack.get("attack_impact_ms"), 0.0) - 111.1) < 0.2)
-	runner.check_eq("resultado con attack_impact_frame = 6", 6,
+	runner.check("resultado con attack_impact_ms ≈333,3",
+		absf(SafeDict.as_float(attack.get("attack_impact_ms"), 0.0) - 333.3) < 0.3)
+	runner.check_eq("resultado con attack_impact_frame = 8 (attack_4)", 8,
 		SafeDict.as_int(attack.get("attack_impact_frame"), -1))
+	runner.check("resultado con reaction_delay_ms ≈444,4",
+		absf(SafeDict.as_float(attack.get("reaction_delay_ms"), 0.0) - 444.4) < 0.3)
 	var attacker_after: Dictionary = SafeDict.as_dict(node.call("get_unit", archer_id))
 	runner.check_eq("atacante en estado attack", "attack", SafeDict.as_string(attacker_after.get("anim_state"), ""))
 	runner.check("atacante en frame de ataque",
 		SafeDict.as_string(attacker_after.get("sprite_frame_path"), "").contains("_attack_"))
 	var defender_after: Dictionary = SafeDict.as_dict(node.call("get_unit", crossbow_id))
-	var defender_state: String = SafeDict.as_string(defender_after.get("anim_state"), "")
+	var pending_reaction: String = SafeDict.as_string(defender_after.get("anim_reaction_state"), "")
+	runner.check("N2: reacción impact/dead programada",
+		pending_reaction == "impact" or pending_reaction == "dead", pending_reaction)
+	runner.check("N2: reaction_at_ms ≈444,4",
+		absf(SafeDict.as_float(defender_after.get("anim_reaction_at_ms"), 0.0) - 444.4) < 0.3,
+		str(defender_after.get("anim_reaction_at_ms")))
+	# attack_4 ocupa 333,3–444,4 ms; después llega impact/death.
+	node.call("tick_animation", 350.0)
+	var during_impact: Dictionary = SafeDict.as_dict(node.call("get_unit", crossbow_id))
+	runner.check("N2: defensor aún no en impact a 350 ms",
+		SafeDict.as_string(during_impact.get("anim_state"), "") != "impact")
+	node.call("tick_animation", 120.0)
+	var defender_reaction: Dictionary = SafeDict.as_dict(node.call("get_unit", crossbow_id))
+	var defender_state: String = SafeDict.as_string(defender_reaction.get("anim_state"), "")
 	if bool(attack.get("defender_destroyed")):
-		runner.check_eq("defensor destruido en estado dead", "dead", defender_state)
+		runner.check_eq("N2: defensor destruido en estado dead", "dead", defender_state)
 	else:
-		runner.check("defensor golpeado en estado hit", defender_state == "hit", defender_state)
-	node.call("tick_animation", 1000.0)
+		runner.check("N2: defensor en impact tras attack_4", defender_state == "impact", defender_state)
+	node.call("tick_animation", 5000.0)
 	var attacker_settled: Dictionary = SafeDict.as_dict(node.call("get_unit", archer_id))
 	runner.check_eq("ataque agotado vuelve a idle", "idle",
 		SafeDict.as_string(attacker_settled.get("anim_state"), ""))
@@ -357,8 +404,8 @@ func _check_combat_animation_states(runner: TestRunnerScript, h: HarnessScript) 
 	runner.check_eq("N3: estado inicial idle", "idle", SafeDict.as_string(duel_attacker.get("anim_state"), ""))
 	runner.check("N3: sprite inicial idle_1",
 		SafeDict.as_string(duel_attacker.get("sprite_frame_path"), "").ends_with("_idle_1.png"))
-	runner.check("N3: attack_impact_ms ≈111",
-		absf(SafeDict.as_float(duel_attacker.get("attack_impact_ms"), 0.0) - 111.1) < 0.2)
+	runner.check("N3: attack_impact_ms ≈333,3",
+		absf(SafeDict.as_float(duel_attacker.get("attack_impact_ms"), 0.0) - 333.3) < 0.3)
 	runner.check("N3: get_animation_state disponible",
 		not SafeDict.as_dict(duel.call("get_animation_state", SafeDict.as_string(duel_attacker.get("id"), ""))).is_empty())
 	var duel_hand: Array = SafeDict.as_array(SafeDict.as_dict(
@@ -369,40 +416,40 @@ func _check_combat_animation_states(runner: TestRunnerScript, h: HarnessScript) 
 	var after_round: Dictionary = SafeDict.as_dict(duel.call("get_state"))
 	var duel_attacker_after: Dictionary = SafeDict.as_dict(after_round.get("attacker", null))
 	var duel_defender: Dictionary = SafeDict.as_dict(after_round.get("defender", null))
-	runner.check_eq("N3: atacante en attack durante attack_2", "attack",
+	runner.check_eq("N3: atacante en attack durante attack_4", "attack",
 		SafeDict.as_string(duel_attacker_after.get("anim_state"), ""))
-	runner.check_eq("N3: defensor en attack hasta attack_2 (reacción programada)", "attack",
+	runner.check_eq("N3: defensor en attack hasta attack_4 (reacción programada)", "attack",
 		SafeDict.as_string(duel_defender.get("anim_state"), ""))
-	var pending_reaction: String = SafeDict.as_string(duel_defender.get("anim_reaction_state"), "")
-	runner.check("N3: reacción pendiente hit/dead", pending_reaction == "hit" or pending_reaction == "dead",
-		pending_reaction)
-	runner.check("N3: reaction_at_ms incluye ventana de attack_2 (>111 ms)",
-		SafeDict.as_float(duel_defender.get("anim_reaction_at_ms"), 0.0) > 111.0)
-	runner.check("N3: reaction_delay_ms ≈222,2 (impacto + cuadro)",
-		absf(SafeDict.as_float(duel_defender.get("anim_reaction_delay_ms"), 0.0) - 222.2) < 0.3,
+	var n3_pending_reaction: String = SafeDict.as_string(duel_defender.get("anim_reaction_state"), "")
+	runner.check("N3: reacción pendiente impact/dead",
+		n3_pending_reaction == "impact" or n3_pending_reaction == "dead", n3_pending_reaction)
+	runner.check("N3: reaction_at_ms incluye ventana de attack_4 (>333 ms)",
+		SafeDict.as_float(duel_defender.get("anim_reaction_at_ms"), 0.0) > 333.0)
+	runner.check("N3: reaction_delay_ms ≈444,4 (attack_4 + cuadro)",
+		absf(SafeDict.as_float(duel_defender.get("anim_reaction_delay_ms"), 0.0) - 444.4) < 0.3,
 		str(duel_defender.get("anim_reaction_delay_ms")))
-	# attack_2 debe verse antes de pasar a hit/dead (ventana de ~111 ms).
-	duel.call("tick_animation", 120.0)
-	var during_impact: Dictionary = SafeDict.as_dict(duel.call("get_state"))
-	var duel_defender_impact: Dictionary = SafeDict.as_dict(during_impact.get("defender", null))
+	# attack_4 debe verse antes de pasar a impact/dead (ventana de ~111 ms).
+	duel.call("tick_animation", 350.0)
+	var n3_during_impact: Dictionary = SafeDict.as_dict(duel.call("get_state"))
+	var duel_defender_impact: Dictionary = SafeDict.as_dict(n3_during_impact.get("defender", null))
 	var duel_defender_state: String = SafeDict.as_string(duel_defender_impact.get("anim_state"), "")
-	runner.check("N3: defensor sigue en attack a 120 ms (attack_2 visible)", duel_defender_state == "attack",
+	runner.check("N3: defensor sigue en attack a 350 ms (attack_4 visible)", duel_defender_state == "attack",
 		duel_defender_state)
-	runner.check("N3: frame actual attack_2 a 120 ms",
-		SafeDict.as_string(duel_defender_impact.get("sprite_frame_path"), "").ends_with("_attack_2.png"),
+	runner.check("N3: frame actual attack_4 a 350 ms",
+		SafeDict.as_string(duel_defender_impact.get("sprite_frame_path"), "").ends_with("_attack_4.png"),
 		SafeDict.as_string(duel_defender_impact.get("sprite_frame_path"), ""))
-	# Tras la ventana (≈222 ms) entra hit/dead.
+	# Tras la ventana (≈444 ms) entra impact/dead.
 	duel.call("tick_animation", 120.0)
 	var after_impact: Dictionary = SafeDict.as_dict(duel.call("get_state"))
 	var duel_defender_after: Dictionary = SafeDict.as_dict(after_impact.get("defender", null))
 	duel_defender_state = SafeDict.as_string(duel_defender_after.get("anim_state"), "")
-	runner.check("N3: defensor en hit/dead tras la ventana de attack_2",
-		duel_defender_state == "hit" or duel_defender_state == "dead", duel_defender_state)
+	runner.check("N3: defensor en impact/dead tras la ventana de attack_4",
+		duel_defender_state == "impact" or duel_defender_state == "dead", duel_defender_state)
 	duel.call("tick_animation", 5000.0)
 	var settled: Dictionary = SafeDict.as_dict(duel.call("get_state"))
 	var settled_defender: Dictionary = SafeDict.as_dict(settled.get("defender", null))
 	var settled_state: String = SafeDict.as_string(settled_defender.get("anim_state"), "")
-	runner.check("N3: hit vuelve a idle o dead hace death_hold",
+	runner.check("N3: impact vuelve a idle o dead hace death_hold",
 		settled_state == "idle" or settled_state == "dead", settled_state)
 	duel.free()
 
@@ -436,15 +483,15 @@ func _check_tactical_animation(runner: TestRunnerScript, h: HarnessScript) -> vo
 	runner.check_eq("orientación inicial E", "E", SafeDict.as_string(archer.get("facing"), ""))
 	runner.check("sin espejo inicial", not SafeDict.as_bool(archer.get("mirror"), true))
 	runner.check("en reposo inicial", not SafeDict.as_bool(archer.get("moving"), true))
-	runner.check_eq("estado inicial idle (D-064)", "idle", SafeDict.as_string(archer.get("anim_state"), ""))
+	runner.check_eq("estado inicial idle (D-065)", "idle", SafeDict.as_string(archer.get("anim_state"), ""))
 	runner.check_eq("march_frame en reposo 0", 0, SafeDict.as_int(archer.get("march_frame"), -1))
 	var first_frame: String = SafeDict.as_string(archer.get("sprite_frame_path"), "")
 	runner.check("sprite_frame_path inicial = idle_1", first_frame.ends_with("_idle_1.png")
 		and ResourceLoader.exists(first_frame), first_frame)
-	runner.check("attack_impact_ms ≈ 1/fps_attack (111 ms)",
-		absf(SafeDict.as_float(archer.get("attack_impact_ms"), 0.0) - 111.1) < 0.2,
+	runner.check("attack_impact_ms ≈ 3/fps_attack (333,3 ms)",
+		absf(SafeDict.as_float(archer.get("attack_impact_ms"), 0.0) - 333.3) < 0.3,
 		str(archer.get("attack_impact_ms")))
-	runner.check_eq("attack_impact_frame = attack_2 (índice 6)", 6,
+	runner.check_eq("attack_impact_frame = attack_4 (índice 8)", 8,
 		SafeDict.as_int(archer.get("attack_impact_frame"), -1))
 	# Moverse al oeste debe espejar el sprite.
 	var west_hex: Dictionary = {}
@@ -526,9 +573,17 @@ func _check_tactical_projectile(runner: TestRunnerScript, h: HarnessScript) -> v
 		runner.check_eq("t inicial 0", 0.0, SafeDict.as_float(projectile.get("t"), -1.0))
 		runner.check("el sprite del proyectil existe",
 			ResourceLoader.exists(SafeDict.as_string(projectile.get("sprite"), "")))
+		runner.check("proyectil lanzado en attack_4 (impact_ms ≈333,3)",
+			absf(SafeDict.as_float(projectile.get("impact_ms"), 0.0) - 333.3) < 0.3)
+		runner.check("launch_ms = started_ms (sale en attack_4)",
+			is_equal_approx(SafeDict.as_float(projectile.get("launch_ms"), -1.0),
+				SafeDict.as_float(projectile.get("started_ms"), -2.0)))
+		node.call("tick_animation", 333.3)
+		runner.check_eq("a 333,3 ms el proyectil aún no avanza", 0.0,
+			SafeDict.as_float((node.call("get_projectiles") as Array)[0].get("t"), -1.0))
 		node.call("tick_animation", 250.0)
 		var mid_projectiles: Array = node.call("get_projectiles")
-		runner.check_eq("a 250 ms el proyectil sigue activo", 1, mid_projectiles.size())
+		runner.check_eq("a 250 ms de vuelo el proyectil sigue activo", 1, mid_projectiles.size())
 		if mid_projectiles.size() == 1:
 			var mid: Dictionary = SafeDict.as_dict(mid_projectiles[0])
 			runner.check_eq("t = 0.5 a mitad de vuelo", 0.5, SafeDict.as_float(mid.get("t"), -1.0))
@@ -536,8 +591,8 @@ func _check_tactical_projectile(runner: TestRunnerScript, h: HarnessScript) -> v
 			runner.check_eq("x intermedia (72)", 72.0, SafeDict.as_float(mid_position.get("x"), -1.0))
 			runner.check_eq("y con arco (-40)", -40.0, SafeDict.as_float(mid_position.get("y"), 1.0))
 		node.call("tick_animation", 300.0)
-		runner.check_eq("a 550 ms el proyectil ya no está activo", 0, (node.call("get_projectiles") as Array).size())
-		runner.check_eq("animation_ms acumulado", 550.0, float(node.call("get_animation_time_ms")))
+		runner.check_eq("a 550 ms de vuelo el proyectil ya no está activo", 0, (node.call("get_projectiles") as Array).size())
+		runner.check_eq("animation_ms acumulado", 883.3, float(node.call("get_animation_time_ms")))
 	node.free()
 
 
@@ -579,7 +634,7 @@ func _check_close_combat_projectiles(runner: TestRunnerScript, h: HarnessScript)
 	runner.check("el duelo incluye flecha", types.has("flecha"), str(types.keys()))
 	runner.check("sprites de proyectil N3 existen", sprites_ok)
 	runner.check("el resultado N3 sigue siendo nivel 3", SafeDict.as_int(outcome.get("level"), 0) == 3)
-	duel.call("tick_animation", 1000.0)
+	duel.call("tick_animation", 1200.0)
 	runner.check_eq("los proyectiles del duelo expiran", 0, (duel.call("get_projectiles") as Array).size())
 	duel.free()
 	# Bombarda v2: ahora SÍ tiene sprite panorámico 64×43 y dispara piedra.

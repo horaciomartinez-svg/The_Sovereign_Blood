@@ -147,28 +147,36 @@
             "properties": {
               "frames": {
                 "type": "array",
-                "description": "13 cuadros (D-064): 0-2 marcha, 3-4 idle, 5-8 ataque (attack_2 = impacto), 9-10 hit, 11-12 muerte.",
-                "minItems": 13,
-                "maxItems": 13,
+                "description": "13 o 15 cuadros (D-065): 10 choque = 13 (march 0-2, idle 3-4, attack 5-8, impact 9-10, death 11-12); 7 a distancia/artillería = 15 (attack 5-10, impact 11-12, death 13-14).",
                 "items": {
                   "type": "string",
-                  "pattern": "^res://assets/art/sprites/units/[a-z0-9_]+_(march|idle|attack|hit|death)_[0-9]+\\.png$"
-                }
+                  "pattern": "^res://assets/art/sprites/units/[a-z0-9_]+_(march|idle|attack|impact|death)_[0-9]+\\.png$"
+                },
+                "oneOf": [
+                  {
+                    "minItems": 13,
+                    "maxItems": 13
+                  },
+                  {
+                    "minItems": 15,
+                    "maxItems": 15
+                  }
+                ]
               },
               "anim": {
                 "type": "object",
-                "description": "Mapas de índices por estado y temporización (D-064): loop en marcha/idle, una vez en ataque/hit/muerte, death_hold persiste.",
+                "description": "Mapas de índices por estado y temporización (D-065): loop en marcha/idle; attack/impact/death una vez; impact 8 fps, death_hold persiste.",
                 "additionalProperties": false,
                 "required": [
                   "march",
                   "idle",
                   "attack",
-                  "hit",
+                  "impact",
                   "death",
                   "fps",
                   "loop",
                   "fps_attack",
-                  "fps_hit",
+                  "fps_impact",
                   "fps_death",
                   "death_hold"
                 ],
@@ -180,7 +188,7 @@
                     "items": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 12
+                      "maximum": 14
                     }
                   },
                   "idle": {
@@ -190,27 +198,36 @@
                     "items": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 12
+                      "maximum": 14
                     }
                   },
                   "attack": {
                     "type": "array",
-                    "minItems": 4,
-                    "maxItems": 4,
+                    "description": "4 cuadros (choque) o 6 (a distancia/artillería). attack_4 = índice absoluto 8.",
                     "items": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 12
-                    }
+                      "maximum": 14
+                    },
+                    "oneOf": [
+                      {
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      {
+                        "minItems": 6,
+                        "maxItems": 6
+                      }
+                    ]
                   },
-                  "hit": {
+                  "impact": {
                     "type": "array",
                     "minItems": 2,
                     "maxItems": 2,
                     "items": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 12
+                      "maximum": 14
                     }
                   },
                   "death": {
@@ -220,7 +237,7 @@
                     "items": {
                       "type": "integer",
                       "minimum": 0,
-                      "maximum": 12
+                      "maximum": 14
                     }
                   },
                   "fps": {
@@ -236,7 +253,7 @@
                     "minimum": 1,
                     "maximum": 30
                   },
-                  "fps_hit": {
+                  "fps_impact": {
                     "type": "number",
                     "minimum": 1,
                     "maximum": 30
