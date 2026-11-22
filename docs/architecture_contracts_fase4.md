@@ -98,3 +98,11 @@ Veredicto en `docs/qa/fase4_report.md`; tag `fase-4` tras APROBADO 12/12.
 - No modificar datos `1402/1453` (diff `fase-3.3..fase-4` = 0 archivos) ni pedir/generar arte externo.
 - REA: solo estructuras `.DAT`/`.GK2` y observación DOSBox; prohibido `.EXE`, texto literal y copia de assets. Si no hay DOSBox, documentar la limitación (D-038) y entregar análisis estructural + lecciones.
 - Cierre: commits por agente + `[AG-0]`, GDD v1.9, STATUS §19, QA `fase4_report.md`, tag **`fase-4`**, push y aviso a Kimi.
+
+---
+
+## 7. Addendum 7.1 — Límite de acciones y costes de reclutamiento (D-074/D-075)
+
+- **Acciones 1/turno:** estado `actions_used` por facción/turno, reseteado al empezar turno; se gatean diplomacia (por acción+objetivo), matrimonios/acciones familiares, construcciones, espionaje por objetivo y expedición de mercaderes. **Exentas:** reclutar/entrenar/disolver, asignar trabajadores y comprar/vender mercancías. API `GameState.mark_action_used(key)`, `is_action_used(key)`, `reset_turn_actions()`, `can_use_action(key)`; motivos `action_used` en los sistemas; UI deshabilita con tooltip/feedback.
+- **Costes:** `units.json.cost.gold` diferenciado por tipo, con caballería > arqueros/infantería ligera y artillería > caballería; `cost.recruits` por bloque; `recruit_goods` ya definido (D-070). Pantalla de ejércitos muestra coste en oro + hombres + mercancías y total para la cantidad; `MilitarySystem.recruit` deduce `cost.gold` por bloque y `recruit_goods`.
+- **QA:** C13 acción repetida rechazada (motor+UI) y excepciones funcionan; C14 costes distintos por unidad, mostrados y deducidos correctamente.
