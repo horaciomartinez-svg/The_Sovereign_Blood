@@ -1439,3 +1439,48 @@ Tras AG-2 (task-53) y la directiva v2, el harness se amplió a **C11** y se re-e
 **task-56 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3.3 — MVP-1337 (task-56).*
+
+---
+
+## 22. Fase 4 — Profundidad GK2: plan y baseline QA (task-64, 2026-11-23)
+
+**Directiva:** D-069…D-073, GDD v1.9, contrato `docs/architecture_contracts_fase4.md`. HEAD **`a5c22ff`** (arranque Fase 4; 1402/1453 congelados, sin arte externo). Plan: **`docs/qa/fase4_plan.md`** (matriz C1-C12 → test → comando → evidencia; riesgos R-F4-01..16). Harness: **`tests/qa_acceptance_fase4.gd`** (C1-C12; `extends SceneTree`; compila siempre; exit 0 solo con 12/12).
+
+### 22.1 Baseline C1-C12 — **3 PASS / 0 FAIL / 9 SKIP** (exit 1 «PENDIENTE», no rechazo)
+
+| # | Estado | Evidencia / motivo |
+|---|---|---|
+| C1 | **SKIP** | falta `docs/rea/gk2_economy_military_family.md` (AG-REA en curso) |
+| C2 | **PASS** | `trade_goods.json`: **10 bienes** (8-12) con `base_price`/`produced_by`/`used_by`/`source`; schema; `sources.md` §13; validate **13/9, 11.851 comprobaciones, 0 WARN** |
+| C3 | **SKIP** | `TradeSystem` ya existe y sin comerciantes rechaza compra/venta, pero los precios aún no fluctúan con la producción (AG-2 en curso) |
+| C4 | **SKIP** | falta `get_faction_army_summary` / pantalla/captura (AG-2/AG-3) |
+| C5 | **PASS** | 9 unidades con `recruit_goods`: **6 caballos + 1 armas** (resto sin campo); consumo se validará en test de reclutamiento |
+| C6 | **SKIP** | falta `spend_time_with_consort` (AG-2) |
+| C7 | **SKIP** | falta `docs/MANUAL_DEL_JUGADOR.md` (AG-1) |
+| C8 | **SKIP** | falta `data/tutorial_script.json`/`TutorialSystem` (AG-1/AG-2) |
+| C9 | **SKIP** | `trade`/`tutorial` aún no completos en estado (AG-2) |
+| C10 | **SKIP** | `MilitarySystem` no monta: `military_system.gd:127` llama a `_recruit_goods_requirements()` inexistente → autoloads dependientes no compilan; `run_all` **1688/44** y 9 líneas ERROR headless (transitorio AG-2) |
+| C11 | **PASS** | hashes de `scenario_1402/1453`, `events_1402/1453` intactos; petición de arte congelada; `git diff fase-3.3..fase-4` = 0 se confirma externamente |
+| C12 | **SKIP** | faltan capturas nuevas (`army_management`, `tutorial_*`, mercado/manual/consorte/dificultad) y UI AG-3 |
+
+### 22.2 Batería de baseline
+
+| Comando | Resultado |
+|---|---|
+| `--script tests/qa_acceptance_fase4.gd` | 3 PASS / 0 FAIL / 9 SKIP (exit 1 «PENDIENTE») |
+| `--script tests/run_all.gd` | **1688 pasados, 44 fallidos, 2 omitidos** — **transitorio** por compilación Fase 4 en curso (no regresión de QA) |
+| `--script tools/validate_data.gd` | **13 datasets / 9 schemas, 11.851 comprobaciones, 0 errores/WARN** (exit 0) |
+| `--editor --quit` | 0 ERROR/WARNING (exit 0) |
+| `--headless --quit` | 9 líneas ERROR: `military_system.gd` `_recruit_goods_requirements()` ausente → autoloads dependientes no compilan; AG-2 debe cerrar (R-F4-16) |
+
+### 22.3 Observaciones y riesgos
+
+- **C2/C5 adelantados:** AG-1 ya entregó `trade_goods.json`+schema+fuentes y `recruit_goods`; validados de forma independiente.
+- **Compilación intermedia (R-F4-16):** `military_system.gd` referencia una función aún no presente; el baseline no puede certificar C10 ni run_all. No se toca producción; se reporta a AG-2.
+- **Harness C3/C10 deliberadamente SKIP** ante módulos incompletos (precios sin fluctuación / autoload roto), no FAIL: baseline no es rechazo.
+- **Pendientes:** AG-REA (C1), AG-2 (C3/C4/C6/C9/C10), AG-1 (C7/C8), AG-3 (C4/C8/C12); verificación final **task-69**.
+- **Riesgos:** R-F4-01..16 en `docs/qa/fase4_plan.md`; sin cambios de producción ni git por AG-4.
+
+**task-64 COMPLETADA** (plan/baseline; verificación final = task-69, bloqueada por AG-REA/1/2/3). Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 4 — plan y baseline QA (task-64).*
