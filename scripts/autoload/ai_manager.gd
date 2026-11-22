@@ -102,6 +102,13 @@ func get_profile(faction_id: String) -> String:
 	return profile
 
 
+## D-073: multiplicador de agresividad IA según dificultad (informativo/tests).
+func get_aggression_multiplier() -> float:
+	if GameState.get_difficulty() == "beginner":
+		return Constants.AI_AGGRESSION_BEGINNER
+	return Constants.AI_AGGRESSION_NORMAL
+
+
 func set_profile(faction_id: String, profile: String) -> void:
 	if not AIProfiles.is_valid(profile):
 		return

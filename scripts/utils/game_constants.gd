@@ -62,6 +62,14 @@ const DISBAND_REFUND_RATIO: float = 0.5
 ## Stock inicial de mercancías por facción (permite el primer reclutamiento
 ## antes de la primera producción trimestral; se documenta en el informe D-069).
 const TRADE_INITIAL_STOCK: int = 20
+
+# --- Fase 4: familia/dificultad/tutorial (D-071/D-073) ---
+const CONSORT_PG_COST: int = 3
+const CONSORT_FERTILITY_TURNS: int = 3
+const CONSORT_FERTILITY_BONUS: float = 0.18
+const CONSORT_PRESTIGE_GAIN: int = 2
+const AI_AGGRESSION_BEGINNER: float = 0.75
+const AI_AGGRESSION_NORMAL: float = 1.0
 ## Bonus de comercio si la facción tiene pactos comerciales activos.
 const TRADE_PACT_COMMERCE_BONUS: float = 0.25
 ## Cosecha anual (§5.2, trimestre 1): clima aleatorio sesgado.

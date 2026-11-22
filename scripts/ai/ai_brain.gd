@@ -67,6 +67,9 @@ func _collect_moves(faction_id: String, weights: Dictionary, candidates: Array[D
 			if defense >= own_men:
 				utility -= weights_security(weights) * 1.5
 			utility -= float(cost_pg) * 0.05
+			# D-073: la dificultad Principiante reduce la agresividad de la IA.
+			if owner != "":
+				utility *= _aggression_multiplier()
 			candidates.append({
 				"type": "move",
 				"army_id": army_id,
@@ -166,6 +169,7 @@ func _collect_diplomacy(faction_id: String, weights: Dictionary, candidates: Arr
 		})
 		if weights_territory(weights) >= 1.0 and own_strength > int(float(target_strength) * 1.2):
 			var war_utility: float = weights_territory(weights) * 1.9 - weights_security(weights) * 0.4
+			war_utility *= _aggression_multiplier()
 			candidates.append({
 				"type": "diplomacy",
 				"action": "declare_war",
@@ -281,6 +285,16 @@ func weights_gold(weights: Dictionary) -> float:
 
 func weights_territory(weights: Dictionary) -> float:
 	return SafeDict.as_float(weights.get("territory"), 0.8)
+
+
+## D-073: multiplicador de agresividad según dificultad de la partida.
+func _aggression_multiplier() -> float:
+	var difficulty: String = "normal"
+	if not GameState.state.is_empty():
+		difficulty = str(GameState.state.get("difficulty", "normal"))
+	if difficulty == "beginner":
+		return Constants.AI_AGGRESSION_BEGINNER
+	return Constants.AI_AGGRESSION_NORMAL
 
 
 func weights_security(weights: Dictionary) -> float:

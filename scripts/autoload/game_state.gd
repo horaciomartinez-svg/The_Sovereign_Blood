@@ -51,7 +51,8 @@ func has_state() -> bool:
 
 
 ## Arranca una partida nueva y construye `state` desde el escenario.
-func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = DEFAULT_SEED) -> void:
+func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = DEFAULT_SEED,
+		p_difficulty: String = "normal") -> void:
 	if not DataLoader.is_loaded:
 		DataLoader.load_all()
 	var scenario: Dictionary = DataLoader.get_scenario(p_scenario_id)
@@ -59,6 +60,7 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		last_errors.append("escenario '%s' no disponible en DataLoader" % p_scenario_id)
 		push_warning("GameState.new_game: escenario '%s' no disponible" % p_scenario_id)
 		return
+	var difficulty: String = p_difficulty if p_difficulty in ["beginner", "normal"] else "normal"
 	scenario_id = p_scenario_id
 	rng_seed = p_seed_value
 	rng = SeededRNGScript.new(p_seed_value)
@@ -92,6 +94,9 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		"pending_battle": {},
 		# D-069: mercancías/comercio; TradeSystem lo completa con facciones/bienes.
 		"trade": {},
+		# D-073: dificultad y estado del Consejero/tutorial.
+		"difficulty": difficulty,
+		"tutorial": {"active": false, "step_index": 0, "completed_steps": [], "skipped": false},
 	}
 	_build_characters(start_year)
 	_build_factions(scenario, start_year)
@@ -102,6 +107,7 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 	# contextualiza); así los eventos `trigger: war` pueden dispararse.
 	_ensure_initial_wars(p_scenario_id, start_year)
 	TradeSystem.ensure_state()
+	TutorialSystem.start_for_new_game(difficulty)
 	rng_seed = rng.get_seed()
 	# Eventos del año de inicio (1337: casus belli y tensión anglo-francesa).
 	EventResolverScript.new().resolve_year(start_year)
@@ -184,6 +190,8 @@ func from_dict(data: Dictionary) -> bool:
 	rng_seed = rng.get_seed()
 	# D-069: completar/migrar el subestado de comercio (también en saves antiguos).
 	TradeSystem.ensure_state()
+	# D-071/D-073: defaults para saves de versiones anteriores.
+	_ensure_phase4_defaults()
 	TurnManager.sync_clock_from_state()
 	return true
 
@@ -274,6 +282,34 @@ func _ensure_initial_wars(p_scenario_id: String, start_year: int) -> void:
 		fra_wars.append("england")
 	england["at_war"] = eng_wars
 	france["at_war"] = fra_wars
+
+
+## D-071/D-073: defaults para saves antiguos y para el subestado del tutorial.
+func _ensure_phase4_defaults() -> void:
+	if state.is_empty():
+		return
+	if not state.has("difficulty") or not ["beginner", "normal"].has(str(state.get("difficulty"))):
+		state["difficulty"] = "normal"
+	if not state.has("tutorial"):
+		state["tutorial"] = {"active": false, "step_index": 0, "completed_steps": [], "skipped": false}
+	TutorialSystem.ensure_state()
+	for faction_id in SafeDict.sorted_keys(SafeDict.as_dict(state.get("factions", null))):
+		var faction: Dictionary = SafeDict.as_dict(SafeDict.as_dict(state.get("factions", null)).get(faction_id, null))
+		if not faction.has("last_consort_turn"):
+			faction["last_consort_turn"] = 0
+		if not faction.has("fertility_bonus_until_turn"):
+			faction["fertility_bonus_until_turn"] = 0
+
+
+func get_difficulty() -> String:
+	return SafeDict.as_string(state.get("difficulty"), "normal")
+
+
+func set_difficulty(value: String) -> bool:
+	if state.is_empty() or not ["beginner", "normal"].has(value):
+		return false
+	state["difficulty"] = value
+	return true
 
 
 ## Facciones jugables del escenario actual (contrato fase3 §3): lista declarada
@@ -474,6 +510,9 @@ func _build_factions(scenario: Dictionary, start_year: int) -> void:
 			"regency_until": 0,
 			"interregnum_until": 0,
 			"prestige_since_year": 0,
+			# D-071: consorte/fertilidad serializables.
+			"last_consort_turn": 0,
+			"fertility_bonus_until_turn": 0,
 		}
 	state["factions"] = factions_state
 	# Guardar el año de inicio para la lógica de regencia/victoria.

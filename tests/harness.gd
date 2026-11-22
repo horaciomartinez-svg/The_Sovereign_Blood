@@ -19,6 +19,8 @@ var battle: Node = null
 var ai: Node = null
 var bus: Node = null
 var audio: Node = null
+var trade: Node = null
+var tutorial: Node = null
 var missing: Array[String] = []
 
 
@@ -34,6 +36,8 @@ func _init(root: Node) -> void:
 	ai = _grab(root, "AIManager")
 	bus = _grab(root, "EventBus")
 	audio = _grab(root, "AudioManager")
+	trade = _grab(root, "TradeSystem")
+	tutorial = _grab(root, "TutorialSystem")
 
 
 func _grab(root: Node, autoload_name: String) -> Node:
@@ -54,6 +58,11 @@ func available() -> bool:
 
 func new_game(faction: String = "england", seed_value: int = 1337) -> void:
 	gs.call("new_game", "scenario_1337", faction, seed_value)
+
+
+## D-073: nueva partida con dificultad beginner/normal.
+func new_game_with_difficulty(faction: String, difficulty: String, seed_value: int = 1337) -> void:
+	gs.call("new_game", "scenario_1337", faction, seed_value, difficulty)
 
 
 ## Arranca una partida en un escenario concreto (Fase 3: 1402/1453/fixtures).
@@ -373,6 +382,137 @@ func army_men(army_id: String) -> int:
 
 func army_slots(region_id: String) -> int:
 	return SafeDict.as_int(mil.call("get_army_slots", region_id), 0)
+
+
+# --- Fase 4: comercio y ejércitos (D-069/D-070) --------------------------
+
+func trade_goods_ids() -> Array[String]:
+	var result: Array[String] = []
+	var value: Variant = trade.call("get_goods_ids")
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result
+
+
+func trade_inventory(faction_id: String) -> Dictionary:
+	return SafeDict.as_dict(trade.call("get_inventory", faction_id))
+
+
+func trade_merchants(faction_id: String) -> int:
+	return SafeDict.as_int(trade.call("get_merchants", faction_id), 0)
+
+
+func trade_available_merchants(faction_id: String) -> int:
+	return SafeDict.as_int(trade.call("get_available_merchants", faction_id), 0)
+
+
+func set_merchants(faction_id: String, amount: int) -> bool:
+	return SafeDict.as_bool(trade.call("set_merchants", faction_id, amount), false)
+
+
+func can_trade(faction_id: String) -> bool:
+	return SafeDict.as_bool(trade.call("can_trade", faction_id), false)
+
+
+func produce_trade(faction_id: String) -> Dictionary:
+	return SafeDict.as_dict(trade.call("produce_quarter", faction_id))
+
+
+func good_price(faction_id: String, good_id: String, region_id: String = "") -> float:
+	return SafeDict.as_float(trade.call("get_good_price", faction_id, good_id, region_id), 0.0)
+
+
+func buy_good(faction_id: String, region_id: String, good_id: String, qty: int) -> bool:
+	return SafeDict.as_bool(trade.call("buy", faction_id, region_id, good_id, qty), false)
+
+
+func sell_good(faction_id: String, region_id: String, good_id: String, qty: int) -> bool:
+	return SafeDict.as_bool(trade.call("sell", faction_id, region_id, good_id, qty), false)
+
+
+func send_expedition(faction_id: String, good_id: String, qty: int) -> bool:
+	return SafeDict.as_bool(trade.call("send_expedition", faction_id, good_id, qty), false)
+
+
+func process_expeditions() -> int:
+	return SafeDict.as_int(trade.call("process_expeditions"), 0)
+
+
+func trade_error() -> String:
+	return SafeDict.as_string(trade.call("get_last_error"), "")
+
+
+# --- Fase 4: consorte/dificultad/tutorial (D-071/D-073) -------------------
+
+func difficulty() -> String:
+	return SafeDict.as_string(gs.call("get_difficulty"), "normal")
+
+
+func set_difficulty(value: String) -> bool:
+	return SafeDict.as_bool(gs.call("set_difficulty", value), false)
+
+
+func spend_time_with_consort(faction_id: String) -> Dictionary:
+	return SafeDict.as_dict(dyn.call("spend_time_with_consort", faction_id))
+
+
+func consort_info(faction_id: String) -> Dictionary:
+	return SafeDict.as_dict(dyn.call("get_consort_info", faction_id))
+
+
+func tutorial_active() -> bool:
+	return SafeDict.as_bool(tutorial.call("is_tutorial_active"), false)
+
+
+func tutorial_step() -> Dictionary:
+	return SafeDict.as_dict(tutorial.call("get_tutorial_step"))
+
+
+func tutorial_state() -> Dictionary:
+	return SafeDict.as_dict(tutorial.call("get_tutorial_state"))
+
+
+func advance_tutorial(condition_id: String) -> Dictionary:
+	return SafeDict.as_dict(tutorial.call("advance_tutorial", condition_id))
+
+
+func skip_tutorial() -> bool:
+	return SafeDict.as_bool(tutorial.call("skip_tutorial"), false)
+
+
+func ai_aggression_multiplier() -> float:
+	return SafeDict.as_float(ai.call("get_aggression_multiplier"), 1.0)
+
+
+func army_summary(faction_id: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var value: Variant = mil.call("get_faction_army_summary", faction_id)
+	if value is Array:
+		for item in (value as Array):
+			if item is Dictionary:
+				result.append(item)
+	return result
+
+
+func train_unit(faction_id: String, unit_id: String, amount: int = 10) -> bool:
+	return SafeDict.as_bool(mil.call("train_unit", faction_id, unit_id, amount), false)
+
+
+func train_army(army_id: String) -> bool:
+	return SafeDict.as_bool(mil.call("train_army", army_id), false)
+
+
+func disband_unit(faction_id: String, unit_id: String, amount: int) -> bool:
+	return SafeDict.as_bool(mil.call("disband_unit", faction_id, unit_id, amount), false)
+
+
+func recruit_reason() -> String:
+	return SafeDict.as_string(mil.call("get_last_recruit_reason"), "")
+
+
+func train_reason() -> String:
+	return SafeDict.as_string(mil.call("get_last_train_reason"), "")
 
 
 # --- Batallas Nivel 2/3 (Fase 2) -----------------------------------------

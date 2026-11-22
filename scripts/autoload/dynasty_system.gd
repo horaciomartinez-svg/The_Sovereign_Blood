@@ -156,6 +156,103 @@ func apply_plague_mortality(year: int = 0) -> int:
 	return killed
 
 
+## D-071: valida la acción «pasar tiempo con la consorte» sin mutar estado.
+func can_spend_time_with_consort(faction_id: String) -> Dictionary:
+	var st: Dictionary = GameState.state
+	var result: Dictionary = {"ok": false, "reason": ""}
+	if st.is_empty():
+		result["reason"] = "sin partida"
+		return result
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if faction.is_empty() or SafeDict.as_bool(faction.get("eliminated"), false):
+		result["reason"] = "facción inválida"
+		return result
+	var ruler_id: String = SafeDict.as_string(faction.get("ruler_id"), "")
+	var ruler: Dictionary = GameState.get_character_state(ruler_id)
+	if ruler.is_empty() or not SafeDict.as_bool(ruler.get("alive"), false):
+		result["reason"] = "gobernante no válido"
+		return result
+	var family: Dictionary = SafeDict.as_dict(ruler.get("family", null))
+	var spouse_id: String = SafeDict.as_string(family.get("spouse"), "")
+	var spouse: Dictionary = GameState.get_character_state(spouse_id)
+	if spouse.is_empty() or not SafeDict.as_bool(spouse.get("alive"), false):
+		result["reason"] = "sin consorte viva"
+		return result
+	if SafeDict.as_bool(spouse.get("sick"), false) or SafeDict.as_bool(spouse.get("ill"), false):
+		result["reason"] = "consorte enferma"
+		return result
+	var current_year: int = SafeDict.as_int(st.get("year"), 1337)
+	var spouse_age: int = current_year - SafeDict.as_int(spouse.get("born"), current_year)
+	if spouse_age < Constants.MARRIAGE_MIN_AGE:
+		result["reason"] = "consorte demasiado joven"
+		return result
+	if spouse_age >= Constants.FERTILE_AGE:
+		result["reason"] = "consorte fuera de edad fértil"
+		return result
+	var current_turn: int = SafeDict.as_int(st.get("turn"), 1)
+	if SafeDict.as_int(faction.get("last_consort_turn"), 0) == current_turn:
+		result["reason"] = "ya se dedicó este trimestre"
+		return result
+	if SafeDict.as_int(faction.get("pg"), 0) < Constants.CONSORT_PG_COST:
+		result["reason"] = "PG insuficiente"
+		return result
+	result["ok"] = true
+	result["spouse_id"] = spouse_id
+	return result
+
+
+## D-071: acción familiar de consorte (2-3 PG, una vez por trimestre).
+func spend_time_with_consort(faction_id: String) -> Dictionary:
+	var validation: Dictionary = can_spend_time_with_consort(faction_id)
+	if not SafeDict.as_bool(validation.get("ok"), false):
+		return {"ok": false, "reason": SafeDict.as_string(validation.get("reason"), "no válido")}
+	var st: Dictionary = GameState.state
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if not TurnManager.spend_pg_for(faction_id, Constants.CONSORT_PG_COST):
+		return {"ok": false, "reason": "PG insuficiente"}
+	var current_turn: int = SafeDict.as_int(st.get("turn"), 1)
+	faction["last_consort_turn"] = current_turn
+	faction["fertility_bonus_until_turn"] = current_turn + Constants.CONSORT_FERTILITY_TURNS
+	faction["prestige"] = SafeDict.as_int(faction.get("prestige"), 0) + Constants.CONSORT_PRESTIGE_GAIN
+	var result: Dictionary = {
+		"ok": true,
+		"reason": "",
+		"spouse_id": SafeDict.as_string(validation.get("spouse_id"), ""),
+		"fertility_bonus_until_turn": SafeDict.as_int(faction.get("fertility_bonus_until_turn"), 0),
+		"prestige_gain": Constants.CONSORT_PRESTIGE_GAIN,
+	}
+	# Pequeña mejora de relación/lealtad con la consorte.
+	var spouse: Dictionary = GameState.get_character_state(SafeDict.as_string(validation.get("spouse_id"), ""))
+	if not spouse.is_empty():
+		var stats: Dictionary = SafeDict.as_dict(spouse.get("stats", null))
+		stats["loyalty"] = clampi(SafeDict.as_int(stats.get("loyalty"), 50) + 2, 0, 100)
+		spouse["stats"] = stats
+	EventBus.emit_signal("consort_time_spent", faction_id,
+		SafeDict.as_string(validation.get("spouse_id"), ""), current_turn)
+	return result
+
+
+func get_consort_info(faction_id: String) -> Dictionary:
+	var st: Dictionary = GameState.state
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if faction.is_empty():
+		return {}
+	var ruler: Dictionary = GameState.get_character_state(SafeDict.as_string(faction.get("ruler_id"), ""))
+	var family: Dictionary = SafeDict.as_dict(ruler.get("family", null))
+	var spouse_id: String = SafeDict.as_string(family.get("spouse"), "")
+	var spouse: Dictionary = GameState.get_character_state(spouse_id)
+	return {
+		"spouse_id": spouse_id,
+		"spouse_name": SafeDict.as_string(spouse.get("name"), ""),
+		"spouse_alive": SafeDict.as_bool(spouse.get("alive"), false),
+		"valid": SafeDict.as_bool(can_spend_time_with_consort(faction_id).get("ok"), false),
+		"reason": SafeDict.as_string(can_spend_time_with_consort(faction_id).get("reason"), ""),
+		"last_consort_turn": SafeDict.as_int(faction.get("last_consort_turn"), 0),
+		"fertility_bonus_until_turn": SafeDict.as_int(faction.get("fertility_bonus_until_turn"), 0),
+		"current_turn": SafeDict.as_int(st.get("turn"), 1),
+	}
+
+
 func advance_year() -> Array[Dictionary]:
 	var events: Array[Dictionary] = []
 	var st: Dictionary = GameState.state
@@ -208,7 +305,11 @@ func advance_year() -> Array[Dictionary]:
 			continue
 		if spouse_age >= Constants.FERTILE_AGE:
 			continue
-		if GameState.rng.next_float() >= Constants.BIRTH_CHANCE:
+		var birth_chance: float = Constants.BIRTH_CHANCE
+		var current_turn: int = SafeDict.as_int(st.get("turn"), 1)
+		if SafeDict.as_int(faction.get("fertility_bonus_until_turn"), 0) >= current_turn:
+			birth_chance += Constants.CONSORT_FERTILITY_BONUS
+		if GameState.rng.next_float() >= birth_chance:
 			continue
 		var child_id: String = _create_child(faction_id, ruler_id, spouse_id, current_year, characters)
 		if child_id == "":
