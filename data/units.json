@@ -322,7 +322,7 @@
       "strength": 9,
       "move": 4,
       "cost": {
-        "gold": 70,
+        "gold": 85,
         "recruits": 120
       },
       "multipliers": {
@@ -399,7 +399,7 @@
       "strength": 12,
       "move": 3,
       "cost": {
-        "gold": 110,
+        "gold": 140,
         "recruits": 80
       },
       "multipliers": {
@@ -485,7 +485,7 @@
       "strength": 7,
       "move": 5,
       "cost": {
-        "gold": 40,
+        "gold": 65,
         "recruits": 100
       },
       "multipliers": {
@@ -566,7 +566,7 @@
       "strength": 8,
       "move": 6,
       "cost": {
-        "gold": 55,
+        "gold": 70,
         "recruits": 120
       },
       "multipliers": {
@@ -726,7 +726,7 @@
       "strength": 12,
       "move": 4,
       "cost": {
-        "gold": 120,
+        "gold": 150,
         "recruits": 90
       },
       "multipliers": {
@@ -883,7 +883,7 @@
       "strength": 11,
       "move": 2,
       "cost": {
-        "gold": 90,
+        "gold": 95,
         "recruits": 100
       },
       "multipliers": {
@@ -1302,7 +1302,7 @@
       "strength": 13,
       "move": 3,
       "cost": {
-        "gold": 130,
+        "gold": 160,
         "recruits": 70
       },
       "multipliers": {

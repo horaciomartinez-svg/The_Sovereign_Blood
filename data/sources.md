@@ -698,11 +698,54 @@ piqueros, arcabuceros, jenízaros, etc.) no consumen mercancías de reclutamient
   `validate_data` queda **0 WARN/0 errores**.
 - Sin cambios en `year_data` 1402/1453 ni en scenarios congelados.
 
+### 13.3 Costes de reclutamiento por tipo de unidad (D-075)
+
+Ajuste de UX/balance (bug del usuario: «todas las unidades parecen costar lo mismo y la caballería
+ligera era más barata que un arquero»). Se modifica **solo `cost.gold`** de `data/units.json`;
+`cost.recruits` y `recruit_goods` se mantienen intactos. El coste es **por bloque de 200 hombres**
+(oro) y no pretende ser un precio histórico exacto: es una **estimación de diseño** que ordena el
+coste relativo por tipo. Regla aplicada: **toda la caballería > arqueros e infantería ligera**;
+caballería pesada > caballería ligera; **artillería > caballería**; élites > milicia.
+
+| Unidad | Tipo | `gold`/bloque | `recruits`/bloque | `recruit_goods` |
+|---|---|---:|---:|---|
+| `militia_spearman` | infantería ligera | 20 | 200 | — |
+| `scottish_schiltron` | infantería (picas) | 30 | 250 | — |
+| `crossbowmen` | arqueros/ballesteros | 45 | 150 | — |
+| `longbowman` | arqueros | 60 | 200 | — |
+| `light_horseman` | caballería ligera | 65 | 100 | caballos 1 |
+| `steppe_cavalry` | caballería ligera | 70 | 120 | caballos 1 |
+| `mounted_sergeants` | caballería | 85 | 120 | caballos 1 |
+| `men_at_arms` | caballería pesada | 140 | 80 | caballos 2 |
+| `mamluk` | caballería pesada/élite | 150 | 90 | caballos 2 |
+| `teutonic_knights` | caballería pesada/élite | 160 | 70 | caballos 2 |
+| `almogavar` | infantería ligera/élite | 55 | 150 | — |
+| `swiss_pikeman` | infantería pesada | 60 | 250 | — |
+| `dismounted_men_at_arms` | infantería pesada a pie | 95 | 100 | armas 1 |
+| `arquebusier` | infantería con pólvora | 90 | 120 | — |
+| `janissary` | infantería de élite | 120 | 80 | — |
+| `hussite_war_wagon` | especial/artillería | 80 | 60 | madera 2, hierro 1 |
+| `bombarda` | artillería | 200 | 40 | hierro 2, madera 1 |
+
+**Justificación (estimación de diseño):** un caballo de guerra, su equipo, forraje y la reposición
+de bajas encarecen la caballería frente a la infantería; la caballería pesada (hombre de armas,
+mameluco, caballero teutónico) suma armadura y entrenamiento, de ahí 140-160. Los arqueros son más
+baratos que la caballería (45-60) pero el arco largo exige entrenamiento y reclutamiento selectivo
+(60). La milicia y las picas son la base barata (20-60); la infantería de élite con pólvora o
+jenizaros sube a 90-120. La artillería es la más cara (bombarda 200; carro húsita 80 por su
+naturaleza de carro). No se citan precios de época porque el valor es una **estimación de
+balance**, no una fuente histórica; la referencia de diseño es GDD §6.4 y D-070/D-075. Se evita el
+efecto «todo cuesta igual» y la anomalía «caballería ligera más barata que un arquero».
+
+**Verificación:** 17/17 unidades con `cost.gold` entero > 0 y ranking correcto; `cost.recruits` y
+`recruit_goods` sin cambios; JSON válido; `validate_data` 14 datasets/10 schemas, 0 WARN/0 errores
+(AG-2 expone el coste por unidad, AG-3 lo muestra en la UI). Sin tocar 1402/1453.
+
 ---
 
 *Generado por AG-1. Fase 0: Escenario 1. Fase 2: `map_borders.json` (§9) y `portrait` (§10).
 Fase 3: escenarios 1402/1453, 23 facciones, 3 años de regiones, eventos y fuentes (§11).
-Fase 3.3 MVP-1337: auditoría de eventos/balance (§12). Fase 4: mercancías y `recruit_goods` (§13).
-Cualquier corrección de dato debe mantener la URL de fuente o marcar `"estimate": true`; las
-reglas de validación están en `tools/validate_data.gd` (D-004/D-009/D-061) y los criterios en
-GDD §12-§13.*
+Fase 3.3 MVP-1337: auditoría de eventos/balance (§12). Fase 4: mercancías, `recruit_goods` y
+costes de reclutamiento (§13). Cualquier corrección de dato debe mantener la URL de fuente o
+marcar `"estimate": true`; las reglas de validación están en `tools/validate_data.gd`
+(D-004/D-009/D-061) y los criterios en GDD §12-§13.*
