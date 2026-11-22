@@ -23,6 +23,9 @@ Thumbs.db
 *.swp
 *~
 
+# Godot import sidecars de capturas de documentación (no son assets del juego)
+docs/screenshots/*.png.import
+
 # Local tooling
 .vscode/*
 !.vscode/settings.json

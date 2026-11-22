@@ -2,15 +2,16 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 1 — MVP jugable (en curso)** — luz verde de Kimi/usuario el 2026-11-21 |
-| **Fase anterior** | **Fase 0 — CERRADA** (`fase-0`); verificación Kimi: **APROBADO CON OBSERVACIONES** (OBS-K1 → D-015) |
-| **Siguiente fase** | Fase 2 — Profundidad militar (tras tag `fase-1`, pendiente de luz verde) |
+| **Fase actual** | **Fase 1 — MVP jugable CERRADA** (`fase-1`); QA APROBADO 6/6 (2026-11-21) |
+| **Fase anterior** | **Fase 0 — CERRADA** (`fase-0`); verificación Kimi: APROBADO CON OBSERVACIONES (OBS-K1 → D-015) |
+| **Siguiente fase** | Fase 2 — Profundidad militar (pendiente de luz verde del usuario) |
 | **GDD** | v1.2 — `GDD_The_Sovereign's_Blood.md` (raíz del repo) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
-| **Fecha de cierre Fase 0** | 2026-11-21 |
+| **Fecha de cierre Fase 1** | 2026-11-21 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
-| **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada para AG-2/AG-3) |
+| **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 0 mayores, 3 menores (ver `docs/qa/fase1_report.md`) |
+| **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
 
@@ -27,6 +28,12 @@ No hay bloqueos ni deuda técnica conocida para iniciar Fase 1.
 **Verificación Kimi de Fase 0:** APROBADO CON OBSERVACIONES (1 menor, OBS-K1: registrar
 `audio_manager.gd` como autoload al activar AG-5 en Fase 3 → decisión **D-015**). Luz verde dada para
 Fase 1 el 2026-11-21.
+
+**Fase 1 (MVP jugable) completada:** sistemas núcleo reales (10 autoloads), UI §9 completa (16 escenas),
+integrada end-to-end y verificada por QA independiente. **QA Fase 1: APROBADO** — 6/6 criterios de §12
+(Inglaterra 1337 jugable, IA de 13 rivales en **17 ms**, save/load exacto con hash, batalla delegada con
+captura, Peste Negra 1348, UI headless) con 0 bloqueantes y 3 observaciones menores resueltas/documentadas.
+Suite headless: **548 tests**; `validate_data.gd`: 0 errores. Tag anotado `fase-1`.
 
 ---
 
@@ -129,9 +136,16 @@ Ningún hallazgo bloqueante ni mayor. No se requirieron tests de regresión nuev
 | `8a171e0` | AG-2 | Scaffold Godot 4.7.2, autoloads, RNG, validador, CI headless |
 | `5532e2c` | AG-1 | Datasets Escenario 1 (1337), schemas y fuentes |
 | `c0f236e` | AG-REA | Informe de lecciones de modelado de datos GK2 |
-| cierre Fase 0 | AG-4/AG-1/AG-0 | QA (`docs/issues.md`), aclaraciones `sources.md` (OBS-02/03), STATUS/decisions y tag `fase-0` |
+| `ddc8aad` | AG-4 | QA Fase 0 (APROBADO) |
+| `874c709` | AG-1 | Aclaraciones `sources.md` (OBS-02/03) |
+| `7f2a443` | AG-0 | Cierre Fase 0 + tag `fase-0` |
+| `f11b09f` | AG-0 | Fase 1: contrato de integración, D-015…D-017, STATUS |
+| `722b778` | AG-2 | Sistemas núcleo Fase 1 + 317 tests; validador excluye presentación |
+| `73bff2f` | AG-3 | UI completa Fase 1 (16 escenas) integrada |
+| `7814dda` | AG-4 | Harness de aceptación (6 criterios) + plan QA |
+| cierre Fase 1 | AG-4/AG-0 | QA final (APROBADO), STATUS/decisiones y tag `fase-1` |
 
-**Tag de fase:** `fase-0` (anotado) en el commit de cierre, tras push a `origin/main`.
+**Tags de fase:** `fase-0` y `fase-1` (anotados) en los commits de cierre, tras push a `origin/main`.
 Historia lineal, sin force-push (GDD §3.2).
 
 ---
@@ -141,11 +155,11 @@ Historia lineal, sin force-push (GDD §3.2).
 | Agente | Rol | Estado | Definición |
 |---|---|---|---|
 | AG-0 | Coordinator (chat principal) | ✅ activo | `C:\Proyectos\TSB\agents\AG-0.md` |
-| AG-REA | Reverse Engineer (alcance §3) | ✅ Fase 0 completada; no se reactiva salvo petición | `agents\AG-REA.md` |
-| AG-1 | Historian/Data | ✅ Fase 0 completada; vuelve en Fase 3 (escenarios 2-3) | `agents\AG-1.md` |
-| AG-2 | Systems Dev | ✅ scaffold completado; Fase 1 (sistemas núcleo) | `agents\AG-2.md` |
-| AG-4 | QA | ✅ Fase 0 aprobada; continúa en Fase 1 | `agents\AG-4.md` |
-| AG-3 | UI Dev | ⏸ no activado aún (Fase 1) | pendiente de crear MD al activar |
+| AG-REA | Reverse Engineer (alcance §3) | ✅ Fase 0; no se reactiva salvo petición | `agents\AG-REA.md` |
+| AG-1 | Historian/Data | ✅ Fase 0; vuelve en Fase 3 (escenarios 2-3) | `agents\AG-1.md` |
+| AG-2 | Systems Dev | ✅ Fases 0-1; Fase 2 (Niveles 2-3) | `agents\AG-2.md` |
+| AG-3 | UI Dev | ✅ Fase 1 completada; Fase 2 (táctico/combate) | `agents\AG-3.md` |
+| AG-4 | QA | ✅ Fases 0-1 aprobadas; continúa por fase | `agents\AG-4.md` |
 | AG-5 | Art Pipeline | ⏸ no activado (Fase 3) | pendiente de crear MD al activar |
 
 ---
@@ -156,41 +170,45 @@ Historia lineal, sin force-push (GDD §3.2).
 D-004 validador GDScript (subconjunto JSON Schema) · D-005 git centralizado en AG-0 · D-006 criterio
 de "compila" · D-007 GDD en repo · D-008 alcance de datos 1337 · D-009 envelope de datasets ·
 D-010 capital dual Praga · D-011 nomenclatura de casas · D-012 anexo técnico REA · D-013 CI local y
-GitHub Actions diferido · D-014 registro de QA por fase.
+GitHub Actions diferido · D-014 registro de QA por fase · D-015 audio_manager (OBS-K1) · D-016 contrato
+Fase 1 · D-017 `map_layout` presentación · D-018 exclusión de presentación en el validador · D-019
+`allocate` absoluto · D-020 educación automática en MVP · D-021 capturas versionadas · D-022 la fachada
+de UI expone referencias vivas de solo lectura (auditado) · D-023 tooling dev en `scripts/ui/dev`.
 
 ---
 
 ## 10. Bloqueos y riesgos
 
-- **Bloqueos:** ninguno.
-- Riesgo residual (bajo): el volumen de datos crece al añadir 1402/1453 (Fase 3) → el envelope
-  `schema_version` y `validate_data.gd` ya soportan múltiples escenarios.
-- Riesgo residual (bajo): `run/main_scene` vacío hasta Fase 1 (D-006); `godot --headless` sin `--script`
-  no arranca partida, la CI usa `tests/run_all.gd`.
-- Sin acceso a la carpeta GK2 por parte de AG-1/AG-2/AG-4 (regla §3.1.2 respetada y verificada por QA).
+- **Bloqueos:** ninguno. Fase 2 pendiente de luz verde del usuario.
+- Riesgo residual (bajo): `scripts/ui/dev` contiene tooling (smoke/probe/screenshots); no se carga desde
+  escenas (M-F1-03, D-023).
+- Riesgo residual (bajo): `tsb_game.gd` expone referencias vivas del estado; auditoría QA: 0 escrituras,
+  el contrato prohíbe mutar (M-F1-02, D-022; copias defensivas en Fase 2).
+- Riesgo residual (bajo): educación de menores automática en MVP (D-020); asignación explícita de tutor
+  para Fase 2 si se exige.
+- Sin acceso a la carpeta GK2 por parte de AG-1/AG-2/AG-3/AG-4 (regla §3.1.2 respetada).
 
 ---
 
-## 11. Próximos pasos — Fase 1 (MVP jugable, §12)
+## 11. Próximos pasos — Fase 2 (Profundidad militar, GDD §12)
 
-1. **AG-2:** sistemas núcleo — `turn_manager` (loop trimestre/año + PG), `economy_system`,
-   `dynasty_system` (nacimientos/educación/sucesión/matrimonios), `diplomacia` (7 acciones),
-   `battle_manager.resolve_delegated`, `ai_manager` (13 rivales <2 s), save/load `save_version=1`.
-2. **AG-3:** UI de §9 consumiendo solo contratos §8.2 (mapa de regiones, consejo, familia,
-   diplomacia, informe de batalla, fin de año, victoria/derrota), placeholders de arte.
-3. **AG-4:** QA continuo: partida simulada headless de Inglaterra 1337, determinismo de save,
-   Peste Negra 1348, presupuesto de IA <2 s, regresión de datos.
-4. **AG-0:** revisión de diffs, `STATUS.md`/`decisions.md`, commits `[AG-N]` y push por módulo;
-   tag `fase-1` al cumplir los criterios jugables de §12.
-5. **Pendiente del usuario:** luz verde para iniciar Fase 1.
+1. **AG-2:** `battle_manager.launch_tactical` (Nivel 2, mapa hex local) y combate Nivel 3 (órdenes/cartas:
+   Carga, Disparo, Formación, Finta, Retirada); acción de espionaje en diplomacia; fin de partida por
+   extinción dinástica completa (ya hay base en `DynastySystem`/`TurnManager`).
+2. **AG-3:** escenas `battle/tactical_map.tscn` y `battle/close_combat.tscn` (hexes, cartas de orden),
+   pulido del panel de región (sin desbordes a 1920×1080) y refs defensivas en `tsb_game.gd` (M-F1-02).
+3. **AG-4:** QA de Fase 2: Crécy jugable en los 3 niveles con resultados coherentes; pérdida de líder
+   sin herederos termina la partida correctamente.
+4. **AG-1:** sin trabajo previsto salvo ampliación de datos si AG-2 lo pide.
+5. **Pendiente del usuario:** luz verde para iniciar Fase 2. Tag `fase-2` al cumplir §12.
 
 ---
 
 ## 12. Verificación de Kimi (protocolo §3.2)
 
-- ¿Existen los entregables de Fase 0 y cumplen §12? → sí (tabla §3 de este documento).
-- ¿`validate_data.gd` y headless pasan con logs? → sí; logs íntegros en `docs/issues.md` §2 y aquí §5.
-- ¿Contratos §8.2 y UI sin mutar estado? → scaffold con contratos declarados; UI no existe aún (Fase 1).
+- Fase 0: entregables y criterios §12 verificados — **APROBADO CON OBSERVACIONES** (OBS-K1 → D-015).
+- Fase 1: entregables, tests headless y contratos verificados; UI auditada estáticamente (0 mutaciones
+  de estado); capturas 1920×1080 en `docs/screenshots/`.
 - ¿Cumplimiento legal (sin material Koei/terceros)? → datos 100% originales con fuentes abiertas;
   informe REA limitado a estructura, sin nombres/textos del juego ni análisis de `.EXE` (§3).
 - Resultado esperado: **APROBADO / APROBADO CON OBSERVACIONES / RECHAZADO**; hallazgos se corrigen
@@ -198,28 +216,44 @@ GitHub Actions diferido · D-014 registro de QA por fase.
 
 ---
 
-## 13. Fase 1 — MVP jugable (EN CURSO)
+## 13. Fase 1 — MVP jugable (CERRADA, tag `fase-1`)
 
-**Objetivo (GDD §12):** loop completo de trimestre + año; economía, familia, diplomacia, batalla
-delegada, IA de 13 rivales, guardar/cargar y UI §9 para jugar Inglaterra 1337.
+**Estado:** cerrada el 2026-11-21. **QA Fase 1: APROBADO** — 6/6 criterios §12, 0 bloqueantes,
+0 mayores, 3 menores no bloqueantes (ver `docs/qa/fase1_report.md`).
 
-| Línea de trabajo | Owner | Scope | Estado |
-|---|---|---|---|
-| Sistemas núcleo (§5, §6.1, §8) | AG-2 | `scripts/autoload/**`, `scripts/ai/**`, `scripts/model/**`, `scripts/utils/**`, `tests/test_*.gd` | ⏳ activo |
-| UI §9 + placeholders §10 | AG-3 | `scenes/**`, `scripts/ui/**`, `assets/art/**`, `project.godot`, `data/map_layout.json` | ⏳ activo |
-| QA continuo + harness de aceptación | AG-4 | `docs/issues.md`, `docs/qa/**`, `tests/qa_*.gd` | ⏳ activo |
-| Contratos, STATUS, commits/push, revisión | AG-0 | `docs/STATUS.md`, `docs/decisions.md`, `docs/architecture_contracts_fase1.md`, git | ⏳ activo |
+**Entregado:**
+- Sistemas núcleo reales (10 autoloads): turno/PG, economía con apoyo y revueltas, dinastía
+  (nacimientos/matrimonios/educación automática/sucesión/regencia/extinción), diplomacia (7 acciones),
+  militar (reclutamiento/movimiento/ocupación), batalla delegada Nivel 1 §6.1, IA de 13 rivales,
+  eventos (incluida Peste Negra 1348), guardado/carga `save_version 1` con autosave.
+- UI §9 completa: 16 escenas (menú, selección, mapa de 47 regiones, panel de región, consejo, familia,
+  diplomacia, militar, economía, corte, opciones, tooltip, informe de batalla, fin de año, victoria).
+  Tema pergamino/tinta/dorado, heráldica generativa, sin assets externos.
+- 16 capturas 1920×1080 del flujo real en `docs/screenshots/` (duplicado M-F1-01 eliminado).
+- Tests: `tests/run_all.gd` **548 asserts** (+317) y `tests/qa_acceptance.gd` (6 criterios).
+- Contrato de integración `docs/architecture_contracts_fase1.md` y decisiones D-015…D-023.
 
-**Contrato vinculante:** `docs/architecture_contracts_fase1.md` (estado canónico `GameState.state`,
-API §2, flujo de turno, formularios, regla UI-sin-mutación, scopes por agente).
+**Evidencia de aceptación (QA independiente, no confía en AG-2/AG-3):**
 
-**Criterios de aceptación Fase 1 (§12) — pendientes de verificar:**
-1. Partida Inglaterra 1337 de principio a fin de año sin crash.
-2. IA de las 13 facciones completa sus turnos **<2 s** (medido).
-3. Guardar/cargar preserva el estado exacto (test automatizado con hash).
-4. Batalla delegada produce informe coherente y captura regiones.
-5. Peste Negra dispara en 1348 (event_log + efecto −0.35 en Europa occidental).
-6. UI de §9 completa, funcional a 1920×1080, instanciable headless sin errores.
+| Criterio §12 | Resultado |
+|---|---|
+| Inglaterra 1337 jugable de inicio a fin de año | PASS — 1337·T1→1338·T1, 4 trimestres, 8/8 órdenes, sin crash |
+| IA de 13 rivales <2 s | PASS — **17 ms** (16–21 ms en 4 ejecuciones; ~100× margen) |
+| Guardar/cargar exacto | PASS — hash `900976fefd4c7e01` idéntico; save 96.231 B; restaurado tras perturbar el estado; RNG reproducible |
+| Batalla delegada con informe y captura | PASS — Burgos con defensores; informe de 16 campos; owner castile→england |
+| Peste Negra 1348 (−0.35 `europe_west`) | PASS — `event_log`+`fired_events`; 32 regiones ratio ≈0,65; 9/9 facciones occidentales |
+| UI §9 headless | PASS — 16/16 escenas instanciadas; auditoría estática: 0 mutaciones de estado |
 
-**Cierre:** push por módulo con este STATUS actualizado; tag anotado `fase-1` al cumplir 1-6; revisión
-de Kimi del repo remoto.
+**Comandos de cierre (todos exit 0):** `qa_acceptance.gd` (6/6 PASS), `run_all.gd` (548/0/1),
+`validate_data.gd` (0 errores), `--editor --quit`, `--headless --quit`. Repeticiones → determinismo.
+
+**Observaciones menores y resolución:**
+
+| ID | Hallazgo | Resolución |
+|---|---|---|
+| M-F1-01 | Capturas 14 y 15 byte-idénticas | Duplicada `15_live_overlay_battle.png` eliminada |
+| M-F1-02 | `tsb_game.gd` expone refs vivas (0 escrituras) | Auditado por QA; contrato prohíbe mutar; D-022 (copias defensivas en Fase 2) |
+| M-F1-03 | Tooling dev en `scripts/ui/dev/` | Documentado como tooling no cargado (D-023); migración opcional |
+
+**Cierre:** commits `[AG-2]`/`[AG-3]`/`[AG-4]` y cierre `[AG-0]`, push a `origin/main`, tag anotado
+`fase-1`. Listo para revisión de Kimi del repo remoto.

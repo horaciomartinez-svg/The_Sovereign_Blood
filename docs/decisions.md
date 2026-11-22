@@ -89,3 +89,33 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** `regions.json` no tiene coordenadas y el GDD §8.1 exige un mapa de regiones clickeable; la geografía precisa es Fase 3.
 **Decisión:** AG-3 crea `data/map_layout.json` con coordenadas normalizadas por `region_id` (solo presentación, no estado de simulación ni dato histórico). No se modifica `regions.json` ni lo valida `validate_data.gd`. En Fase 3 AG-1 lo sustituirá por posiciones cartográficas con fuente.
 **Consecuencia:** mapa funcional en Fase 1 sin tocar datasets históricos; separación limpia entre datos de juego y presentación.
+
+## D-018 · Exclusión de datos de presentación en el validador (2026-11-21)
+**Contexto:** AG-2 detectó que `tools/validator_core.gd` recorre `data/**/*.json` y emitía 2 `[WARN]` por `data/map_layout.json` (presentación de AG-3, D-017), que no tiene schema ni corresponde a datos de simulación.
+**Decisión:** el validador excluye explícitamente `data/map_layout.json` (y futuros datos de presentación declarados) del conjunto de datasets de juego; los 6 datasets de simulación se siguen validando con sus schemas y reglas cruzadas. AG-2 aplica el cambio en `tools/validator_core.gd` (task-10).
+**Consecuencia:** `validate_data.gd` sin warnings; los datos de presentación no se confunden con contenido de juego.
+
+## D-019 · Semántica de `EconomySystem.allocate` (2026-11-21)
+**Contexto:** el contrato §2 no precisaba si `allocate(region_id, worker_class, amount)` asigna un delta o un objetivo absoluto; AG-2 implementó objetivo absoluto (conservando el total de trabajadores) y AG-3 envió totales objetivo desde el panel de región.
+**Decisión:** se fija la semántica **absoluta**: `amount` es el total de trabajadores de esa clase en la región; el sistema valida contra la población trabajadora y cobra 1 PG por orden. Documentado aquí y en el contrato; ambos componentes ya la usan de forma consistente.
+**Consecuencia:** sin ambigüedad de integración; si en Fase 2 se necesita reasignación incremental, se añadirá un método específico en vez de cambiar este.
+
+## D-020 · Educación familiar en el MVP (2026-11-21)
+**Contexto:** GDD §5.3 describe educación con asignación de tutor (PG/turno) y §12 incluye «educación» entre las mecánicas familiares de Fase 1; el contrato §8.2 no define un método `educate`, solo `marry`/`advance_year`.
+**Decisión:** en Fase 1 la educación de menores (6-16 años) es **automática**: `DynastySystem.advance_year` aplica educación a los menores de cada facción (1 PG/año por facción, crecimiento de stats por edad). La asignación explícita de tutor y el botón correspondiente en el árbol familiar quedan para Fase 2 (UI los muestra desactivados). La mecánica «educación» de §12 queda cubierta por el sistema.
+**Consecuencia:** MVP sin acción adicional; si Kimi exige asignación explícita, se implementará `set_tutor(child_id, tutor_id)` en Fase 2 (cambio localizado en DynastySystem + family_tree).
+
+## D-021 · Capturas de pantalla en el repo (2026-11-21)
+**Contexto:** GDD §13 exige capturas de cada pantalla en `docs/screenshots/`; AG-3 generó 16 PNG 1920×1080 del flujo real + tooltip en `C:\Proyectos\TSB\.ui_check\` (fuera del repo).
+**Decisión:** se copian las 16 capturas a `docs/screenshots/` y se versionan (≈4,8 MB) como evidencia de la checklist manual de Fase 1; `.ui_check/` queda como material bruto de trabajo y no se versiona.
+**Consecuencia:** el repo remoto es autocontenido para la verificación de Kimi; el peso es aceptable para GitHub.
+
+## D-022 · Referencias vivas en la fachada de UI (M-F1-02) (2026-11-21)
+**Contexto:** QA final de Fase 1 detecta que `scripts/ui/tsb_game.gd` expone referencias vivas del estado (`state()`, `armies()`, `region()` comparte arrays); hoy hay **0 escrituras** (auditoría estática de 25 `.gd` de `scripts/ui/**`) y el contrato §7 prohíbe mutar.
+**Decisión:** se acepta para el MVP: la fachada es de solo lectura por contrato y QA auditó 0 mutaciones; las copias defensivas (`duplicate(true)` en getters sensibles) se implementarán en Fase 2 junto con los pulidos de UI.
+**Consecuencia:** riesgo futuro documentado y acotado; si aparece una mutación, se corrige en la fachada sin tocar sistemas.
+
+## D-023 · Tooling de desarrollo en `scripts/ui/dev` (M-F1-03) (2026-11-21)
+**Contexto:** AG-3 dejó en `scripts/ui/dev/` las herramientas `ui_smoke.gd`, `integration_probe.gd`, `ui_screenshots.gd` y `gen_map_layout.ps1`, no referenciadas por ninguna escena.
+**Decisión:** se mantienen versionadas como tooling de desarrollo/QA (útiles para regresión visual y smoke), documentadas como no cargadas por el juego. Su migración a `tools/dev/` queda como mejora opcional de Fase 2, sin impacto funcional.
+**Consecuencia:** trazabilidad de cómo se generaron capturas y layout; el binario del juego no las incluye salvo export selectivo (queda anotado para el pipeline de export).

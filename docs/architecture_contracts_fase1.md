@@ -65,6 +65,12 @@ estado de partida vive aquí; los sistemas lo leen/mutan y la UI **solo lo lee**
 factores float; `year/quarter/turn` espejo del reloj de `TurnManager` (autoridad del reloj: **TurnManager**).
 El snapshot `rng` se escribe al guardar y se restaura al cargar (determinismo, GDD §13).
 
+**Nota de serialización (addendum 1.1):** `GameState.to_dict()` canonicaliza enteros y floats, y
+serializa `rng.state` (64 bits) **como texto** para no perder precisión al pasar por JSON; consumidores
+deben usar `GameState.rng`/`from_dict()`, no leer ese campo como número. `to_dict()` es la referencia
+canónica del save (criterio A4: hash estable). Los sistemas pueden exponer helpers aditivos y señales
+nuevas (p. ej. `EventBus.recruitment_completed`) siempre que no se rompan las firmas de §2.
+
 ## 2. API congelada (autoloads; implementar exactamente las firmas ya declaradas)
 
 | Autoload | Métodos que implementa Fase 1 | Semántica |
