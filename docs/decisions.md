@@ -285,3 +285,38 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** §10.4 exige capturas de un campo con río+puente+villa y uno de llanura; sin ellas no se cierra.
 **Decisión:** capturas 1920×1080 en `docs/screenshots/`: `tiles_n3_rio_puente_villa.png` y `tiles_n3_llanura.png`, más la hoja de contacto de tiles; revisión visual de continuidad del río y legibilidad a 128 px.
 **Consecuencia:** criterio objetivo para el cierre del módulo de tiles.
+
+## D-057 · Escenarios 1402/1453: modelo de datos (2026-11-22)
+**Contexto:** el motor ya es genérico por escenario (`new_game(scenario_id)` + `initial_state`), pero solo existe `scenario_1337`; `map_borders.json` ya define owners 1402/1453 con 9 facciones sin entrada en `factions.json`.
+**Decisión:** se añaden **9 facciones** (`brittany`, `burgundy`, `florence`, `genoa`, `milan`, `naples`, `ottoman`, `tamerlane`, `venice`; total 23) y `year_data` 1402/1453 en las 47 regiones, escenarios `scenario_1402`/`scenario_1453` (start 1402/1453; `playable_factions` = 8) y `events_1402/1453.json`. Las 8 facciones jugables del 1337 y sus datos no cambian. Contrato: `docs/architecture_contracts_fase3_scenarios.md`.
+**Consecuencia:** los 3 escenarios comparten mapa y facciones base; el `playable` global de `factions.json` solo describe 1337 y cada escenario declara su propio set jugable.
+
+## D-058 · Personajes vivos y gobernantes por año de escenario (2026-11-22)
+**Contexto:** `GameState._build_characters` marca vivo = `died == null`, lo que rompe escenarios con personajes de muerte histórica futura; una facción tiene gobernantes distintos por año.
+**Decisión:** `alive = (died == null or died >= start_year) and born <= start_year`; `age = start_year - born`. La selección de gobernante/heredero filtra por año y, si hay `reign_start`/`reign_end`, elige el reinado que cubre `start_year`; si hay varios, el más reciente. Los datos 1337 no cambian.
+**Consecuencia:** 1402/1453 seleccionan a sus gobernantes históricos sin duplicar fichas ni romper partidas de 1337.
+
+## D-059 · Evolución tecnológica por año (2026-11-22)
+**Contexto:** §6.4 define eras I-III por unidad; Phase 3 exige evolución tecnológica por año.
+**Decisión:** era **I** si year < 1350, **II** si 1350 ≤ year < 1400, **III** si year ≥ 1400; una unidad es reclutable/AI-usable si su `era` contiene la era actual. `TechSystem`/helper expone `era_for_year(year)` y `MilitarySystem.get_available_units(faction)`; UI muestra la era junto al año. Sin cambio de datos en units.
+**Consecuencia:** 1337 solo permite unidades I; 1402 permite II-III; 1453 permite III; el balance de reclutamiento queda acotado históricamente.
+
+## D-060 · Victoria/derrota §4.5 y años finales (2026-11-22)
+**Contexto:** §4.5 exige coronas, prestigio, supervivencia y conquista; el motor solo implementa prestigio y derrota.
+**Decisión:** victoria por **Prestigio Real** objetivo mantenido `years_held` (existente), **conquista ≥ control_pct (70%)** de regiones, o **supervivencia** al llegar a `end_year` (1402→1460, 1453→1480). Derrota por extinción/pérdida total (existente). Las coronas/claims se documentan como simplificación MVP (Fase 4) si el estado no las modela; no bloquean la aceptación de §4.5 en esta fase.
+**Consecuencia:** los 3 escenarios tienen final automático claro y verificable.
+
+## D-061 · Validación de los 3 escenarios (2026-11-22)
+**Contexto:** el validador exige datos del 1337; hay que cubrir 1402/1453 sin regresiones.
+**Decisión:** `tools/validator_core.gd` valida por escenario: facciones existentes, `playable_factions` exactamente 8 y ⊆ factions, `initial_state.regions` con `year_data` del año y owners válidos, `events_script` existente y eventos dentro de [start_year,end_year]; 1337 conserva 8 jugables. Schemas de scenario/characters/regions se amplían si hace falta (AG-1).
+**Consecuencia:** `validate_data` 0 WARN/0 errores con 3 escenarios; cualquier inconsistencia de datos bloquea CI.
+
+## D-062 · Assets externos: retratos de herederos/1402-1453 y animaciones de combate (2026-11-22)
+**Contexto:** Phase 3 pide set completo de retratos y cuadros idle/ataque/impacto/muerte; el equipo DSH no tiene generador de arte IA.
+**Decisión:** AG-5 prepara `docs/art/requests/kimi_phase3_assets.md` (lista exacta de character_id para 1402/1453 y herederos, hoja de estilo Kimi 256×256, y hojas de animación de las 17 unidades con referencia del set §10.3) para que el usuario la traslade a Kimi. Mientras no lleguen: fallback heráldico/silueta (nunca hueco). La aceptación de Fase 3 se documentará con esta dependencia externa; el resto de criterios (escenarios, tech, victoria, 10 años, QA) no se bloquea.
+**Consecuencia:** Fase 3 puede cerrarse con observaciones de assets externos si Kimi aún no ha entregado; no se inventa arte.
+
+## D-063 · UI de selección de escenario y era (2026-11-22)
+**Contexto:** `scenario_select` muestra 1402/1453 como "PRÓXIMAMENTE" y el mapa arranca en 1337.
+**Decisión:** las 3 tarjetas son jugables; al elegir escenario se listan sus 8 `playable_factions`; `new_game` usa el id del escenario; el mapa arranca en la vista del año del escenario y el HUD muestra la era I/II/III; pantalla de fin con motivo (prestigio/conquista/supervivencia/extinción).
+**Consecuencia:** los 3 escenarios son accesibles desde la UI y la tecnología es visible para el jugador.
