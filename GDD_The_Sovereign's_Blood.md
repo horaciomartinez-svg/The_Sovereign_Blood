@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vía DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.8.1 |
-| **Estado** | Aprobado — v1.8.1: addendum de animación (ataque de 6 cuadros para las 7 unidades a distancia/artillería y nomenclatura `impact`, alineado con la petición AG-5 `kimi_phase3_assets.md` v1.1); hereda v1.8 (cuadros de animación de combate §10.3, D-049), v1.7 (tiles §10.4), v1.6 (sprites §10.3), v1.5 (REA §3.2, retratos §10.2) |
+| **Versión del documento** | 1.9 |
+| **Estado** | Aprobado — v1.9: Fase 4 (mercancías y comercio, pantalla de ejércitos, acción de consorte, Manual del Jugador, tutorial con Consejero y dificultad); hereda v1.8.1 (animación de combate), v1.8/v1.7 (sprites/tiles), v1.6 (17 unidades) |
 
 ---
 
@@ -219,6 +219,12 @@ Tesoro               += impuestos(oro_total × tasa) + comercio − mantenimient
 
 **Edificios** (costo PG + oro, cola por región): Graneros, Talleres, Mercados, Murallas, Castillos, Astilleros, Universidad (Fase 3).
 
+**Mercancías y comercio (v1.9 — D-069):** cada facción mantiene un **inventario de mercancías** agregado de sus regiones. Hay 8-12 bienes (`data/trade_goods.json`, schema + fuentes): especias, pieles, lana, vino, sal, grano, armas, caballos, hierro y madera. Cada bien define `base_price`, `produced_by` (terreno/edificio: costa→sal; llanura extensa/pastos→caballos/pieles; taller→armas; bosque→madera; etc.) y `used_by` (reclutamiento/consumo). La producción llega al inventario de facción cada trimestre.
+- **Comerciantes obligatorios:** el volumen de compra/venta de una facción depende de los **Comerciantes** asignados (clase trabajadora de §5.2). Sin comerciantes asignados no se puede operar el mercado; más comerciantes = mayor volumen máximo por trimestre.
+- **Mercado:** comprar/vender al precio `base_price × factor_oferta_demanda`, donde el factor se deriva del inventario local/regional y de eventos (determinista con el RNG de la partida). Comercio exterior con facciones con pacto comercial, o mediante **expedición de mercaderes** (2 PG) que retorna tras N trimestres.
+- **Riqueza con propósito:** el oro del comercio financia reclutamiento y entrenamiento (§5.5); el comercio es significativo pero **menor que la economía base**, sin inflación desbocada (mismas métricas de D-068).
+- **Consumo:** grano/sal sostienen el apoyo poblacional; armas y caballos se consumen al reclutar las unidades que los requieren (§6.4).
+
 ### 5.3 Dinastía y familia (eje central)
 Cada facción tiene un árbol familiar: gobernante, consorte, hijos (edad, sexo, stats), hermanos, tíos (candidatos alternos).
 
@@ -229,6 +235,8 @@ Cada facción tiene un árbol familiar: gobernante, consorte, hijos (edad, sexo,
 **Sucesión:** al morir el gobernante, el heredero legal sube al trono. Si el heredero es menor de 14 → regencia (astucia reducida, riesgo de usurpación por parientes). Si no hay heredero → **crisis sucesoria**: facción cae a interregno 2 años; los parientes de otras casas pueden declarar guerra por la corona. Tercera facción extinción → derrota.
 
 **Eventos vitales trimestrales (probabilidades):** nacimiento (base 12% por consorte fértil < 40 años), enfermedad (base 2% por personaje > 50, +epidemias: Peste Negra evento global 1347-1353), muerte en batalla (si lidera un ejército derrotado: 15%).
+
+**Acción «Pasar tiempo con la consorte» (v1.9 — D-071):** en el árbol familiar, una vez por trimestre y con coste de **2-3 PG**, el gobernante pasa tiempo con su consorte: otorga un **bonus de fertilidad** (probabilidad de nacimiento aumentada durante los **siguientes 2-4 trimestres**) y un pequeño bonus de prestigio/relación. Sin consorte válida (viuda/enferma/ausente) la acción se rechaza con mensaje claro; no deja estados rotos. La educación automática de menores (D-020) se mantiene y se muestra en la ficha del hijo.
 
 ### 5.4 Diplomacia
 Relación bilateral −100..100, derivada de: casus belli activos, tratados, religion, fronteras, personalidad del líder.
@@ -249,7 +257,7 @@ Acciones (todas cuestan PG; éxito = tirada modificada por Astucia del enviado y
 **Puntuación de IA rival (ver 5.6)** decida aceptación.
 
 ### 5.5 Militar (visión general; detalle en Sección 6)
-Ejércitos = grupos de unidades dentro de una región; límite por región según edificios. Movimiento por adyacencia regional (1 PG por ejército movido + coste de terreno). Reclutamiento consume pool regional y oro.
+Ejércitos = grupos de unidades dentro de una región; límite por región según edificios. Movimiento por adyacencia regional (1 PG por ejército movido + coste de terreno). **Reclutamiento con mercancías (v1.9 — D-070):** además de oro y pool regional, ciertas unidades consumen mercancías del inventario de facción — caballería exige **caballos**; infantería pesada/hombres de armas exigen **armas** (tabla §6.4 ampliada). La **pantalla de ejércitos** muestra por tipo de unidad su imagen (sprite `march_1` existente), número, fuerza y moral/experiencia medias, y permite **Reclutar / Entrenar** (sube experiencia; oro + 1 PG) / **Disolver** (libera reclutas y devuelve parte del oro) desde una vista global de facción.
 
 ### 5.6 IA de facciones rivales
 Motor por **utilidad esperada**, modular y reemplazable (un solo script `ai_brain.gd` por facción con perfiles):
@@ -314,6 +322,8 @@ Como el nivel 2 pero con grupos unidad-a-unidad y cartas de orden: Carga, Dispar
 | Caballeros teutónicos | I-II | Cab. | 13 | 3 | alto | Balcano/Báltico; cruzada |
 
 **Reglas de interacción:** Disparo inflige daño previo al asalto; Caballería pesada ×1.4 vs Infantería en llanura pero ×0.6 vs Schiltron/Piqueros; Artillería solo efectiva en asedio; Cab. ligera puede retirarse sin asalto final (finta).
+
+**Reclutamiento con mercancías y entrenamiento (v1.9 — D-070):** además de oro y pool regional, el reclutamiento consume mercancías del inventario de facción: unidades de **caballería** (sargentos a caballo, hombres de armas, caballería ligera, caballería de estepa, mamelucos, caballeros teutónicos) requieren **caballos**; **infantería pesada/hombres de armas a pie** requieren **armas**. La tabla concreta de coste por unidad queda en `data/units.json` (`recruit_goods`) y se valida con el pipeline. **Entrenar** una unidad sube su experiencia/media (coste de oro + 1 PG) desde la pantalla de ejércitos; **Disolver** libera el pool de reclutas y devuelve parte del oro. La IA usa las mismas reglas (sin trampas de recursos).
 
 ---
 
@@ -498,6 +508,10 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 7. **Informe de batalla (Nivel 1):** resumen por asaltos, bajas, capturas, botín; botones "Rechazar/revisar" no aplican (no hay undo — decisión final, como el diseño de referencia).
 8. **Fin de año:** informe anual (cosecha, nacimientos, muertes, eventos, cambios de frontera) con avance a siguiente año.
 9. **Pantalla de victoria/derrota** con estadísticas de la partida.
+10. **Mercado / comercio (v1.9 — D-069):** inventario de facción por mercancía, precios y factor oferta/demanda, comerciantes disponibles, comprar/vender y panel de comercio exterior (pactos/expedición), con feedback de oro y volumen.
+11. **Ejércitos (v1.9 — D-070):** rejilla global por tipo de unidad con sprite `march_1`, número, fuerza y moral/experiencia medias; acciones Reclutar (oro+pool+mercancías), Entrenar (oro+1 PG) y Disolver con confirmación.
+12. **Manual del Jugador (v1.9 — D-072):** botón «Manual» en el menú principal (abre `docs/MANUAL_DEL_JUGADOR.md`) y entrada «Ayuda» en el menú de consejo con resumen rápido.
+13. **Dificultad y tutorial (v1.9 — D-073):** selección Principiante/Normal al iniciar; en Principiante, panel del **Consejero** con guion del primer año, texto breve, resaltado de UI y opción de saltar; guion en `data/tutorial_script.json`, estado serializable. Normal = sin Consejero y IA algo más agresiva.
 
 **MVP de interacción:** todo con mouse; atajos opcionales (Enter = terminar turno). Resolución objetivo 1920×1080, escalable.
 
@@ -698,6 +712,15 @@ C:\Proyectos\TSB\sovereigns-blood --script tests/run_all.gd
 - **Integración de sprites Kimi (primero):** AG-5 copia el paquete `Sprites_Unidades_TSB.zip` a `assets/art/sprites/units/` (51 PNG, 17 unidades), reescala a 64×64 / 64×80 / 64×43 (LANCZOS), añade `sprite_sheet` a las 17 unidades en `units.json` (formato §10.3) y valida carga en CI headless. Niveles 2/3 de batalla usan estos sprites con el ciclo de marcha; proyectiles en capa separada con trayectoria balística. **Actualización v1.8 (D-049):** integrar también `Anim_Combate_TSB.zip` (170 PNG de idle/ataque/impacto/muerte) extendiendo `frames` y `anim` según el contrato §10.3; en batalla N3 la unidad en guardia usa `idle`, al atacar `attack` (impacto en `attack_2`), al recibir daño `hit`, al morir `death` con `death_hold`.
 - Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2 de herederos y nuevos escenarios siguiendo la hoja de estilo Kimi, **tiles de batalla §10.4 ya entregados por Kimi — solo integrar**, música CC); balance general.
 - **Aceptación:** los 3 escenarios empiezan y llegan a su año final; victoria/derrota según Sección 4.5; partida completa de test automatizada de 10 años sin errores; set de retratos completo y slot de retrato funcional en las 5 ubicaciones §10.2.
+
+### Fase 4 — Profundidad (objetivo: 2-3 semanas)
+- **REA preliminar:** `docs/rea/gk2_economy_military_family.md` (≤2 páginas + `notes_economy.md`): estructuras de datos de economía/mercancías/mercaderes y lecciones de UX de los menús Economía/Militar/Familia (sin transcribir texto ni copiar assets; sin `.EXE`).
+- **Mercancías y comercio (D-069):** 8-12 bienes en `data/trade_goods.json` + schema/fuentes; producción por terreno/edificios; inventario de facción; comerciantes obligatorios; mercado con precios oferta/demanda; comercio exterior/expedición; consumo (grano/sal) y uso en reclutamiento (armas/caballos); pantalla Mercado.
+- **Ejércitos (D-070):** pantalla global con imagen por tipo, conteos, fuerza/moral/experiencia; Reclutar/Entrenar/Disolver; reclutamiento con mercancías.
+- **Familia (D-071):** acción «Pasar tiempo con la consorte» (2-3 PG/trimestre; bonus de fertilidad 2-4 trimestres; sin consorte válida → rechazo claro).
+- **Manual (D-072):** `docs/MANUAL_DEL_JUGADOR.md` con 10 secciones, accesible desde el juego.
+- **Tutorial y dificultad (D-073):** Principiante (Consejero + IA menos agresiva) / Normal; guion en `data/tutorial_script.json`; panel del Consejero con resaltado y salto; estado serializable.
+- **Aceptación:** QA C1-C12 del prompt de Fase 4 — REA legal; `trade_goods` validado con fuentes; comercio operativo solo con comerciantes y simulación 10 años sin inflación; pantalla de ejércitos con acciones efectivas; reclutamiento consume mercancías; consorte con bonus/cooldown; Manual completo y accesible; tutorial con guion/resaltes/salto y dificultad; save/load con inventario y tutorial; sin regresión (run_all ≥1742/0, validate 0, editor 0 warnings, F1/F2/F3/MVP/anim/tiles); 1402/1453 intactos y sin arte externo; UX sin botones muertos y capturas 1920×1080.
 
 **Total estimado: 7-10 semanas de trabajo del equipo de agentes, revisado por ti en sesiones cortas.**
 
