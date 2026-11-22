@@ -80,7 +80,9 @@ func _build() -> void:
 	_pg_label = UIKit.label(pg_row, "—", "GoldLabel", HORIZONTAL_ALIGNMENT_RIGHT)
 	_pg_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_pg_label.add_theme_font_size_override("font_size", 20)
+	_pg_label.tooltip_text = "Puntos de Gobierno (PG): recurso del turno para acciones. Se recuperan al comenzar el siguiente turno."
 	_pg_bar = UIKit.bar(column, 0, 30, Palette.GOLD, 12)
+	_pg_bar.tooltip_text = "PG restantes / PG máximos del turno"
 
 	UIKit.hsep(column)
 

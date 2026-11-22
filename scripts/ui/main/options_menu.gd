@@ -8,6 +8,7 @@ signal closed
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 
@@ -67,7 +68,14 @@ func _rebuild_content() -> void:
 	_fullscreen_check.toggled.connect(_on_fullscreen_toggled)
 	_content.add_child(_fullscreen_check)
 
-	var info := UIKit.label(_content, "Resolución de diseño 1920×1080 · escalado por canvas_items\nAudio: se incorpora en Fase 3 (sin assets en Fase 1).", "InkLabel")
+	var mute_check := CheckButton.new()
+	mute_check.text = "Silenciar audio"
+	mute_check.tooltip_text = "Activa/desactiva los tonos de UI (click, campana de fin de año, espada N3)."
+	mute_check.button_pressed = _is_audio_muted()
+	mute_check.toggled.connect(_on_mute_toggled)
+	_content.add_child(mute_check)
+
+	var info := UIKit.label(_content, "Resolución de diseño 1920×1080 · escalado por canvas_items\nAudio: tonos generados por AudioManager (click, campana de fin de año, espada N3); sin assets externos.", "InkLabel")
 	info.add_theme_font_size_override("font_size", 16)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -90,10 +98,27 @@ func _rebuild_content() -> void:
 
 
 func _on_fullscreen_toggled(enabled: bool) -> void:
+	UIAudio.play_click()
 	if enabled:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func _audio() -> Node:
+	return get_node_or_null("/root/AudioManager")
+
+
+func _is_audio_muted() -> bool:
+	var audio := _audio()
+	return bool(audio.call("is_muted")) if audio != null and audio.has_method("is_muted") else false
+
+
+func _on_mute_toggled(enabled: bool) -> void:
+	UIAudio.play_click()
+	var audio := _audio()
+	if audio != null and audio.has_method("set_muted"):
+		audio.call("set_muted", enabled)
 
 
 func _on_save() -> void:

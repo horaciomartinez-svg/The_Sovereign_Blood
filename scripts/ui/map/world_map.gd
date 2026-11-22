@@ -92,6 +92,7 @@ var _year_buttons: Dictionary = {}
 var _year_label: Label = null
 var _borders_notice: PanelContainer = null
 var _zoom_label: Label = null
+var _zoom_controls: Control = null
 var _map_hint: Label = null
 var _preview_banner: PanelContainer = null
 var _view_banner: PanelContainer = null
@@ -412,6 +413,7 @@ func _build_zoom_controls() -> void:
 	panel.offset_bottom = -24
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_hud.add_child(panel)
+	_zoom_controls = panel
 	var row := UIKit.hbox(panel, 6)
 	var zoom_out := UIKit.button(row, "-", "SmallButton")
 	zoom_out.custom_minimum_size = Vector2(38, 30)
@@ -500,7 +502,9 @@ func _build_info_sidebar() -> void:
 	_info_pg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_info_pg.add_theme_font_size_override("font_size", 20)
 	_info_pg.add_theme_color_override("font_color", Palette.INK_TEXT)
+	_info_pg.tooltip_text = "Puntos de Gobierno (PG): se gastan en acciones de corte, diplomacia, militar y economía. Se recuperan al empezar el siguiente turno."
 	_info_pg_bar = UIKit.bar(column, 0, 30, Palette.GOLD, 12)
+	_info_pg_bar.tooltip_text = "PG restantes / PG máximos del turno"
 
 	var stats := UIKit.grid(column, 2, 8, 3)
 	_info_treasury = _stat_pair(stats, "Tesoro")
@@ -965,6 +969,9 @@ func _on_region_clicked(region_id: String) -> void:
 	_interactive.call("set_selected", region_id)
 	if _region_panel != null:
 		_region_panel.call("open", region_id)
+	# El panel tapa los controles de zoom en la esquina inferior derecha.
+	if _zoom_controls != null:
+		_zoom_controls.visible = false
 	if _tooltip != null:
 		_tooltip.call("hide_tip")
 
@@ -1327,6 +1334,8 @@ func _on_region_panel_closed() -> void:
 	_interactive.call("set_selected", "")
 	if _region_panel != null:
 		_region_panel.visible = false
+	if _zoom_controls != null:
+		_zoom_controls.visible = true
 
 
 func _on_action_result(message: String, ok: bool) -> void:
@@ -1433,6 +1442,7 @@ func _open_tactical_battle(attacker_army_id: String, defender_army_id: String, r
 func _open_year_end(year: int) -> void:
 	if _overlay_kind == "year_end":
 		return
+	# D-066: AudioManager.play_year_bell() lo emite TurnManager al avanzar año.
 	_open_overlay(YearEndScene.resource_path, "year_end", year)
 
 

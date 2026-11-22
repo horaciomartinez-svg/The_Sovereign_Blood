@@ -417,6 +417,7 @@ func _play_card(card_id: String) -> void:
 		return
 	var result: Variant = _cc.call("enemy_respond")
 	if result is Dictionary:
+		# D-066: AudioManager.play_sword() lo emite CloseCombat al resolver.
 		var response := result as Dictionary
 		_set_status("Ronda %d: %s vs %s · bajas %d/%d" % [
 			int(response.get("round", 0)),

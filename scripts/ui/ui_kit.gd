@@ -5,6 +5,7 @@ extends RefCounted
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
+const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 
 
 static func apply_theme(root: Control) -> void:
@@ -53,6 +54,8 @@ static func button(
 	if not tooltip.is_empty():
 		node.tooltip_text = tooltip
 	parent.add_child(node)
+	# D-066: click de UI (no-op si AudioManager aún no está registrado).
+	node.pressed.connect(UIAudio.play_click)
 	return node
 
 

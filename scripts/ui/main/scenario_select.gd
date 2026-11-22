@@ -14,6 +14,11 @@ const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 const WORLD_MAP_SCENE := "res://scenes/map/world_map.tscn"
 
+## D-066/D-067: flag reversible del MVP-1337. Para reanudar 1402/1453 basta
+## añadir aquí sus ids; las tarjetas y los datos permanecen intactos.
+const ENABLED_SCENARIO_IDS: Array[String] = ["scenario_1337"]
+const PAUSED_LABEL := "EN PAUSA — disponible en versión completa"
+
 const SCENARIO_DEFAULTS := [
 	{
 		"id": "scenario_1337",
@@ -185,36 +190,44 @@ func _build() -> void:
 
 func _build_scenario_card(parent: Node, meta: Dictionary) -> void:
 	var scenario_id := str(meta.get("id", ""))
+	var paused := not ENABLED_SCENARIO_IDS.has(scenario_id)
 	var available := _scenario_available(scenario_id)
+	var has_data := TSBGame.scenario_available(scenario_id)
 	var card := UIKit.panel(parent, "ParchmentPanel" if available else "InkPanel")
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if not available:
 		card.modulate = Color(1, 1, 1, 0.72)
 	var margin := UIKit.margin(card, 16, 12, 16, 12)
 	var column := UIKit.vbox(margin, 5)
-	var year_value := TSBGame.scenario_start_year(scenario_id) if available else int(meta.get("year", 1337))
+	var year_value := TSBGame.scenario_start_year(scenario_id) if has_data else int(meta.get("year", 1337))
 	var year_label := UIKit.label(column, str(year_value), "InkLabel")
 	year_label.add_theme_font_size_override("font_size", 36)
 	year_label.add_theme_color_override("font_color", Palette.CRIMSON if available else Palette.MUTED)
-	var title_text := str(TSBGame.scenario(scenario_id).get("title", meta.get("title", ""))) if available else str(meta.get("title", ""))
+	var title_text := str(TSBGame.scenario(scenario_id).get("title", meta.get("title", ""))) if has_data else str(meta.get("title", ""))
 	var title_label := UIKit.label(column, title_text, "InkLabel")
 	title_label.add_theme_font_size_override("font_size", 23)
 	title_label.add_theme_color_override("font_color", Palette.INK_TEXT if available else Palette.MUTED)
 	var era_text := "ERA %s" % TSBGame.era_for_year(year_value)
-	var end_year := TSBGame.scenario_end_year_for(scenario_id) if available else int(meta.get("end_year", year_value + 62))
+	var end_year := TSBGame.scenario_end_year_for(scenario_id) if has_data else int(meta.get("end_year", year_value + 62))
 	var era_label := UIKit.label(column, "%s · %d–%d" % [era_text, year_value, end_year], "InkLabel")
 	era_label.add_theme_font_size_override("font_size", 13)
 	era_label.add_theme_color_override("font_color", Palette.GOLD_DIM if available else Palette.MUTED)
-	var description_text := str(TSBGame.scenario(scenario_id).get("description", meta.get("description", ""))) if available else str(meta.get("description", ""))
+	var description_text := str(TSBGame.scenario(scenario_id).get("description", meta.get("description", ""))) if has_data else str(meta.get("description", ""))
 	var description := UIKit.label(column, description_text, "InkLabel")
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.add_theme_font_size_override("font_size", 14)
 	description.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.1) if available else Palette.MUTED)
 	description.custom_minimum_size = Vector2(0, 52)
 	UIKit.spacer(column, 2)
-	var button_text := "ELEGIR ESCENARIO" if available else "DATOS EN PREPARACIÓN"
+	if paused:
+		var pause_label := UIKit.label(column, PAUSED_LABEL, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		pause_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pause_label.add_theme_font_size_override("font_size", 12)
+		pause_label.add_theme_color_override("font_color", Palette.MUTED)
+	var button_text := "ELEGIR ESCENARIO" if available else ("EN PAUSA" if paused else "DATOS EN PREPARACIÓN")
 	var button := UIKit.button(column, button_text, "SmallButton" if available else "CardButton")
 	button.disabled = not available
+	button.tooltip_text = PAUSED_LABEL if paused else "Elegir este escenario"
 	button.toggle_mode = true
 	button.custom_minimum_size = Vector2(0, 36)
 	button.pressed.connect(func() -> void: _select_scenario(scenario_id))
@@ -222,6 +235,8 @@ func _build_scenario_card(parent: Node, meta: Dictionary) -> void:
 
 
 func _scenario_available(scenario_id: String) -> bool:
+	if not ENABLED_SCENARIO_IDS.has(scenario_id):
+		return false
 	return TSBGame.scenario_available(scenario_id) and not TSBGame.playable_factions(scenario_id).is_empty()
 
 
