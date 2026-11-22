@@ -74,3 +74,18 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** AG-4 entregó `docs/issues.md` con el informe completo de QA (538 líneas) y veredicto.
 **Decisión:** `docs/issues.md` es el registro de QA acumulativo: cada fase añade su sección o archivo `docs/qa/fase-N.md` si el volumen crece; el veredicto y la evidencia se enlazan desde `docs/STATUS.md`. El informe incluye salidas íntegras y códigos de salida para la verificación de Kimi.
 **Consecuencia:** trazabilidad de QA por fase sin mezclar con `docs/decisions.md`.
+
+## D-015 · `audio_manager.gd` como autoload al activar AG-5 (OBS-K1) (2026-11-21)
+**Contexto:** verificación Kimi de Fase 0: APROBADO CON OBSERVACIONES (1 menor, OBS-K1). El GDD §8.1 lista `scripts/autoload/audio_manager.gd`, pero el scaffold de Fase 0 registró 10 autoloads y dejó audio para la fase de arte/audio.
+**Decisión:** al activar AG-5 (Art Pipeline, Fase 3) se creará `scripts/autoload/audio_manager.gd` y se registrará como autoload en `project.godot` en el mismo commit de activación de AG-5; hasta entonces no se crea para no dejar autoloads vacíos sin uso. Se anota en `docs/STATUS.md` como pendiente de Fase 3.
+**Consecuencia:** OBS-K1 queda registrada y trazable; no hay bloqueo para Fase 1/Fase 2.
+
+## D-016 · Contrato de integración de Fase 1 (2026-11-21)
+**Contexto:** AG-2 (sistemas) y AG-3 (UI) trabajan en paralelo y el GDD §8.2 solo fija firmas mínimas; sin un estado canónico compartido la integración fallaría.
+**Decisión:** `docs/architecture_contracts_fase1.md` v1.0 es vinculante para Fase 1: define `GameState.state` (formato JSON exacto), la API congelada de los 10 autoloads, el orden del flujo de turno, las fórmulas mínimas, la regla «la UI no muta estado» y los scopes de escritura por agente. AG-2/AG-3 no lo editan; los cambios se solicitan a AG-0 y se registran aquí.
+**Consecuencia:** integración paralela con un único punto de verdad; los desvíos se detectan en QA.
+
+## D-017 · `data/map_layout.json` para el mapa principal (2026-11-21)
+**Contexto:** `regions.json` no tiene coordenadas y el GDD §8.1 exige un mapa de regiones clickeable; la geografía precisa es Fase 3.
+**Decisión:** AG-3 crea `data/map_layout.json` con coordenadas normalizadas por `region_id` (solo presentación, no estado de simulación ni dato histórico). No se modifica `regions.json` ni lo valida `validate_data.gd`. En Fase 3 AG-1 lo sustituirá por posiciones cartográficas con fuente.
+**Consecuencia:** mapa funcional en Fase 1 sin tocar datasets históricos; separación limpia entre datos de juego y presentación.

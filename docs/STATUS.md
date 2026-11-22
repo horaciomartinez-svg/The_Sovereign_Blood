@@ -2,13 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 0 — CERRADA** (criterios §12 cumplidos; tag `fase-0`) |
-| **Siguiente fase** | Fase 1 — MVP jugable (pendiente de luz verde del usuario) |
+| **Fase actual** | **Fase 1 — MVP jugable (en curso)** — luz verde de Kimi/usuario el 2026-11-21 |
+| **Fase anterior** | **Fase 0 — CERRADA** (`fase-0`); verificación Kimi: **APROBADO CON OBSERVACIONES** (OBS-K1 → D-015) |
+| **Siguiente fase** | Fase 2 — Profundidad militar (tras tag `fase-1`, pendiente de luz verde) |
 | **GDD** | v1.2 — `GDD_The_Sovereign's_Blood.md` (raíz del repo) |
 | **Coordinador** | AG-0 |
 | **Repo** | https://github.com/horaciomartinez-svg/The_Sovereign_Blood (rama `main`, sin force-push) |
-| **Fecha de cierre** | 2026-11-21 |
+| **Fecha de cierre Fase 0** | 2026-11-21 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
+| **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada para AG-2/AG-3) |
 
 ---
 
@@ -21,6 +23,10 @@ CI headless, y la validación independiente de QA. Los tres comandos obligatorio
 (**231 tests pasados**) e importación del proyecto. El informe REA tiene **1.721 palabras (~2 páginas)**.
 
 No hay bloqueos ni deuda técnica conocida para iniciar Fase 1.
+
+**Verificación Kimi de Fase 0:** APROBADO CON OBSERVACIONES (1 menor, OBS-K1: registrar
+`audio_manager.gd` como autoload al activar AG-5 en Fase 3 → decisión **D-015**). Luz verde dada para
+Fase 1 el 2026-11-21.
 
 ---
 
@@ -189,3 +195,31 @@ GitHub Actions diferido · D-014 registro de QA por fase.
   informe REA limitado a estructura, sin nombres/textos del juego ni análisis de `.EXE` (§3).
 - Resultado esperado: **APROBADO / APROBADO CON OBSERVACIONES / RECHAZADO**; hallazgos se corrigen
   antes de continuar (§3.2.5).
+
+---
+
+## 13. Fase 1 — MVP jugable (EN CURSO)
+
+**Objetivo (GDD §12):** loop completo de trimestre + año; economía, familia, diplomacia, batalla
+delegada, IA de 13 rivales, guardar/cargar y UI §9 para jugar Inglaterra 1337.
+
+| Línea de trabajo | Owner | Scope | Estado |
+|---|---|---|---|
+| Sistemas núcleo (§5, §6.1, §8) | AG-2 | `scripts/autoload/**`, `scripts/ai/**`, `scripts/model/**`, `scripts/utils/**`, `tests/test_*.gd` | ⏳ activo |
+| UI §9 + placeholders §10 | AG-3 | `scenes/**`, `scripts/ui/**`, `assets/art/**`, `project.godot`, `data/map_layout.json` | ⏳ activo |
+| QA continuo + harness de aceptación | AG-4 | `docs/issues.md`, `docs/qa/**`, `tests/qa_*.gd` | ⏳ activo |
+| Contratos, STATUS, commits/push, revisión | AG-0 | `docs/STATUS.md`, `docs/decisions.md`, `docs/architecture_contracts_fase1.md`, git | ⏳ activo |
+
+**Contrato vinculante:** `docs/architecture_contracts_fase1.md` (estado canónico `GameState.state`,
+API §2, flujo de turno, formularios, regla UI-sin-mutación, scopes por agente).
+
+**Criterios de aceptación Fase 1 (§12) — pendientes de verificar:**
+1. Partida Inglaterra 1337 de principio a fin de año sin crash.
+2. IA de las 13 facciones completa sus turnos **<2 s** (medido).
+3. Guardar/cargar preserva el estado exacto (test automatizado con hash).
+4. Batalla delegada produce informe coherente y captura regiones.
+5. Peste Negra dispara en 1348 (event_log + efecto −0.35 en Europa occidental).
+6. UI de §9 completa, funcional a 1920×1080, instanciable headless sin errores.
+
+**Cierre:** push por módulo con este STATUS actualizado; tag anotado `fase-1` al cumplir 1-6; revisión
+de Kimi del repo remoto.
