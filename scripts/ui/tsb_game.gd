@@ -1029,6 +1029,31 @@ static func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictio
 	return result as Node if result is Node else null
 
 
+## D-033: la API de campaña para Nivel 3 la implementa AG-2 (task-17). La UI
+## comprueba su presencia y, si aun no existe, muestra el duelo como vista previa.
+static func has_close_combat_apply() -> bool:
+	var manager := _autoload("BattleManager")
+	return manager != null and manager.has_method("apply_close_combat_outcome")
+
+
+## Aplica el resultado del duelo (N3) a la campaña. Devuelve {} si la API aun
+## no existe o no hay partida; nunca muta estado directamente. Se pasa el mismo
+## dict outcome que devuelve CloseCombat para que la idempotencia de la API
+## (outcome["_applied_report"]) funcione; la UI ademas guarda su propio flag.
+static func apply_close_combat_outcome(
+		attacker_army_id: String,
+		defender_army_id: String,
+		region_id: String,
+		outcome: Dictionary
+) -> Dictionary:
+	if not has_game() or attacker_army_id.is_empty() or defender_army_id.is_empty() or region_id.is_empty():
+		return {}
+	var result: Variant = _call("BattleManager", "apply_close_combat_outcome", [
+		attacker_army_id, defender_army_id, region_id, outcome,
+	])
+	return result if result is Dictionary else {}
+
+
 ## Nivel 1 desde la UI: delega en el movimiento/batalla ya probado de Fase 1.
 ## Devuelve el informe ({} si no hubo choque o el movimiento fue rechazado).
 static func delegate_attack(attacker_army_id: String, region_id: String) -> Dictionary:

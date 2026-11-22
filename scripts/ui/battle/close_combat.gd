@@ -33,6 +33,11 @@ var _defender_unit: Dictionary = {}
 var _content: VBoxContainer = null
 var _log_box: VBoxContainer = null
 var _status: Label = null
+## D-033: si el duelo viene de una batalla de campaña, el resultado se aplica
+## una sola vez al terminar. El acceso directo (sin contexto) es vista previa.
+var _campaign_context: Dictionary = {}
+var _campaign_applied := false
+var _campaign_apply_result: Dictionary = {}
 
 
 func _ready() -> void:
@@ -57,9 +62,10 @@ func _ready() -> void:
 	_build_shell()
 
 
-func setup(attacker_unit: Dictionary, defender_unit: Dictionary) -> void:
+func setup(attacker_unit: Dictionary, defender_unit: Dictionary, campaign_context: Dictionary = {}) -> void:
 	_attacker_unit = attacker_unit.duplicate(true)
 	_defender_unit = defender_unit.duplicate(true)
+	_campaign_context = campaign_context.duplicate(true)
 	_cc = TSBGame.launch_close_combat(_attacker_unit, _defender_unit)
 	if _cc == null:
 		_show_pending()
@@ -226,6 +232,7 @@ func _show_outcome() -> void:
 	if not (outcome is Dictionary):
 		return
 	var data := outcome as Dictionary
+	_apply_campaign_outcome_once()
 	var winner_side := str(data.get("winner_side", ""))
 	var winner_faction := str(data.get("winner_faction", ""))
 	var panel := PanelContainer.new()
@@ -239,10 +246,45 @@ func _show_outcome() -> void:
 		int(data.get("attacker_losses", 0)), int(data.get("defender_losses", 0)), int(data.get("rounds", 0))], "InkLabel")
 	losses.add_theme_font_size_override("font_size", 15)
 	losses.add_theme_color_override("font_color", Palette.INK_TEXT)
-	var note := UIKit.label(text, "Nivel 3 (API CloseCombat). El informe se integra en el flujo de batalla del juego.", "InkLabel")
+	var note := UIKit.label(text, _campaign_note(), "InkLabel")
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	note.add_theme_font_size_override("font_size", 12)
 	note.add_theme_color_override("font_color", Palette.MUTED)
+
+
+## Aplica una unica vez el duelo a la campana cuando hay contexto de batalla
+## (D-033). Sin contexto (selector directo) no toca el estado.
+func _apply_campaign_outcome_once() -> void:
+	if _campaign_applied or _campaign_context.is_empty() or _cc == null:
+		return
+	var attacker_army_id := str(_campaign_context.get("attacker_army_id", ""))
+	var defender_army_id := str(_campaign_context.get("defender_army_id", ""))
+	var region_id := str(_campaign_context.get("region_id", ""))
+	if attacker_army_id.is_empty() or defender_army_id.is_empty() or region_id.is_empty():
+		return
+	if not TSBGame.has_close_combat_apply():
+		_set_status("API de aplicación N3 pendiente (AG-2 task-17): resultado en vista previa.")
+		return
+	var outcome_value: Variant = _cc.call("get_outcome")
+	if not (outcome_value is Dictionary):
+		return
+	var result := TSBGame.apply_close_combat_outcome(attacker_army_id, defender_army_id, region_id, outcome_value as Dictionary)
+	_campaign_apply_result = result.duplicate(true)
+	_campaign_applied = not result.is_empty() and bool(result.get("ok", true))
+	if _campaign_applied:
+		_set_status("Resultado de Nivel 3 aplicado a la campaña.")
+	else:
+		_set_status("No se pudo aplicar el resultado de Nivel 3 a la campaña.")
+
+
+func _campaign_note() -> String:
+	if _campaign_context.is_empty():
+		return "Vista previa del selector directo: no se aplica a la campaña (D-033)."
+	if _campaign_applied:
+		return "Resultado aplicado a la campaña: dueño, bajas e informe actualizados."
+	if not TSBGame.has_close_combat_apply():
+		return "API apply_close_combat_outcome aún no disponible (AG-2 task-17); duelo mostrado sin efectos."
+	return "No se pudo aplicar el resultado a la campaña; revisa el estado del ejército/región."
 
 
 func _set_status(text: String) -> void:

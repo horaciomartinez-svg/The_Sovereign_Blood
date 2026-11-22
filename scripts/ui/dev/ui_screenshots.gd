@@ -147,6 +147,33 @@ func _initialize() -> void:
 				close_scene.queue_free()
 			await _settle(3)
 
+		# N3 en contexto de campaña (D-033): aplica resultado y abre informe.
+		if not battle_context.is_empty():
+			world.call("_open_tactical_battle", str(battle_context.get("attacker", "")), str(battle_context.get("defender", "")), str(battle_context.get("region", "")))
+			await _settle(3)
+			var tactical_campaign: Variant = world.get("_overlay")
+			if tactical_campaign != null:
+				tactical_campaign.call("_begin_level3")
+				await _settle(3)
+				var campaign_close: Node = tactical_campaign.get_child(tactical_campaign.get_child_count() - 1)
+				var campaign_cc: Variant = campaign_close.get("_cc") if campaign_close != null else null
+				if campaign_cc != null:
+					campaign_cc.call("auto_resolve")
+					campaign_close.call("_rebuild")
+					await _settle(3)
+					await _capture("f2_15b_close_combat_campaign_applied")
+					campaign_close.call("_close")
+					await _settle(3)
+					var report_overlay: Variant = world.get("_overlay")
+					if report_overlay is Node and is_instance_valid(report_overlay):
+						await _capture("f2_15c_n3_battle_report")
+						(report_overlay as Node).call("close_overlay")
+						await _settle(3)
+			var leftover: Variant = world.get("_overlay")
+			if leftover is Node and is_instance_valid(leftover):
+				(leftover as Node).call("close_overlay")
+				await _settle(2)
+
 		# Terminar turno real (IA + resoluciones + informe si aplica).
 		world.call("_on_end_turn_requested")
 		await create_timer(3.0).timeout

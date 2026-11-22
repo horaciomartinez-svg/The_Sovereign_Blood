@@ -543,7 +543,17 @@ func _begin_level3() -> void:
 	_stage = "n3"
 	add_child(close_scene)
 	if close_scene.has_method("setup"):
-		close_scene.call("setup", attacker_unit, defender_unit)
+		var attacker_army_id := str(_context.get("attacker_army_id", ""))
+		var defender_army_id := str(_context.get("defender_army_id", ""))
+		var region_id := str(_context.get("region_id", ""))
+		var campaign_context: Dictionary = {}
+		if not attacker_army_id.is_empty() and not defender_army_id.is_empty() and not region_id.is_empty():
+			campaign_context = {
+				"attacker_army_id": attacker_army_id,
+				"defender_army_id": defender_army_id,
+				"region_id": region_id,
+			}
+		close_scene.call("setup", attacker_unit, defender_unit, campaign_context)
 	if close_scene.has_signal("closed"):
 		close_scene.connect("closed", _close)
 

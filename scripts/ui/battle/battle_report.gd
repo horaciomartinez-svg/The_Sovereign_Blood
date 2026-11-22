@@ -5,6 +5,14 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 
+const CLOSE_CARD_NAMES := {
+	"carga": "Carga",
+	"disparo": "Disparo",
+	"formacion": "Formación",
+	"finta": "Finta",
+	"retirada": "Retirada",
+}
+
 var _report: Dictionary = {}
 var _body: VBoxContainer = null
 
@@ -66,25 +74,51 @@ func _rebuild() -> void:
 	_side_panel(sides, defender, "DEFENSOR", int(_report.get("defender_losses", 0)), "defender_army_id")
 
 	UIKit.hsep(_body, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
-	var rounds_title := UIKit.label(_body, "Asaltos", "InkLabel")
+	var is_close_combat := int(_report.get("level", 1)) == 3
+	var rounds_title := UIKit.label(_body, "Rondas" if is_close_combat else "Asaltos", "InkLabel")
 	rounds_title.add_theme_font_size_override("font_size", 21)
 	rounds_title.add_theme_color_override("font_color", Palette.CRIMSON)
 
 	var rounds: Variant = _report.get("rounds", [])
 	if rounds is Array and not (rounds as Array).is_empty():
-		var grid := UIKit.grid(_body, 3, 10, 4)
-		_header_cell(grid, "Asalto")
-		_header_cell(grid, "Bajas atacante")
-		_header_cell(grid, "Bajas defensor")
-		for i in range((rounds as Array).size()):
-			var round_entry: Variant = (rounds as Array)[i]
-			if not (round_entry is Dictionary):
-				continue
-			var round_dict := round_entry as Dictionary
-			var number := int(round_dict.get("round", round_dict.get("assault", i + 1)))
-			_cell(grid, "Asalto %d" % number)
-			_cell(grid, str(_first_value(round_dict, ["attacker_damage", "attacker_losses", "attacker_casualties", "attacker"], "—")))
-			_cell(grid, str(_first_value(round_dict, ["defender_damage", "defender_losses", "defender_casualties", "defender"], "—")))
+		if is_close_combat:
+			# Nivel 3: el log del duelo mezcla rondas (cartas+bajas) con notas de
+			# texto. Se muestran solo las rondas, con cartas legibles.
+			var round_rows: Array = []
+			for entry_value: Variant in (rounds as Array):
+				if entry_value is Dictionary:
+					var entry := entry_value as Dictionary
+					if entry.has("attacker_card"):
+						round_rows.append(entry)
+			if round_rows.is_empty():
+				var no_close_rounds := UIKit.label(_body, "El duelo no registró rondas.", "InkLabel")
+				no_close_rounds.add_theme_font_size_override("font_size", 15)
+			else:
+				var close_grid := UIKit.grid(_body, 4, 10, 4)
+				_header_cell(close_grid, "Ronda")
+				_header_cell(close_grid, "Orden atacante")
+				_header_cell(close_grid, "Orden defensor")
+				_header_cell(close_grid, "Bajas A / D")
+				for i in range(round_rows.size()):
+					var row := round_rows[i] as Dictionary
+					_cell(close_grid, "Ronda %d" % int(row.get("round", i + 1)))
+					_cell(close_grid, str(CLOSE_CARD_NAMES.get(str(row.get("attacker_card", "")), "—")))
+					_cell(close_grid, str(CLOSE_CARD_NAMES.get(str(row.get("defender_card", "")), "—")))
+					_cell(close_grid, "%d / %d" % [int(row.get("attacker_losses", 0)), int(row.get("defender_losses", 0))])
+		else:
+			var grid := UIKit.grid(_body, 3, 10, 4)
+			_header_cell(grid, "Asalto")
+			_header_cell(grid, "Bajas atacante")
+			_header_cell(grid, "Bajas defensor")
+			for i in range((rounds as Array).size()):
+				var round_entry: Variant = (rounds as Array)[i]
+				if not (round_entry is Dictionary):
+					continue
+				var round_dict := round_entry as Dictionary
+				var number := int(round_dict.get("round", round_dict.get("assault", i + 1)))
+				_cell(grid, "Asalto %d" % number)
+				_cell(grid, str(_first_value(round_dict, ["attacker_damage", "attacker_losses", "attacker_casualties", "attacker"], "—")))
+				_cell(grid, str(_first_value(round_dict, ["defender_damage", "defender_losses", "defender_casualties", "defender"], "—")))
 	else:
 		var no_rounds := UIKit.label(_body, "El informe no detalla asaltos (resolución directa).", "InkLabel")
 		no_rounds.add_theme_font_size_override("font_size", 15)

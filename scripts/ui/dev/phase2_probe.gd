@@ -118,14 +118,23 @@ func _initialize() -> void:
 				tactical_n3.call("_begin_level3")
 				await _frames(3)
 				_check(str(tactical_n3.get("_stage")) == "n3", "UI selector abre combate cerrado (N3)")
+				var nested: Node = tactical_n3.get_child(tactical_n3.get_child_count() - 1)
+				var nested_context: Dictionary = {}
+				if nested != null:
+					var raw_context: Variant = nested.get("_campaign_context")
+					if raw_context is Dictionary:
+						nested_context = raw_context as Dictionary
+				_check(not nested_context.is_empty(), "UI N3 recibe contexto de campaña")
 				tactical_n3.call("_close")
 				await _frames(3)
 
-		# Batalla Nivel 3 real.
+		# Batalla Nivel 3 real en vista previa (sin contexto): NO aplica estado.
 		var close_scene: Node = load("res://scenes/battle/close_combat.tscn").instantiate()
 		root.add_child(close_scene)
 		var attacker_unit := TSBGame.first_unit_of_army(str(context["attacker"]))
 		var defender_unit := TSBGame.first_unit_of_army(str(context["defender"]))
+		var preview_owner_before := str(TSBGame.region(str(context["region"])).get("owner", ""))
+		var preview_reports_before := TSBGame.battle_reports().size()
 		close_scene.call("setup", attacker_unit, defender_unit)
 		await _frames(3)
 		var cc: Variant = close_scene.get("_cc")
@@ -140,6 +149,12 @@ func _initialize() -> void:
 				var response: Dictionary = cc.call("enemy_respond")
 				print("[f2] N3: play_order=", played, " respuesta=", response)
 				_check(played, "CloseCombat.play_order")
+			cc.call("auto_resolve")
+			close_scene.call("_rebuild")
+			await _frames(2)
+			_check(not bool(close_scene.get("_campaign_applied")), "N3 vista previa sin contexto no aplica")
+			_check(str(TSBGame.region(str(context["region"])).get("owner", "")) == preview_owner_before, "N3 vista previa no cambia dueño")
+			_check(TSBGame.battle_reports().size() == preview_reports_before, "N3 vista previa no emite informe")
 		close_scene.queue_free()
 		await _frames(2)
 
@@ -156,6 +171,59 @@ func _initialize() -> void:
 			var live_overlay: Variant = world.get("_overlay")
 			if live_overlay is Node and is_instance_valid(live_overlay):
 				(live_overlay as Node).call("close_overlay")
+				await _frames(2)
+
+		# Nivel 3 en batalla de CAMPAÑA: aplica dueño/bajas una sola vez (D-033).
+		var restarted: bool = TSBGame.start_new_game("england", 1337)
+		_check(restarted, "reinicio de partida para N3 campaña")
+		await _frames(3)
+		world.call("refresh")
+		await _frames(2)
+		var campaign_context := _find_battle_context()
+		if campaign_context.is_empty():
+			_check(false, "N3 campaña: sin contexto de batalla tras reiniciar")
+		elif not TSBGame.has_close_combat_apply():
+			print("[SKIP] N3 campaña: BattleManager.apply_close_combat_outcome aún no existe (AG-2 task-17).")
+		else:
+			var campaign_region := str(campaign_context["region"])
+			var campaign_attacker := str(campaign_context["attacker"])
+			var campaign_defender := str(campaign_context["defender"])
+			var owner_before := str(TSBGame.region(campaign_region).get("owner", ""))
+			var reports_before := TSBGame.battle_reports().size()
+			var attacker_before := TSBGame.army_soldiers(TSBGame.army(campaign_attacker))
+			var defender_before := TSBGame.army_soldiers(TSBGame.army(campaign_defender))
+			world.call("_open_tactical_battle", campaign_attacker, campaign_defender, campaign_region)
+			await _frames(3)
+			var tactical_campaign: Variant = world.get("_overlay")
+			if tactical_campaign != null:
+				tactical_campaign.call("_begin_level3")
+				await _frames(3)
+				var campaign_close: Node = tactical_campaign.get_child(tactical_campaign.get_child_count() - 1)
+				var campaign_cc: Variant = campaign_close.get("_cc") if campaign_close != null else null
+				if campaign_cc != null:
+					var campaign_outcome: Variant = campaign_cc.call("auto_resolve")
+					campaign_close.call("_rebuild")
+					await _frames(3)
+					var winner_faction := str((campaign_outcome as Dictionary).get("winner_faction", "")) if campaign_outcome is Dictionary else ""
+					var owner_after := str(TSBGame.region(campaign_region).get("owner", ""))
+					var reports_after := TSBGame.battle_reports().size()
+					var attacker_after := TSBGame.army_soldiers(TSBGame.army(campaign_attacker))
+					var defender_after := TSBGame.army_soldiers(TSBGame.army(campaign_defender))
+					print("[f2] N3 campaña: aplicado=", campaign_close.get("_campaign_applied"), " dueño ", owner_before, "→", owner_after, " ganador=", winner_faction, " informes ", reports_before, "→", reports_after, " soldados ", attacker_before, "/", defender_before, "→", attacker_after, "/", defender_after)
+					_check(bool(campaign_close.get("_campaign_applied")), "N3 campaña aplica el resultado")
+					_check(owner_after == winner_faction, "N3 campaña cambia el dueño al ganador")
+					_check(attacker_after < attacker_before or defender_after < defender_before, "N3 campaña aplica bajas al ejército")
+					_check(reports_after == reports_before + 1, "N3 campaña emite exactamente un informe")
+					campaign_close.call("_apply_campaign_outcome_once")
+					await _frames(2)
+					_check(TSBGame.battle_reports().size() == reports_after, "N3 campaña sin doble aplicación")
+					campaign_close.call("_close")
+					await _frames(3)
+				else:
+					_check(false, "N3 campaña: CloseCombat no creado")
+			var campaign_overlay: Variant = world.get("_overlay")
+			if campaign_overlay is Node and is_instance_valid(campaign_overlay):
+				(campaign_overlay as Node).call("close_overlay")
 				await _frames(2)
 
 	world.queue_free()
