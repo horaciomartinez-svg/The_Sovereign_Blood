@@ -18,7 +18,68 @@ func run(runner: TestRunnerScript, h: HarnessScript) -> void:
 	_check_movement(runner, h)
 	_check_duel_and_rounds(runner, h)
 	_check_auto_resolve_commit(runner, h)
+	_check_losses_with_destroyed_units(runner, h)
 	_check_determinism(runner, h)
+
+
+## Regresión B-F2-01: las bajas del informe deben contar las unidades destruidas
+## (se eliminan de `_units`, pero sus hombres iniciales siguen contando).
+func _check_losses_with_destroyed_units(runner: TestRunnerScript, h: HarnessScript) -> void:
+	# (a) Unidad destruida individual: sus bajas = su tamaño inicial.
+	var ids: Array[String] = _prepare_battle(h)
+	var node: Node = _launch(h, ids)
+	if node == null:
+		return
+	var units: Array = node.call("get_units")
+	var defender_id: String = ""
+	var defender_size: int = 0
+	for unit_value in units:
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		if SafeDict.as_string(unit.get("side"), "") == "defender" and defender_id == "":
+			defender_id = SafeDict.as_string(unit.get("id"), "")
+			defender_size = SafeDict.as_int(unit.get("size"), 0)
+	var start_by_side: Dictionary = SafeDict.as_dict(node.get("_start_men_by_side"))
+	runner.check_eq("B-F2-01: start-men del defensor = suma de sus unidades",
+		_side_men(units, "defender"), SafeDict.as_int(start_by_side.get("defender"), 0))
+	var internal_unit: Dictionary = node.call("_find_unit", defender_id)
+	internal_unit["size"] = 0
+	node.call("_remove_destroyed_unit", defender_id)
+	var report_one: Dictionary = SafeDict.as_dict(node.call("commit"))
+	runner.check_eq("B-F2-01: bajas de la unidad destruida = tamaño inicial", defender_size,
+		SafeDict.as_int(report_one.get("defender_losses"), -1))
+	runner.check_eq("B-F2-01: el atacante intacto no tiene bajas", 0,
+		SafeDict.as_int(report_one.get("attacker_losses"), -1))
+	node.free()
+	# (b) Ejército aniquilado: losses == start_men del bando y el rival gana.
+	ids = _prepare_battle(h)
+	node = _launch(h, ids)
+	if node == null:
+		return
+	units = node.call("get_units")
+	var attacker_ids: Array[String] = []
+	var attacker_start: int = 0
+	for unit_value in units:
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		if SafeDict.as_string(unit.get("side"), "") != "attacker":
+			continue
+		attacker_ids.append(SafeDict.as_string(unit.get("id"), ""))
+		attacker_start += SafeDict.as_int(unit.get("size"), 0)
+	start_by_side = SafeDict.as_dict(node.get("_start_men_by_side"))
+	runner.check_eq("B-F2-01: start-men del atacante registrado", attacker_start,
+		SafeDict.as_int(start_by_side.get("attacker"), 0))
+	for attacker_id in attacker_ids:
+		var internal: Dictionary = node.call("_find_unit", attacker_id)
+		internal["size"] = 0
+		node.call("_remove_destroyed_unit", attacker_id)
+	node.call("_check_finish")
+	var report: Dictionary = SafeDict.as_dict(node.call("commit"))
+	runner.check_eq("B-F2-01: ejército aniquilado → bajas = start_men", attacker_start,
+		SafeDict.as_int(report.get("attacker_losses"), -1))
+	runner.check_eq("B-F2-01: el ganador es el rival", "france",
+		SafeDict.as_string(report.get("winner_faction"), ""))
+	runner.check_eq("B-F2-01: el bando aniquilado no tiene hombres finales", 0,
+		_side_men(node.call("get_units"), "attacker"))
+	node.free()
 
 
 func _check_creation(runner: TestRunnerScript, h: HarnessScript) -> void:
@@ -226,3 +287,13 @@ func _army_in(h: HarnessScript, faction_id: String, region_id: String) -> String
 				and SafeDict.as_string(army.get("region_id"), "") == region_id:
 			return str(army_id)
 	return ""
+
+
+## Hombres finales de un bando en la lista de unidades tácticas.
+func _side_men(units: Array, unit_side: String) -> int:
+	var total: int = 0
+	for unit_value in units:
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		if SafeDict.as_string(unit.get("side"), "") == unit_side:
+			total += SafeDict.as_int(unit.get("size"), 0)
+	return total

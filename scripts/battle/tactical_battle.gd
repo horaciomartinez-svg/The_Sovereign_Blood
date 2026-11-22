@@ -45,6 +45,9 @@ var _objectives: Array[Dictionary] = []
 var _selected_unit_id: String = ""
 var _round_limit: int = Constants.TACTICAL_MAX_ROUNDS
 var _start_men: Dictionary = {}
+## Hombres iniciales por bando, incluidos los de unidades que mueran después
+## (B-F2-01: las bajas del informe no deben depender de las unidades actuales).
+var _start_men_by_side: Dictionary = {"attacker": 0, "defender": 0}
 var _commander_stat: Dictionary = {}
 var _commander_bonus: Dictionary = {}
 var _region_wealth: int = 50
@@ -74,6 +77,10 @@ func setup(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, region: REGIO
 	battle_id = "tac_%s_%s_%s_%d" % [region_id, attacker_faction, defender_faction, seed_value]
 	_log.clear()
 	_round_log_clear()
+	# B-F2-01: reiniciar bajas/start-men por si se reutiliza el nodo.
+	_units = []
+	_start_men = {}
+	_start_men_by_side = {"attacker": 0, "defender": 0}
 	_commander_stat = {
 		"attacker": _commander_stat_for(attacker_army.leader_id, attacker_faction),
 		"defender": _commander_stat_for(defender_army.leader_id, defender_faction),
@@ -547,6 +554,7 @@ func _spawn_units(army: ARMY_SCRIPT, unit_side: String) -> void:
 		}
 		_units.append(unit)
 		_start_men[unit_id] = size
+		_start_men_by_side[unit_side] = SafeDict.as_int(_start_men_by_side.get(unit_side), 0) + size
 		unit_index += 1
 
 
@@ -973,14 +981,9 @@ func _side_current_men(unit_side: String) -> int:
 
 
 func _side_start_men(unit_side: String) -> int:
-	var total: int = 0
-	for unit_value in _units:
-		var unit: Dictionary = SafeDict.as_dict(unit_value)
-		if SafeDict.as_string(unit.get("side"), "") != unit_side:
-			continue
-		var unit_id: String = SafeDict.as_string(unit.get("id"), "")
-		total += SafeDict.as_int(_start_men.get(unit_id), 0)
-	return total
+	# B-F2-01: usar el total inicial por bando (no las unidades actuales, porque
+	# las destruidas se eliminan de `_units` y el informe perdería sus bajas).
+	return SafeDict.as_int(_start_men_by_side.get(unit_side), 0)
 
 
 func _snapshot_side(unit_side: String) -> Array:
