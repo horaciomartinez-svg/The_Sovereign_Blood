@@ -27,6 +27,22 @@ const REGION_SCRIPT = preload("res://scripts/model/region_state.gd")
 ## Batallas pendientes de resolver al cierre del turno (normalmente vacío: la
 ## batalla se resuelve en el propio `move_army` para que la UI muestre el informe).
 var _pending_battles: Array[Dictionary] = []
+## D-070: motivo legible de la última operación (reclutar/entrenar/disolver).
+var last_recruit_reason: String = ""
+var last_train_reason: String = ""
+var last_disband_reason: String = ""
+
+
+func get_last_recruit_reason() -> String:
+	return last_recruit_reason
+
+
+func get_last_train_reason() -> String:
+	return last_train_reason
+
+
+func get_last_disband_reason() -> String:
+	return last_disband_reason
 
 
 ## Crea un ejército vacío de la facción en la región indicada (si hay hueco).
@@ -73,30 +89,44 @@ func create_army(faction_id: String, region_id: String) -> Dictionary:
 
 ## Recluta `amount` hombres de `unit_id` en la región (pool + oro).
 func recruit(faction_id: String, region_id: String, unit_id: String, amount: int) -> bool:
+	last_recruit_reason = ""
 	var st: Dictionary = GameState.state
 	if st.is_empty() or amount <= 0:
+		last_recruit_reason = "cantidad inválida"
 		return false
 	var faction: Dictionary = GameState.get_faction_state(faction_id)
 	var region: Dictionary = GameState.get_region_state(region_id)
 	if faction.is_empty() or region.is_empty():
+		last_recruit_reason = "facción o región inválida"
 		return false
 	if SafeDict.as_bool(faction.get("eliminated"), false):
+		last_recruit_reason = "facción eliminada"
 		return false
 	if SafeDict.as_string(region.get("owner"), "") != faction_id:
+		last_recruit_reason = "región no propia"
 		return false
 	var unit_definition: Dictionary = DataLoader.get_unit(unit_id)
 	if unit_definition.is_empty():
+		last_recruit_reason = "unidad inexistente"
 		return false
 	if not _unit_allowed_for(unit_definition, faction_id):
+		last_recruit_reason = "unidad no disponible"
 		return false
 	var pool: int = SafeDict.as_int(region.get("recruit_pool"), 0)
 	if pool < amount:
+		last_recruit_reason = "pool insuficiente"
 		return false
 	var blocks: int = int(ceilf(float(amount) / float(Constants.UNIT_MEN_PER_BLOCK)))
 	var cost: Dictionary = SafeDict.as_dict(unit_definition.get("cost", null))
 	var gold_cost: int = blocks * SafeDict.as_int(cost.get("gold"), 0)
 	var gold: int = SafeDict.as_int(faction.get("gold"), 0)
 	if gold < gold_cost:
+		last_recruit_reason = "oro insuficiente"
+		return false
+	# D-070: mercancías de reclutamiento (por bloque de 200 hombres).
+	var requirements: Dictionary = _recruit_goods_requirements(unit_definition, amount)
+	if not requirements.is_empty() and not TradeSystem.can_consume_goods(faction_id, requirements):
+		last_recruit_reason = "faltan mercancías"
 		return false
 	# Localizar o crear el ejército receptor antes de comprometer recursos.
 	var army_id: String = _army_id_of(faction_id, region_id)
@@ -132,10 +162,244 @@ func recruit(faction_id: String, region_id: String, unit_id: String, amount: int
 			"experience": 0,
 		})
 	army["units"] = units
+	if not requirements.is_empty():
+		TradeSystem.consume_goods(faction_id, requirements)
 	emit_signal("recruitment_completed", faction_id, region_id, unit_id)
 	EventBus.emit_signal("recruitment_completed", faction_id, region_id, unit_id)
 	emit_signal("armies_changed", region_id)
 	EventBus.emit_signal("treasury_changed", faction_id, SafeDict.as_int(faction.get("gold"), 0))
+	return true
+
+
+func _recruit_goods_requirements(unit_definition: Dictionary, amount: int) -> Dictionary:
+	var requirements: Dictionary = {}
+	var goods: Dictionary = SafeDict.as_dict(unit_definition.get("recruit_goods", null))
+	if goods.is_empty():
+		return requirements
+	var blocks: int = int(ceilf(float(amount) / float(maxi(1, Constants.UNIT_MEN_PER_BLOCK))))
+	for good_id in SafeDict.sorted_keys(goods):
+		var per_block: float = SafeDict.as_float(goods.get(good_id), 0.0)
+		if per_block > 0.0:
+			requirements[good_id] = ceilf(per_block * float(blocks))
+	return requirements
+
+
+## Resumen global por tipo de unidad (D-070) para la pantalla de ejércitos.
+func get_faction_army_summary(faction_id: String) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var st: Dictionary = GameState.state
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	var aggregated: Dictionary = {}
+	for army_id in SafeDict.sorted_keys(armies):
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != faction_id:
+			continue
+		for unit_value in SafeDict.as_array(army.get("units", null)):
+			var unit: Dictionary = SafeDict.as_dict(unit_value)
+			var unit_id: String = SafeDict.as_string(unit.get("unit_id"), "")
+			if unit_id == "":
+				continue
+			var definition: Dictionary = DataLoader.get_unit(unit_id)
+			var entry: Dictionary = SafeDict.as_dict(aggregated.get(unit_id, null))
+			if entry.is_empty():
+				entry = {
+					"unit_id": unit_id,
+					"type": SafeDict.as_string(definition.get("type"), "infantry"),
+					"count": 0,
+					"men": 0,
+					"strength": SafeDict.as_int(definition.get("strength"), 1),
+					"avg_morale": 0.0,
+					"avg_experience": 0.0,
+					"sprite_path": _unit_march_sprite(unit_id),
+					"_morale_sum": 0.0,
+					"_exp_sum": 0.0,
+				}
+			var size: int = maxi(0, SafeDict.as_int(unit.get("size"), 0))
+			entry["count"] = SafeDict.as_int(entry.get("count"), 0) + 1
+			entry["men"] = SafeDict.as_int(entry.get("men"), 0) + size
+			entry["_morale_sum"] = SafeDict.as_float(entry.get("_morale_sum"), 0.0) \
+				+ SafeDict.as_float(unit.get("morale"), 1.0) * float(size)
+			entry["_exp_sum"] = SafeDict.as_float(entry.get("_exp_sum"), 0.0) \
+				+ SafeDict.as_float(unit.get("experience"), 0.0) * float(size)
+			aggregated[unit_id] = entry
+	for unit_id in SafeDict.sorted_keys(aggregated):
+		var entry: Dictionary = SafeDict.as_dict(aggregated.get(unit_id, null))
+		var men: int = maxi(0, SafeDict.as_int(entry.get("men"), 0))
+		if men > 0:
+			entry["avg_morale"] = snappedf(SafeDict.as_float(entry.get("_morale_sum"), 0.0) / float(men), 0.001)
+			entry["avg_experience"] = snappedf(SafeDict.as_float(entry.get("_exp_sum"), 0.0) / float(men), 0.01)
+		entry.erase("_morale_sum")
+		entry.erase("_exp_sum")
+		result.append(entry)
+	return result
+
+
+func _unit_march_sprite(unit_id: String) -> String:
+	var sprite: Dictionary = DataLoader.get_unit_sprite(unit_id)
+	var frames: Array = SafeDict.as_array(sprite.get("frames", null))
+	if not frames.is_empty():
+		return str(frames[0])
+	return "res://assets/art/sprites/units/%s_march_1.png" % unit_id
+
+
+## Entrena unidades de un tipo (D-070): coste oro + 1 PG; tope de experiencia.
+func train_unit(faction_id: String, unit_id: String, amount: int = Constants.TRAIN_EXP_PER_ACTION) -> bool:
+	last_train_reason = ""
+	var st: Dictionary = GameState.state
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if st.is_empty() or faction.is_empty() or amount <= 0:
+		last_train_reason = "parámetros inválidos"
+		return false
+	var matching: Array[Dictionary] = []
+	var men: int = 0
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	for army_id in SafeDict.sorted_keys(armies):
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != faction_id:
+			continue
+		for unit_value in SafeDict.as_array(army.get("units", null)):
+			var unit: Dictionary = SafeDict.as_dict(unit_value)
+			if SafeDict.as_string(unit.get("unit_id"), "") == unit_id and SafeDict.as_int(unit.get("size"), 0) > 0:
+				matching.append(unit)
+				men += SafeDict.as_int(unit.get("size"), 0)
+	if matching.is_empty():
+		last_train_reason = "no hay unidades de ese tipo"
+		return false
+	var cost: int = int(ceilf(float(men) / float(maxi(1, Constants.UNIT_MEN_PER_BLOCK)))) * Constants.TRAIN_GOLD_PER_BLOCK
+	if SafeDict.as_int(faction.get("gold"), 0) < cost:
+		last_train_reason = "oro insuficiente"
+		return false
+	if not TurnManager.spend_pg_for(faction_id, 1):
+		last_train_reason = "PG insuficiente"
+		return false
+	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) - cost
+	for unit in matching:
+		unit["experience"] = mini(Constants.TRAIN_EXP_MAX,
+			SafeDict.as_int(unit.get("experience"), 0) + amount)
+	EventBus.emit_signal("army_trained", faction_id, unit_id, amount)
+	EventBus.emit_signal("armies_changed", "")
+	return true
+
+
+## Entrena todas las unidades de un ejército concreto (oro + 1 PG).
+func train_army(army_id: String) -> bool:
+	last_train_reason = ""
+	var st: Dictionary = GameState.state
+	var army: Dictionary = GameState.get_army_state(army_id)
+	if st.is_empty() or army.is_empty():
+		last_train_reason = "ejército inexistente"
+		return false
+	var faction_id: String = SafeDict.as_string(army.get("faction_id"), "")
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	if SafeDict.as_int(faction.get("gold"), 0) < Constants.TRAIN_ARMY_GOLD:
+		last_train_reason = "oro insuficiente"
+		return false
+	if not TurnManager.spend_pg_for(faction_id, 1):
+		last_train_reason = "PG insuficiente"
+		return false
+	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) - Constants.TRAIN_ARMY_GOLD
+	for unit_value in SafeDict.as_array(army.get("units", null)):
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		unit["experience"] = mini(Constants.TRAIN_EXP_MAX,
+			SafeDict.as_int(unit.get("experience"), 0) + Constants.TRAIN_EXP_PER_ACTION)
+	EventBus.emit_signal("army_trained", faction_id, "", Constants.TRAIN_EXP_PER_ACTION)
+	EventBus.emit_signal("armies_changed", SafeDict.as_string(army.get("region_id"), ""))
+	return true
+
+
+## Disuelve `amount` hombres de una unidad global (libera pool, devuelve 50 %).
+func disband_unit(faction_id: String, unit_id: String, amount: int) -> bool:
+	last_disband_reason = ""
+	var st: Dictionary = GameState.state
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	var definition: Dictionary = DataLoader.get_unit(unit_id)
+	if st.is_empty() or faction.is_empty() or definition.is_empty() or amount <= 0:
+		last_disband_reason = "parámetros inválidos"
+		return false
+	var available: int = 0
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	for army_id in SafeDict.sorted_keys(armies):
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != faction_id:
+			continue
+		for unit_value in SafeDict.as_array(army.get("units", null)):
+			var unit: Dictionary = SafeDict.as_dict(unit_value)
+			if SafeDict.as_string(unit.get("unit_id"), "") == unit_id:
+				available += SafeDict.as_int(unit.get("size"), 0)
+	if available < amount:
+		last_disband_reason = "unidades insuficientes"
+		return false
+	var remaining: int = amount
+	var refund: int = 0
+	var pool_region: String = ""
+	for army_id in SafeDict.sorted_keys(armies):
+		if remaining <= 0:
+			break
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != faction_id:
+			continue
+		var units: Array = SafeDict.as_array(army.get("units", null))
+		var kept: Array = []
+		for unit_value in units:
+			var unit: Dictionary = SafeDict.as_dict(unit_value)
+			if SafeDict.as_string(unit.get("unit_id"), "") != unit_id or remaining <= 0:
+				kept.append(unit)
+				continue
+			var size: int = SafeDict.as_int(unit.get("size"), 0)
+			var removed: int = mini(size, remaining)
+			remaining -= removed
+			var refund_blocks: int = int(ceilf(float(removed) / float(maxi(1, Constants.UNIT_MEN_PER_BLOCK))))
+			var unit_cost: Dictionary = SafeDict.as_dict(definition.get("cost", null))
+			refund += int(roundf(float(refund_blocks * SafeDict.as_int(unit_cost.get("gold"), 0)) * Constants.DISBAND_REFUND_RATIO))
+			unit["size"] = size - removed
+			if pool_region == "":
+				pool_region = SafeDict.as_string(army.get("region_id"), "")
+			if SafeDict.as_int(unit.get("size"), 0) > 0:
+				kept.append(unit)
+		army["units"] = kept
+		if kept.is_empty():
+			var region_id: String = SafeDict.as_string(army.get("region_id"), "")
+			armies.erase(army_id)
+			emit_signal("army_destroyed", army_id, faction_id)
+			emit_signal("armies_changed", region_id)
+	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) + refund
+	if pool_region != "":
+		var region: Dictionary = GameState.get_region_state(pool_region)
+		region["recruit_pool"] = SafeDict.as_int(region.get("recruit_pool"), 0) + amount
+	EventBus.emit_signal("army_disbanded", faction_id, unit_id, amount)
+	EventBus.emit_signal("armies_changed", pool_region)
+	return true
+
+
+## Disuelve un ejército completo (libera pool y devuelve 50 % del coste).
+func disband_army(army_id: String) -> bool:
+	last_disband_reason = ""
+	var st: Dictionary = GameState.state
+	var army: Dictionary = GameState.get_army_state(army_id)
+	if st.is_empty() or army.is_empty():
+		last_disband_reason = "ejército inexistente"
+		return false
+	var faction_id: String = SafeDict.as_string(army.get("faction_id"), "")
+	var region_id: String = SafeDict.as_string(army.get("region_id"), "")
+	var men: int = 0
+	var refund: int = 0
+	for unit_value in SafeDict.as_array(army.get("units", null)):
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		var unit_id: String = SafeDict.as_string(unit.get("unit_id"), "")
+		var size: int = SafeDict.as_int(unit.get("size"), 0)
+		men += size
+		var definition: Dictionary = DataLoader.get_unit(unit_id)
+		var unit_cost: Dictionary = SafeDict.as_dict(definition.get("cost", null))
+		var blocks: int = int(ceilf(float(size) / float(maxi(1, Constants.UNIT_MEN_PER_BLOCK))))
+		refund += int(roundf(float(blocks * SafeDict.as_int(unit_cost.get("gold"), 0)) * Constants.DISBAND_REFUND_RATIO))
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) + refund
+	var region: Dictionary = GameState.get_region_state(region_id)
+	region["recruit_pool"] = SafeDict.as_int(region.get("recruit_pool"), 0) + men
+	SafeDict.as_dict(st.get("armies", null)).erase(army_id)
+	emit_signal("army_destroyed", army_id, faction_id)
+	EventBus.emit_signal("army_disbanded", faction_id, "", men)
+	emit_signal("armies_changed", region_id)
 	return true
 
 
@@ -178,26 +442,6 @@ func move_army(army_id: String, to_region: String) -> bool:
 		return true
 	var defender_id: String = _strongest_army_id(defenders)
 	_resolve_battle(army_id, defender_id, to_region, from_region)
-	return true
-
-
-func disband_army(army_id: String) -> bool:
-	var st: Dictionary = GameState.state
-	var army: Dictionary = GameState.get_army_state(army_id)
-	if st.is_empty() or army.is_empty():
-		return false
-	var faction_id: String = SafeDict.as_string(army.get("faction_id"), "")
-	var region_id: String = SafeDict.as_string(army.get("region_id"), "")
-	var region: Dictionary = GameState.get_region_state(region_id)
-	var men: int = _army_men(army)
-	if not region.is_empty():
-		var returned: int = int(roundf(float(men) * 0.5))
-		region["recruit_pool"] = SafeDict.as_int(region.get("recruit_pool"), 0) + returned
-	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
-	armies.erase(army_id)
-	emit_signal("army_destroyed", army_id, faction_id)
-	EventBus.emit_signal("army_destroyed", army_id, faction_id)
-	emit_signal("armies_changed", region_id)
 	return true
 
 

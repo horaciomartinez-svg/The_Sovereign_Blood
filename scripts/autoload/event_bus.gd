@@ -42,7 +42,13 @@ signal relation_changed(faction_a: String, faction_b: String, value: int)
 signal army_created(army_id: String, faction_id: String, region_id: String)
 signal army_moved(army_id: String, from_region: String, to_region: String)
 signal army_destroyed(army_id: String, faction_id: String)
+signal armies_changed(region_id: String)
 signal recruitment_completed(faction_id: String, region_id: String, unit_id: String)
+signal army_trained(faction_id: String, unit_id: String, amount: int)
+signal army_disbanded(faction_id: String, unit_id: String, amount: int)
+signal trade_completed(faction_id: String, good_id: String, qty: int, gold: int, operation: String)
+signal expedition_sent(faction_id: String, good_id: String, qty: int, return_turn: int)
+signal expedition_returned(faction_id: String, good_id: String, qty: int, gold: int)
 
 # --- Batalla (battle_manager.gd) ---
 signal battle_started(attacker: String, defender: String, region_id: String)

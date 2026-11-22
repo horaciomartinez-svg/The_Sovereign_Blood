@@ -90,6 +90,8 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		"battle_reports": [],
 		# D-066: batalla en curso (N2/N3) serializable para guardar/cargar.
 		"pending_battle": {},
+		# D-069: mercancías/comercio; TradeSystem lo completa con facciones/bienes.
+		"trade": {},
 	}
 	_build_characters(start_year)
 	_build_factions(scenario, start_year)
@@ -99,6 +101,7 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 	# D-067: la Guerra de los Cien Años empieza declarada (el evento 1337 la
 	# contextualiza); así los eventos `trigger: war` pueden dispararse.
 	_ensure_initial_wars(p_scenario_id, start_year)
+	TradeSystem.ensure_state()
 	rng_seed = rng.get_seed()
 	# Eventos del año de inicio (1337: casus belli y tensión anglo-francesa).
 	EventResolverScript.new().resolve_year(start_year)
@@ -179,6 +182,8 @@ func from_dict(data: Dictionary) -> bool:
 	# El estado en memoria guarda siempre el snapshot con enteros.
 	state["rng"] = rng.snapshot()
 	rng_seed = rng.get_seed()
+	# D-069: completar/migrar el subestado de comercio (también en saves antiguos).
+	TradeSystem.ensure_state()
 	TurnManager.sync_clock_from_state()
 	return true
 

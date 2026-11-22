@@ -46,6 +46,22 @@ const TREASURY_OVERHEAD_RATE: float = 0.35
 ## D-067: mortalidad dinástica de la Peste Negra (una parte de la casa, no el
 ## gobernante ni el heredero, para no romper la sucesión jugable).
 const PLAGUE_MORTALITY_CHANCE: float = 0.20
+
+# --- Fase 4: comercio y ejércitos (D-069/D-070) ---
+## Volumen máximo por comerciante asignado en cada compra/venta/expedición.
+const TRADE_VOLUME_PER_MERCHANT: int = 5
+const EXPEDITION_PG_COST: int = 2
+const EXPEDITION_RETURN_TURNS: int = 2
+const EXPEDITION_PROFIT_FACTOR: float = 1.2
+## Entrenamiento: oro por bloque de 200 hombres + 1 PG; tope de experiencia.
+const TRAIN_GOLD_PER_BLOCK: int = 10
+const TRAIN_ARMY_GOLD: int = 50
+const TRAIN_EXP_MAX: int = 100
+const TRAIN_EXP_PER_ACTION: int = 10
+const DISBAND_REFUND_RATIO: float = 0.5
+## Stock inicial de mercancías por facción (permite el primer reclutamiento
+## antes de la primera producción trimestral; se documenta en el informe D-069).
+const TRADE_INITIAL_STOCK: int = 20
 ## Bonus de comercio si la facción tiene pactos comerciales activos.
 const TRADE_PACT_COMMERCE_BONUS: float = 0.25
 ## Cosecha anual (§5.2, trimestre 1): clima aleatorio sesgado.

@@ -34,6 +34,7 @@ const TestBattleTilesScript = preload("res://tests/test_battle_tiles.gd")
 const TestScenariosScript = preload("res://tests/test_scenarios.gd")
 const TestMvp1337Script = preload("res://tests/test_mvp_1337.gd")
 const TestMusicScript = preload("res://tests/test_music.gd")
+const TestTradeMilitaryScript = preload("res://tests/test_trade_military.gd")
 const HarnessScript = preload("res://tests/harness.gd")
 const ValidatorCore = preload("res://tools/validator_core.gd")
 
@@ -79,6 +80,8 @@ func _initialize() -> void:
 	TestMvp1337Script.new().run(runner, harness)
 	# Fase 3.3 D-067 §2.5: música OGG, buses, crossfade y persistencia.
 	TestMusicScript.new().run(runner, harness)
+	# Fase 4 D-069/D-070: comercio/mercancías y gestión de ejércitos.
+	TestTradeMilitaryScript.new().run(runner, harness)
 	_run_data_validation(runner)
 
 	var summary: Dictionary = runner.summary()

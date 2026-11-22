@@ -656,6 +656,9 @@ func _index_entities() -> void:
 		# D-067: audio_tracks es un mapa de contextos→pista; sin entidades.
 		if kind == "audio_tracks":
 			continue
+		# D-069/D-073: trade_goods/tutorial_script no son listas de entidades.
+		if kind == "trade_goods" or kind == "tutorial_script":
+			continue
 		var root: Variant = _datasets[dataset_path]["data"]
 		var list := _entities_of(root, kind)
 		if list.is_empty():
@@ -690,6 +693,10 @@ func _kind_of(dataset_path: String) -> String:
 		return "battle_tiles"
 	if stem.begins_with("audio_tracks") or stem.begins_with("audio_track"):
 		return "audio_tracks"
+	if stem.begins_with("trade_goods") or stem.begins_with("trade_good"):
+		return "trade_goods"
+	if stem.begins_with("tutorial_script") or stem.begins_with("tutorial"):
+		return "tutorial_script"
 	if stem.begins_with("scenario"):
 		return "scenario"
 	if stem.begins_with("event"):

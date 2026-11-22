@@ -278,6 +278,8 @@ func _army_speed(army: Dictionary) -> int:
 func _run_quarterly_economy() -> void:
 	for faction_id in _faction_ids():
 		EconomySystem.recalculate(faction_id)
+	# D-069: producción de mercancías y resolución de expediciones cada trimestre.
+	TradeSystem.produce_quarter_all()
 
 
 func _refresh_all_pg() -> void:
