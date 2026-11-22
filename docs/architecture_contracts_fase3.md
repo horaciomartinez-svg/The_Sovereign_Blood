@@ -158,3 +158,27 @@ Este addendum **sustituye los conteos y tamaños de §1-§2** tras la entrega de
   archivos existen (51 = 17×3); se integran igualmente. Varias fuentes llegan con el arma/figura
   tocando el borde del lienzo (recorte del artista); no hay margen recuperable sin regenerar y no
   bloquea el render.
+
+---
+
+## 9. Addendum 4.1 — Animación de combate (GDD v1.8 §10.3, D-049/D-064)
+
+Set entregado por Kimi: `Anim_Combate_TSB.zip` — **170 PNG** (17 unidades × 10 cuadros) + 170 `_raw`
+1024/1536 + `_hoja_contacto_anim.png` + README.
+
+- **Cuadros:** `<unit_id>_idle_{1,2}`, `<unit_id>_attack_{1,2,3,4}`, `<unit_id>_hit_{1,2}`,
+  `<unit_id>_death_{1,2}`; RGBA 512-wide (512×512 / 512×640 / 512×341), ancla `bottom_center`, facing E
+  con espejo en motor; reescalado LANCZOS 64×64/64×80/64×43.
+- **`sprite_sheet.frames`:** 13 entradas — índices 0-2 marcha, 3-4 idle, 5-8 ataque (attack_2 = impacto),
+  9-10 hit, 11-12 death.
+- **`sprite_sheet.anim`:** `{"march":[0,1,2],"idle":[3,4],"attack":[5,6,7,8],"hit":[9,10],
+  "death":[11,12],"fps":6,"loop":true,"fps_attack":9,"fps_hit":8,"fps_death":6,"death_hold":true}`.
+  `loop` aplica a marcha/idle; ataque/impacto/muerte una vez; `death_hold` persiste el último cuadro.
+- **Motor N3:** estado por unidad `idle|march|attack|hit|dead`; ataque dispara una vez y el impacto
+  (`attack_2`) se sincroniza con la resolución de daño D-048 y el proyectil separado; `hit` al recibir
+  daño; `death` + `death_hold` al morir; mirroring oeste; sin consumir RNG.
+- **QA:** 17/17 unidades × 13 frames cargan en headless; secuencia ataque/impacto/muerte visible en una
+  batalla N3; capturas en `docs/screenshots/`; `run_all`/`validate_data` verdes; informe
+  `docs/qa/fase3_anim_report.md`.
+- **Ownership:** AG-5 assets (`assets/art/sprites/**`), AG-2 datos/motor (`data/units.json`, schema,
+  `scripts/battle/**`, tests), AG-3 render N3 (`scenes/**`, `scripts/ui/**`), AG-4 QA, AG-0 docs/git.
