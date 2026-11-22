@@ -1,18 +1,19 @@
 extends RefCounted
-## Tests de la integración de sprites Fase 3 (§10.3, contrato fase3 §2-§3,
-## D-040/D-042): datos `sprite_sheet`, orientación/mirroring, ciclo de marcha y
-## proyectiles N2/N3 (virote/flecha/piedra) sin RNG de combate.
+## Tests de la integración de sprites Fase 3 v2 (§10.3, contrato fase3 §2-§3 y
+## addendum 2.1, D-044/D-047/D-048): 17/17 hojas, orientación/mirroring, ciclo
+## de marcha y proyectiles N2/N3 (virote/flecha/piedra) sin RNG de combate.
 
 const HarnessScript = preload("res://tests/harness.gd")
 const TestRunnerScript = preload("res://tests/test_runner.gd")
 const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const BattleSpritesScript = preload("res://scripts/battle/battle_sprites.gd")
 
-const CORE_UNITS: Array[String] = [
-	"militia_spearman", "swiss_pikeman", "crossbowmen",
-	"longbowman", "men_at_arms", "light_horseman",
+const EXPECTED_UNIT_COUNT: int = 17
+const CAVALRY_UNITS: Array[String] = [
+	"men_at_arms", "light_horseman", "mounted_sergeants",
+	"mamluk", "teutonic_knights", "steppe_cavalry",
 ]
-const TALL_UNITS: Array[String] = ["men_at_arms", "light_horseman"]
+const PANORAMIC_UNITS: Array[String] = ["bombarda", "hussite_war_wagon"]
 const REGION: String = "region_normandia"
 
 var _projectile_events: int = 0
@@ -35,19 +36,23 @@ func run(runner: TestRunnerScript, h: HarnessScript) -> void:
 
 func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 	var all_units: Array[String] = h.unit_ids()
-	runner.check("units.json carga las 17 unidades", all_units.size() == 17, str(all_units.size()))
-	for unit_id in CORE_UNITS:
+	runner.check("units.json carga las 17 unidades", all_units.size() == EXPECTED_UNIT_COUNT,
+		str(all_units.size()))
+	var sprite_sheets_present: int = 0
+	for unit_id in all_units:
 		var definition: Dictionary = h.unit_definition(unit_id)
-		runner.check("existe la unidad núcleo %s" % unit_id, not definition.is_empty())
+		runner.check("existe la unidad %s" % unit_id, not definition.is_empty())
 		var sprite: Dictionary = SafeDict.as_dict(definition.get("sprite_sheet", null))
 		runner.check("sprite_sheet presente en %s" % unit_id, not sprite.is_empty())
 		if sprite.is_empty():
 			continue
+		sprite_sheets_present += 1
 		var frames: Array = SafeDict.as_array(sprite.get("frames", null))
 		runner.check_eq("3 frames en %s" % unit_id, 3, frames.size())
-		var expected_size: Array = [64, 80] if TALL_UNITS.has(unit_id) else [64, 64]
+		var expected_size: Array = _expected_size(unit_id)
 		var size_value: Array = _int_array(SafeDict.as_array(sprite.get("size", null)))
-		runner.check_eq("size correcto en %s" % unit_id, JSON.stringify(expected_size), JSON.stringify(size_value))
+		runner.check_eq("size %s en %s" % [JSON.stringify(expected_size), unit_id],
+			JSON.stringify(expected_size), JSON.stringify(size_value))
 		runner.check_eq("anchor bottom_center en %s" % unit_id, "bottom_center",
 			SafeDict.as_string(sprite.get("anchor"), ""))
 		runner.check_eq("facing E en %s" % unit_id, "E", SafeDict.as_string(sprite.get("facing"), ""))
@@ -82,19 +87,20 @@ func _check_unit_data(runner: TestRunnerScript, h: HarnessScript) -> void:
 		runner.check("texturas válidas para %s" % unit_id, texture_ok)
 		runner.check("dimensiones %dx%d para %s" % [int(expected_size[0]), int(expected_size[1]), unit_id],
 			dimensions_ok)
+	runner.check_eq("17/17 sprite_sheet válidos", EXPECTED_UNIT_COUNT, sprite_sheets_present)
 
 
 func _check_fallback(runner: TestRunnerScript, h: HarnessScript) -> void:
 	var all_units: Array[String] = h.unit_ids()
-	var fallback_count: int = 0
+	var without_sprite: int = 0
 	for unit_id in all_units:
-		if CORE_UNITS.has(unit_id):
-			continue
-		fallback_count += 1
-		runner.check("sin sprite_sheet: %s" % unit_id, h.unit_sprite(unit_id).is_empty())
-	runner.check_eq("11 unidades de fallback", 11, fallback_count)
+		if h.unit_sprite(unit_id).is_empty():
+			without_sprite += 1
+	runner.check_eq("17/17 unidades con sprite_sheet en datos (sin fallback real)", 0, without_sprite)
+	# El fallback se prueba con una unidad SINTÉTICA sin sprite (addendum 2.1).
+	runner.check("unidad sintética sin sprite en DataLoader", h.unit_sprite("sintetica_sin_sprite").is_empty())
 	runner.check_eq("frame_path vacío sin sprite", "", BattleSpritesScript.frame_path({}, 0))
-	# Unidad sin sprite en batalla: get_units devuelve sprite_sheet null y ruta vacía.
+	# N2: unidad sintética sin sprite en la batalla → sprite_sheet null y ruta "".
 	var ids: Array[String] = _prepare_battle(h)
 	_add_fallback_unit_to_army(h, ids[0])
 	var node: Node = _launch(h, ids)
@@ -104,13 +110,26 @@ func _check_fallback(runner: TestRunnerScript, h: HarnessScript) -> void:
 	var fallback_seen: bool = false
 	for unit_value in node.call("get_units"):
 		var unit: Dictionary = SafeDict.as_dict(unit_value)
-		if SafeDict.as_string(unit.get("unit_id"), "") != "mounted_sergeants":
+		if SafeDict.as_string(unit.get("unit_id"), "") != "sintetica_sin_sprite":
 			continue
 		fallback_seen = true
 		runner.check("fallback: sprite_sheet null", unit.get("sprite_sheet") == null)
 		runner.check_eq("fallback: sprite_frame_path vacío", "", SafeDict.as_string(unit.get("sprite_frame_path"), "x"))
-	runner.check("la unidad de fallback aparece en la batalla", fallback_seen)
+	runner.check("la unidad sintética de fallback aparece en la batalla", fallback_seen)
 	node.free()
+	# N3: misma unidad sintética en el duelo → fallback sin huecos.
+	h.new_game("england", 1337)
+	var duel: Node = h.launch_close_combat(
+		_unit("sintetica_sin_sprite", "england", 300, 6, 60),
+		_unit("men_at_arms", "france", 300, 12, 60))
+	if duel == null:
+		return
+	var duel_state: Dictionary = SafeDict.as_dict(duel.call("get_state"))
+	var duel_attacker: Dictionary = SafeDict.as_dict(duel_state.get("attacker", null))
+	runner.check("fallback N3: sprite_sheet null", duel_attacker.get("sprite_sheet") == null)
+	runner.check_eq("fallback N3: sprite_frame_path vacío", "",
+		SafeDict.as_string(duel_attacker.get("sprite_frame_path"), "x"))
+	duel.free()
 
 
 func _check_animation_helpers(runner: TestRunnerScript) -> void:
@@ -157,13 +176,21 @@ func _check_animation_helpers(runner: TestRunnerScript) -> void:
 	runner.check_eq("piedra tipo", "piedra", SafeDict.as_string(piedra.get("type"), ""))
 	runner.check_eq("piedra 700 ms", 700, SafeDict.as_int(piedra.get("duration_ms"), 0))
 	runner.check_eq("piedra arco 56", 56.0, SafeDict.as_float(piedra.get("arc_height"), 0.0))
+	# D-048: jenízaro y caballería de estepa disparan flecha (500 ms/40).
+	var janissary_shot: Dictionary = BattleSpritesScript.projectile_for_unit("janissary")
+	runner.check_eq("janissary flecha", "flecha", SafeDict.as_string(janissary_shot.get("type"), ""))
+	runner.check_eq("janissary 500 ms", 500, SafeDict.as_int(janissary_shot.get("duration_ms"), 0))
+	var steppe_shot: Dictionary = BattleSpritesScript.projectile_for_unit("steppe_cavalry")
+	runner.check_eq("steppe_cavalry flecha", "flecha", SafeDict.as_string(steppe_shot.get("type"), ""))
+	runner.check_eq("steppe_cavalry 500 ms", 500, SafeDict.as_int(steppe_shot.get("duration_ms"), 0))
+	runner.check_eq("steppe_cavalry arco 40", 40.0, SafeDict.as_float(steppe_shot.get("arc_height"), 0.0))
 	runner.check("sin proyectil para infantería", BattleSpritesScript.projectile_for_unit("militia_spearman").is_empty())
 	var sprite_ok: bool = true
-	for projectile_spec in [virote, flecha, piedra]:
+	for projectile_spec in [virote, flecha, piedra, janissary_shot, steppe_shot]:
 		var sprite_path: String = SafeDict.as_string(SafeDict.as_dict(projectile_spec).get("sprite"), "")
 		if not ResourceLoader.exists(sprite_path):
 			sprite_ok = false
-	runner.check("los 3 sprites de proyectil existen", sprite_ok)
+	runner.check("los sprites de proyectil existen", sprite_ok)
 	# Trayectoria paramétrica: x lineal, arco senoidal.
 	var start_point: Dictionary = {"x": 0.0, "y": 0.0}
 	var end_point: Dictionary = {"x": 100.0, "y": 0.0}
@@ -344,7 +371,7 @@ func _check_close_combat_projectiles(runner: TestRunnerScript, h: HarnessScript)
 	duel.call("tick_animation", 1000.0)
 	runner.check_eq("los proyectiles del duelo expiran", 0, (duel.call("get_projectiles") as Array).size())
 	duel.free()
-	# Bombarda (unidad SIN sprite): piedra y fallback heráldico.
+	# Bombarda v2: ahora SÍ tiene sprite panorámico 64×43 y dispara piedra.
 	h.new_game("england", 1337)
 	var siege: Node = h.launch_close_combat(
 		_unit("bombarda", "england", 300, 18, 70),
@@ -353,9 +380,12 @@ func _check_close_combat_projectiles(runner: TestRunnerScript, h: HarnessScript)
 		return
 	var siege_state: Dictionary = SafeDict.as_dict(siege.call("get_state"))
 	var siege_attacker: Dictionary = SafeDict.as_dict(siege_state.get("attacker", null))
-	runner.check("bombarda sin sprite (fallback)", siege_attacker.get("sprite_sheet") == null)
-	runner.check_eq("bombarda con sprite_frame_path vacío", "",
-		SafeDict.as_string(siege_attacker.get("sprite_frame_path"), "x"))
+	var siege_sprite: Dictionary = SafeDict.as_dict(siege_attacker.get("sprite_sheet", null))
+	runner.check("bombarda con sprite_sheet v2", not siege_sprite.is_empty())
+	runner.check_eq("bombarda size [64,43]", "[64,43]",
+		JSON.stringify(_int_array(SafeDict.as_array(siege_sprite.get("size", null)))))
+	runner.check("bombarda con sprite_frame_path que carga",
+		ResourceLoader.exists(SafeDict.as_string(siege_attacker.get("sprite_frame_path"), "")))
 	siege.call("auto_resolve")
 	var siege_projectiles: Array = siege.call("get_projectiles")
 	var stone_seen: bool = false
@@ -463,10 +493,19 @@ func _add_fallback_unit_to_army(h: HarnessScript, army_id: String) -> void:
 	var units_value: Array = SafeDict.as_array(army.get("units", null))
 	units_value.append({
 		"id": "synthetic_fallback",
-		"unit_id": "mounted_sergeants",
+		"unit_id": "sintetica_sin_sprite",
 		"size": 300,
 		"strength": 8,
 		"morale": 1.0,
 		"experience": 0,
 	})
 	army["units"] = units_value
+
+
+## Tamaño de producción esperado por unidad (D-047).
+func _expected_size(unit_id: String) -> Array:
+	if PANORAMIC_UNITS.has(unit_id):
+		return [64, 43]
+	if CAVALRY_UNITS.has(unit_id):
+		return [64, 80]
+	return [64, 64]

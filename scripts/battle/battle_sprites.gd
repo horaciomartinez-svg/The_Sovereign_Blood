@@ -26,8 +26,8 @@ const FACING_BY_SIGN: Dictionary = {
 const MARCH_FPS_DEFAULT: float = 6.0
 const MARCH_FRAME_COUNT: int = 3
 
-## Proyectiles D-042: por `unit_id`; virote/flecha/piedra con su sprite, duración
-## y altura de arco. La trayectoria es paramétrica (sin RNG de combate).
+## Proyectiles D-042/D-048: por `unit_id`; virote/flecha/piedra con su sprite,
+## duración y altura de arco. La trayectoria es paramétrica (sin RNG de combate).
 const PROJECTILE_BY_UNIT: Dictionary = {
 	"crossbowmen": {
 		"type": "virote",
@@ -37,6 +37,21 @@ const PROJECTILE_BY_UNIT: Dictionary = {
 		"ballistic": true,
 	},
 	"longbowman": {
+		"type": "flecha",
+		"sprite": "res://assets/art/sprites/projectiles/proyectil_flecha.png",
+		"duration_ms": 500,
+		"arc_height": 40.0,
+		"ballistic": true,
+	},
+	# D-048: arco compuesto (jenízaro) y caballería de estepa disparan flecha.
+	"janissary": {
+		"type": "flecha",
+		"sprite": "res://assets/art/sprites/projectiles/proyectil_flecha.png",
+		"duration_ms": 500,
+		"arc_height": 40.0,
+		"ballistic": true,
+	},
+	"steppe_cavalry": {
 		"type": "flecha",
 		"sprite": "res://assets/art/sprites/projectiles/proyectil_flecha.png",
 		"duration_ms": 500,

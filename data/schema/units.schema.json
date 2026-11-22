@@ -135,6 +135,7 @@
           },
           "sprite_sheet": {
             "type": "object",
+            "description": "Hoja de sprites opcional (GDD §10.3 v2 / D-044/D-047): 3 frames de marcha; size [64,64] infantería/ranged, [64,80] caballería, [64,43] bombarda y hussite_war_wagon.",
             "additionalProperties": false,
             "required": [
               "frames",
@@ -184,6 +185,7 @@
               },
               "size": {
                 "type": "array",
+                "description": "Tamaño real de producción: [64,64] infantería/ranged, [64,80] caballería, [64,43] artillería/carro (D-047).",
                 "minItems": 2,
                 "maxItems": 2,
                 "items": {

@@ -61,7 +61,29 @@
       "requires": [],
       "faction_tags": [
         "scotland"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/scottish_schiltron_march_1.png",
+          "res://assets/art/sprites/units/scottish_schiltron_march_2.png",
+          "res://assets/art/sprites/units/scottish_schiltron_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "crossbowmen",
@@ -171,7 +193,29 @@
         "vs_infantry": 1.2
       },
       "requires": [],
-      "faction_tags": []
+      "faction_tags": [],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/mounted_sergeants_march_1.png",
+          "res://assets/art/sprites/units/mounted_sergeants_march_2.png",
+          "res://assets/art/sprites/units/mounted_sergeants_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "men_at_arms",
@@ -290,7 +334,29 @@
       "requires": [],
       "faction_tags": [
         "golden_horde"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/steppe_cavalry_march_1.png",
+          "res://assets/art/sprites/units/steppe_cavalry_march_2.png",
+          "res://assets/art/sprites/units/steppe_cavalry_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "almogavar",
@@ -313,7 +379,29 @@
       "requires": [],
       "faction_tags": [
         "aragon"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/almogavar_march_1.png",
+          "res://assets/art/sprites/units/almogavar_march_2.png",
+          "res://assets/art/sprites/units/almogavar_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "mamluk",
@@ -336,7 +424,29 @@
       "requires": [],
       "faction_tags": [
         "mamluks"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/mamluk_march_1.png",
+          "res://assets/art/sprites/units/mamluk_march_2.png",
+          "res://assets/art/sprites/units/mamluk_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "swiss_pikeman",
@@ -405,7 +515,29 @@
         "england",
         "france"
       ],
-      "available_from": 1346
+      "available_from": 1346,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/dismounted_men_at_arms_march_1.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_march_2.png",
+          "res://assets/art/sprites/units/dismounted_men_at_arms_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "bombarda",
@@ -432,7 +564,29 @@
         "hre",
         "england"
       ],
-      "available_from": 1350
+      "available_from": 1350,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/bombarda_march_1.png",
+          "res://assets/art/sprites/units/bombarda_march_2.png",
+          "res://assets/art/sprites/units/bombarda_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          43
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "arquebusier",
@@ -457,7 +611,29 @@
         "hre",
         "castile"
       ],
-      "available_from": 1440
+      "available_from": 1440,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/arquebusier_march_1.png",
+          "res://assets/art/sprites/units/arquebusier_march_2.png",
+          "res://assets/art/sprites/units/arquebusier_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "hussite_war_wagon",
@@ -482,7 +658,29 @@
       "faction_tags": [
         "bohemia"
       ],
-      "available_from": 1419
+      "available_from": 1419,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/hussite_war_wagon_march_1.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_march_2.png",
+          "res://assets/art/sprites/units/hussite_war_wagon_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          43
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "janissary",
@@ -503,7 +701,29 @@
       },
       "requires": [],
       "faction_tags": [],
-      "available_from": 1365
+      "available_from": 1365,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/janissary_march_1.png",
+          "res://assets/art/sprites/units/janissary_march_2.png",
+          "res://assets/art/sprites/units/janissary_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "teutonic_knights",
@@ -524,7 +744,29 @@
       },
       "requires": [],
       "faction_tags": [],
-      "available_from": 1226
+      "available_from": 1226,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/teutonic_knights_march_1.png",
+          "res://assets/art/sprites/units/teutonic_knights_march_2.png",
+          "res://assets/art/sprites/units/teutonic_knights_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     }
   ]
 }
