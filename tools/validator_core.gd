@@ -725,7 +725,8 @@ func _cross_rules() -> void:
 	_check_scenario_factions()
 	_check_character_references()
 	_check_regions_owned_per_scenario()
-	_check_playable_1337()
+	_check_playable_scenarios()
+	_check_scenario_events()
 	_check_battle_tiles()
 
 
@@ -832,13 +833,47 @@ func _check_scenario_factions() -> void:
 		if not (scenario_factions is Array):
 			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".factions", "factions debe ser un array de ids de facción"))
 			continue
+		var scenario_ids: Dictionary = {}
 		for faction_ref in (scenario_factions as Array):
 			var faction_id := _as_id(faction_ref)
 			if faction_id == "":
 				continue
+			scenario_ids[faction_id] = true
 			checks += 1
 			if not factions.has(faction_id):
 				errors.append(_format_error(str(record["file"]), str(record["path"]) + ".factions", "la facción '%s' no existe en factions.json" % faction_id))
+		# Años del escenario (D-060): start < end.
+		checks += 1
+		var start_year: int = _as_int(scenario.get("start_year", 0), 0)
+		var end_year: int = _as_int(scenario.get("end_year", 0), 0)
+		if start_year <= 0:
+			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".start_year", "start_year ausente o inválido"))
+		elif end_year <= start_year:
+			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".end_year", "end_year (%d) debe ser posterior a start_year (%d)" % [end_year, start_year]))
+		# Fase 3 D-061: `playable_factions` exactamente 8 y ⊆ factions del escenario.
+		var playable_ref: Variant = scenario.get("playable_factions", null)
+		if playable_ref == null:
+			continue
+		if not (playable_ref is Array):
+			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".playable_factions", "playable_factions debe ser un array de ids"))
+			continue
+		var playable_ids: Array = playable_ref
+		checks += 1
+		if playable_ids.size() != 8:
+			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".playable_factions", "debe declarar exactamente 8 facciones jugables (hay %d)" % playable_ids.size()))
+		var unique_playable: Dictionary = {}
+		for faction_ref in playable_ids:
+			var faction_id := _as_id(faction_ref)
+			if faction_id == "":
+				continue
+			checks += 1
+			if unique_playable.has(faction_id):
+				errors.append(_format_error(str(record["file"]), str(record["path"]) + ".playable_factions", "facción jugable duplicada '%s'" % faction_id))
+			unique_playable[faction_id] = true
+			if not scenario_ids.has(faction_id):
+				errors.append(_format_error(str(record["file"]), str(record["path"]) + ".playable_factions", "'%s' no está en scenario.factions" % faction_id))
+			elif not factions.has(faction_id):
+				errors.append(_format_error(str(record["file"]), str(record["path"]) + ".playable_factions", "'%s' no existe en factions.json" % faction_id))
 
 
 func _check_character_references() -> void:
@@ -937,6 +972,12 @@ func _check_regions_owned_per_scenario() -> void:
 			for faction_ref in (scenario_factions_ref as Array):
 				scenario_factions[_as_id(faction_ref)] = true
 		var year_key := str(start_year)
+		var initial_state: Variant = scenario.get("initial_state", null)
+		if initial_state is Dictionary:
+			var regions_ref: Variant = (initial_state as Dictionary).get("regions", null)
+			if regions_ref is String and str(regions_ref) != "":
+				year_key = str(regions_ref)
+		var factions_map := _id_map("faction")
 		for region_id in regions.keys():
 			var region_record: Dictionary = regions[region_id]
 			var region: Dictionary = region_record["obj"]
@@ -946,7 +987,7 @@ func _check_regions_owned_per_scenario() -> void:
 			checks += 1
 			var regions_data: Dictionary = year_data
 			if not regions_data.has(year_key):
-				errors.append(_format_error(str(region_record["file"]), str(region_record["path"]) + ".year_data", "falta el año %s (start_year del escenario '%s')" % [year_key, scenario_id]))
+				errors.append(_format_error(str(region_record["file"]), str(region_record["path"]) + ".year_data", "falta el año %s (initial_state.regions del escenario '%s')" % [year_key, scenario_id]))
 				continue
 			var year_entry: Variant = regions_data[year_key]
 			if not (year_entry is Dictionary):
@@ -954,20 +995,26 @@ func _check_regions_owned_per_scenario() -> void:
 			var owner := _as_id((year_entry as Dictionary).get("owner", null))
 			if owner == "":
 				errors.append(_format_error(str(region_record["file"]), "%s.year_data.%s.owner" % [str(region_record["path"]), year_key], "la región no tiene dueño en el año %s" % year_key))
+			elif not factions_map.is_empty() and not factions_map.has(owner):
+				errors.append(_format_error(str(region_record["file"]), "%s.year_data.%s.owner" % [str(region_record["path"]), year_key], "owner '%s' no existe en factions.json" % owner))
 			elif not scenario_factions.is_empty() and not scenario_factions.has(owner):
 				warnings.append("[WARN] %s :: %s.year_data.%s.owner :: owner '%s' no está en scenario.factions (¿facción menor intencional?)" % [str(region_record["file"]), str(region_record["path"]), year_key, owner])
 
 
-func _check_playable_1337() -> void:
+func _check_playable_scenarios() -> void:
 	if not _has_kind("scenario") or not _has_kind("faction"):
-		skips.append("[SKIP] regla 'exactamente 8 playable en 1337': requiere scenarios/*.json y factions.json")
+		skips.append("[SKIP] regla '8 facciones jugables': requiere scenarios/*.json y factions.json")
 		return
 	var scenarios := _id_map("scenario")
 	var factions := _id_map("faction")
 	for scenario_id in scenarios.keys():
 		var record: Dictionary = scenarios[scenario_id]
 		var scenario: Dictionary = record["obj"]
-		var start_year := int(scenario.get("start_year", 0))
+		var start_year: int = _as_int(scenario.get("start_year", 0), 0)
+		# Con `playable_factions`, la validación exacta 8/subconjunto está en
+		# `_check_scenario_factions`; aquí sólo se cubre el legado 1337 sin campo.
+		if scenario.get("playable_factions", null) is Array:
+			continue
 		if start_year != 1337 and not str(scenario_id).contains("1337"):
 			continue
 		var scenario_factions_ref: Variant = scenario.get("factions", null)
@@ -987,6 +1034,45 @@ func _check_playable_1337() -> void:
 		checks += 1
 		if playable_count != 8:
 			errors.append(_format_error(str(record["file"]), str(record["path"]) + ".factions", "hay %d facciones playable=true en 1337 (se esperaban exactamente 8)" % playable_count))
+
+
+## Eventos de cada escenario dentro de [start_year, end_year] (D-061).
+func _check_scenario_events() -> void:
+	if not _has_kind("scenario"):
+		skips.append("[SKIP] regla eventos dentro de [start_year,end_year]: requiere scenarios/*.json")
+		return
+	var scenarios := _id_map("scenario")
+	for scenario_id in scenarios.keys():
+		var record: Dictionary = scenarios[scenario_id]
+		var scenario: Dictionary = record["obj"]
+		var start_year: int = _as_int(scenario.get("start_year", 0), 0)
+		var end_year: int = _as_int(scenario.get("end_year", 0), 0)
+		var events_script := _as_id(scenario.get("events_script", null))
+		if events_script == "":
+			continue
+		var events_path := _data_root.path_join(events_script)
+		if not FileAccess.file_exists(events_path):
+			continue  # la referencia ya se valida en _check_character_references
+		var root: Variant = _read_json_file(events_path)
+		var field_path := str(record["path"]) + ".events_script"
+		if not (root is Dictionary):
+			errors.append(_format_error(str(record["file"]), field_path, "no se puede leer '%s' (JSON inválido)" % events_script))
+			continue
+		var events_value: Variant = (root as Dictionary).get("events", null)
+		if not (events_value is Array):
+			errors.append(_format_error(str(record["file"]), field_path, "el events_script '%s' no contiene un array 'events'" % events_script))
+			continue
+		for event_value in (events_value as Array):
+			if not (event_value is Dictionary):
+				continue
+			var event: Dictionary = event_value
+			var event_year: int = _as_int(event.get("year", null), -1)
+			checks += 1
+			var event_id := _as_id(event.get("id", null))
+			if event_year < 0:
+				errors.append(_format_error(str(record["file"]), field_path, "evento '%s' sin 'year'" % event_id))
+			elif event_year < start_year or event_year > end_year:
+				errors.append(_format_error(str(record["file"]), field_path, "evento '%s' (año %d) fuera de [%d, %d] del escenario '%s'" % [event_id, event_year, start_year, end_year, scenario_id]))
 
 
 # ---------------------------------------------------------------------------
@@ -1101,6 +1187,34 @@ func _check_battle_tiles() -> void:
 
 func _format_error(file: String, path: String, message: String) -> String:
 	return "[FAIL] %s :: %s :: %s" % [file, path, message]
+
+
+## Entero robusto para datos cargados de JSON (null/float/string).
+func _as_int(value: Variant, fallback: int = 0) -> int:
+	if value == null:
+		return fallback
+	if value is int:
+		return value
+	if value is float:
+		return int(value)
+	if value is String and str(value).is_valid_int():
+		return int(value)
+	return fallback
+
+
+## Lee un JSON de data/ para reglas cruzadas que necesitan contenido externo.
+func _read_json_file(path: String) -> Variant:
+	if not FileAccess.file_exists(path):
+		return null
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return null
+	var text := file.get_as_text()
+	file.close()
+	var parser := JSON.new()
+	if parser.parse(text) != OK:
+		return null
+	return parser.data
 
 
 ## Devuelve el id como String tratando null como "". Ojo: str(null) == "<null>",

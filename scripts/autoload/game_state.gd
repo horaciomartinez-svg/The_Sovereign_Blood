@@ -18,6 +18,7 @@ const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
 const SeededRNGScript = preload("res://scripts/utils/rng.gd")
 const EventResolverScript = preload("res://scripts/utils/event_resolver.gd")
+const TechScript = preload("res://scripts/utils/tech.gd")
 
 ## Versión del formato de guardado (GDD §8.4); migraciones al subirla.
 const SAVE_VERSION: int = 1
@@ -76,6 +77,10 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		"quarter": 1,
 		"turn": 1,
 		"game_over": false,
+		# Fase 3 §4.3/D-059: era tecnológica actual (I/II/III) para UI y reglas.
+		"start_year": start_year,
+		"end_year": SafeDict.as_int(scenario.get("end_year"), start_year + 60),
+		"era": TechScript.era_name(start_year),
 		"factions": {},
 		"regions": {},
 		"characters": {},
@@ -223,9 +228,42 @@ func sync_clock_from_state() -> void:
 	year = SafeDict.as_int(state.get("year"), year)
 	quarter = SafeDict.as_int(state.get("quarter"), quarter)
 	turn = SafeDict.as_int(state.get("turn"), turn)
+	state["era"] = TechScript.era_name(year)
 	var player: String = SafeDict.as_string(state.get("player_faction"), current_faction_id)
 	if player != "":
 		current_faction_id = player
+
+
+## Era tecnológica actual ("I" | "II" | "III", D-059).
+func get_era() -> String:
+	if state.is_empty():
+		return TechScript.era_name(year)
+	return TechScript.era_name(SafeDict.as_int(state.get("year"), year))
+
+
+func get_era_index() -> int:
+	return TechScript.era_index(SafeDict.as_int(state.get("year"), year))
+
+
+## Facciones jugables del escenario actual (contrato fase3 §3): lista declarada
+## por el escenario (`playable_factions`) con fallback a `factions`.
+func get_playable_factions(p_scenario_id: String = "") -> Array[String]:
+	var sid: String = p_scenario_id if p_scenario_id != "" else scenario_id
+	var scenario: Dictionary = DataLoader.get_scenario(sid)
+	var result: Array[String] = []
+	for faction_value in SafeDict.as_array(scenario.get("playable_factions", null)):
+		result.append(str(faction_value))
+	if not result.is_empty():
+		return result
+	for faction_value in SafeDict.as_array(scenario.get("factions", null)):
+		result.append(str(faction_value))
+	return result
+
+
+## Año final del escenario actual (para UI y supervivencia, D-060).
+func get_end_year() -> int:
+	var scenario: Dictionary = DataLoader.get_scenario(scenario_id)
+	return SafeDict.as_int(scenario.get("end_year"), SafeDict.as_int(state.get("end_year"), 0))
 
 
 func get_faction_state(faction_id: String) -> Dictionary:
@@ -307,9 +345,15 @@ func _build_characters(start_year: int) -> void:
 	for character_id in DataLoader.get_character_ids():
 		var source: Dictionary = DataLoader.get_character(character_id)
 		var entry: Dictionary = source.duplicate(true)
-		var died: Variant = source.get("died", null)
-		entry["alive"] = died == null
 		var born: int = SafeDict.as_int(source.get("born"), start_year)
+		var died_value: Variant = source.get("died", null)
+		var died: int = 0
+		var has_died: bool = died_value != null
+		if has_died:
+			died = SafeDict.as_int(died_value, start_year)
+		# Fase 3 D-058: vivo en el año de inicio si ya nació y no ha muerto antes.
+		var alive: bool = born <= start_year and (not has_died or died >= start_year)
+		entry["alive"] = alive
 		entry["age"] = start_year - born
 		characters_state[character_id] = entry
 	state["characters"] = characters_state
@@ -324,7 +368,7 @@ func _build_factions(scenario: Dictionary, start_year: int) -> void:
 	for faction_value in faction_ids:
 		var faction_id: String = str(faction_value)
 		var definition: Dictionary = DataLoader.get_faction(faction_id)
-		var ruler_id: String = _find_role_character(characters_state, faction_id, "ruler", start_year)
+		var ruler_id: String = _find_ruler_character(characters_state, faction_id, start_year)
 		var heir_id: String = _find_heir(characters_state, faction_id, ruler_id, start_year)
 		var ruler_character: Dictionary = SafeDict.as_dict(characters_state.get(ruler_id, null))
 		factions_state[faction_id] = {
@@ -511,6 +555,40 @@ func _find_role_character(characters_state: Dictionary, faction_id: String, role
 			continue
 		return character_id
 	return ""
+
+
+## Gobernante de la facción en `start_year` (D-058): filtra vivos y, si hay
+## `reign_start`/`reign_end`, exige que el reinado cubra el año; si varios,
+## elige el reinado más reciente. Sin ventanas, primer gobernante vivo (legado).
+func _find_ruler_character(characters_state: Dictionary, faction_id: String, start_year: int) -> String:
+	var best_id: String = ""
+	var best_reign_start: int = -1
+	var fallback_id: String = ""
+	for character_id in SafeDict.sorted_keys(characters_state):
+		var character: Dictionary = SafeDict.as_dict(characters_state.get(character_id, null))
+		if SafeDict.as_string(character.get("faction"), "") != faction_id:
+			continue
+		if SafeDict.as_string(character.get("role"), "") != "ruler":
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		if SafeDict.as_int(character.get("born"), start_year) > start_year:
+			continue
+		var has_window: bool = character.has("reign_start") or character.has("reign_end")
+		if has_window:
+			var reign_start: int = SafeDict.as_int(character.get("reign_start"),
+				SafeDict.as_int(character.get("born"), start_year))
+			var reign_end: int = SafeDict.as_int(character.get("reign_end"), 9999)
+			if start_year < reign_start or start_year > reign_end:
+				continue
+			if reign_start > best_reign_start:
+				best_reign_start = reign_start
+				best_id = character_id
+		elif fallback_id == "":
+			fallback_id = character_id
+	if best_id != "":
+		return best_id
+	return fallback_id
 
 
 func _find_heir(characters_state: Dictionary, faction_id: String, ruler_id: String, start_year: int) -> String:

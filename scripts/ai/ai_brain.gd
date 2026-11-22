@@ -11,6 +11,7 @@ extends RefCounted
 const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
 const AIProfiles = preload("res://scripts/ai/ai_profiles.gd")
+const TechScript = preload("res://scripts/utils/tech.gd")
 
 
 ## Órdenes candidatas ordenadas de mayor a menor utilidad.
@@ -237,7 +238,6 @@ func _army_men(army: Dictionary) -> int:
 func _best_unit_for(faction_id: String, region_id: String) -> String:
 	var st: Dictionary = GameState.state
 	var year: int = SafeDict.as_int(st.get("year"), 1337)
-	var era: int = clampi(1 + int(float(year - 1337) / 21.0), 1, 3)
 	var best_unit: String = ""
 	var best_strength: int = -1
 	for unit_id in DataLoader.get_unit_ids():
@@ -245,14 +245,8 @@ func _best_unit_for(faction_id: String, region_id: String) -> String:
 		var tags: Array = SafeDict.as_array(definition.get("faction_tags", null))
 		if not tags.is_empty() and not tags.has(faction_id):
 			continue
-		var era_range: Array = SafeDict.as_array(definition.get("era", null))
-		if era_range.size() >= 2:
-			var era_min: int = SafeDict.as_int(era_range[0], 1)
-			var era_max: int = SafeDict.as_int(era_range[1], 3)
-			if era < era_min or era > era_max:
-				continue
-		var available_from: int = SafeDict.as_int(definition.get("available_from"), 0)
-		if available_from > 0 and year < available_from:
+		# D-059: era/año centralizados en Tech.
+		if not TechScript.is_unit_available(definition, year):
 			continue
 		var strength: int = SafeDict.as_int(definition.get("strength"), 0)
 		if strength > best_strength:

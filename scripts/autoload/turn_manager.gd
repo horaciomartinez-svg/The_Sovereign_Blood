@@ -342,5 +342,17 @@ func _check_game_over() -> void:
 			faction["prestige_since_year"] = SafeDict.as_int(st.get("year"), 1337)
 		elif SafeDict.as_int(st.get("year"), 1337) - since >= years_held:
 			GameState.end_game(true, "Prestigio Real sostenido durante %d años" % years_held)
+			return
 	else:
 		faction["prestige_since_year"] = 0
+	# Victoria por conquista: controlar ≥ `control_pct` de las regiones (D-060).
+	var control_pct: int = SafeDict.as_int(victory.get("control_pct"), 70)
+	var total_regions: int = regions.size()
+	if control_pct > 0 and total_regions > 0 \
+			and float(owned_regions) / float(total_regions) >= float(control_pct) / 100.0:
+		GameState.end_game(true, "Conquista: controlas ≥%d%% de las regiones" % control_pct)
+		return
+	# Victoria por supervivencia: llegar al `end_year` sin derrota (D-060).
+	var end_year: int = SafeDict.as_int(scenario.get("end_year"), 0)
+	if end_year > 0 and SafeDict.as_int(st.get("year"), 0) >= end_year:
+		GameState.end_game(true, "Supervivencia hasta el año final (%d)" % end_year)

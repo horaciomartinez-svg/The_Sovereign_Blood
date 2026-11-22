@@ -167,8 +167,8 @@ func _check_crisis_and_extinction(runner: TestRunnerScript, h: HarnessScript) ->
 			continue
 		if SafeDict.as_string(character.get("house"), "") != "plantagenet":
 			continue
-		if not SafeDict.as_bool(character.get("alive"), false):
-			continue
+		# Incluye los nacidos después de 1337: con D-058 un heredero futuro
+		# mantiene viva la casa; para forzar la extinción deben morir todos.
 		character["alive"] = false
 		character["died"] = h.year()
 		plantagenets_killed += 1

@@ -120,6 +120,10 @@ func advance_year() -> Array[Dictionary]:
 	var characters: Dictionary = SafeDict.as_dict(st.get("characters", null))
 	var factions: Dictionary = SafeDict.as_dict(st.get("factions", null))
 
+	# 0) Vivos por año (D-058): los nacidos después del inicio pasan a vivos al
+	# llegar su año; los fallecidos históricamente dejan de estarlo.
+	_refresh_character_lives(characters, current_year)
+
 	# 1) Envejecimiento.
 	for character_id in SafeDict.sorted_keys(characters):
 		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
@@ -241,7 +245,7 @@ func resolve_succession(faction_id: String) -> Dictionary:
 	# Fase 2 (D-031, task-17): si no queda NINGÚN miembro vivo de la casa del
 	# gobernante en la facción, la dinastía se extingue aunque sobrevivan nobles
 	# de otras casas. Emite dynasty_extinct y el jugador pierde la partida.
-	if faction_house != "" and _faction_house_members_alive(characters, faction_id, faction_house).is_empty():
+	if faction_house != "" and _faction_house_members_alive(characters, faction_id, faction_house, current_year).is_empty():
 		var extinction_events: Array[Dictionary] = []
 		_extinguish(faction_id, extinction_events)
 		result["extinct"] = true
@@ -356,15 +360,47 @@ func check_ruling_line(faction_id: String) -> Dictionary:
 	return resolve_succession(faction_id)
 
 
+## Actualiza `alive`/`age` de todos los personajes para el año en curso (D-058):
+## nacidos <= año y no fallecidos todavía. Los nacimientos dinásticos ya vienen
+## con `alive=true`; aquí se incorporan también los históricos nacidos después
+## del año de inicio del escenario.
+func _refresh_character_lives(characters: Dictionary, year: int) -> void:
+	for character_id in SafeDict.sorted_keys(characters):
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if character.is_empty():
+			continue
+		var born: int = SafeDict.as_int(character.get("born"), year)
+		var died_value: Variant = character.get("died", null)
+		var dead: bool = died_value != null and SafeDict.as_int(died_value, year) <= year
+		character["alive"] = born <= year and not dead
+		character["age"] = year - born
+
+
+## Miembros de la línea dinástica vivos o aún no nacidos (D-058): un heredero
+## futuro (born > año y sin fallecimiento registrado) mantiene viva la casa y
+## evita declarar extinción; la sucesión sigue en crisis/interregno hasta nacer.
+func _character_line_alive(character: Dictionary, year: int) -> bool:
+	if SafeDict.as_bool(character.get("alive"), false):
+		return true
+	var born: int = SafeDict.as_int(character.get("born"), year)
+	if born > year:
+		var died_value: Variant = character.get("died", null)
+		# Sigue en la línea si aún no ha nacido y no consta muerto antes de nacer
+		# (los fallecimientos registrados por el motor usan el año actual < born).
+		if died_value == null or SafeDict.as_int(died_value, year) >= born:
+			return true
+	return false
+
+
 ## Miembros vivos de la casa gobernante DENTRO de una facción (D-031/task-17).
 ## La extinción se decide con esta lista: nobles de otras casas no cuentan.
-func _faction_house_members_alive(characters: Dictionary, faction_id: String, house: String) -> Array[String]:
+func _faction_house_members_alive(characters: Dictionary, faction_id: String, house: String, year: int) -> Array[String]:
 	var result: Array[String] = []
 	if house == "":
 		return result
 	for character_id in SafeDict.sorted_keys(characters):
 		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
-		if not SafeDict.as_bool(character.get("alive"), false):
+		if not _character_line_alive(character, year):
 			continue
 		if SafeDict.as_string(character.get("house"), "") != house:
 			continue
@@ -375,13 +411,13 @@ func _faction_house_members_alive(characters: Dictionary, faction_id: String, ho
 
 
 ## Miembros vivos de una casa dinástica (en cualquier facción). D-031.
-func _house_members_alive(characters: Dictionary, house: String) -> Array[String]:
+func _house_members_alive(characters: Dictionary, house: String, year: int) -> Array[String]:
 	var result: Array[String] = []
 	if house == "":
 		return result
 	for character_id in SafeDict.sorted_keys(characters):
 		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
-		if not SafeDict.as_bool(character.get("alive"), false):
+		if not _character_line_alive(character, year):
 			continue
 		if SafeDict.as_string(character.get("house"), "") == house:
 			result.append(character_id)
@@ -629,7 +665,7 @@ func _advance_interregna(factions: Dictionary, characters: Dictionary, year: int
 			# en la propia facción; sin ellos, extinción aunque haya otras casas.
 			var faction_house: String = SafeDict.as_string(faction.get("house"), "")
 			var house_alive: bool = faction_house != "" \
-				and not _faction_house_members_alive(characters, faction_id, faction_house).is_empty()
+				and not _faction_house_members_alive(characters, faction_id, faction_house, year).is_empty()
 			if house_alive:
 				faction["interregnum_until"] = year + Constants.INTERREGNUM_YEARS
 				events.append(_log_event("interregno_prorrogado_%s_%d" % [faction_id, year],

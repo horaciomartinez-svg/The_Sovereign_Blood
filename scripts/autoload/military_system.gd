@@ -19,6 +19,7 @@ signal region_captured(region_id: String, faction_id: String)
 
 const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
+const TechScript = preload("res://scripts/utils/tech.gd")
 
 const ARMY_SCRIPT = preload("res://scripts/model/army.gd")
 const REGION_SCRIPT = preload("res://scripts/model/region_state.gd")
@@ -582,21 +583,31 @@ func _faction_has_leader(faction_id: String) -> bool:
 
 func _unit_allowed_for(unit_definition: Dictionary, faction_id: String) -> bool:
 	var tags: Array = SafeDict.as_array(unit_definition.get("faction_tags", null))
-	if not tags.is_empty() and not tags.has(faction_id):
+	if faction_id != "" and not tags.is_empty() and not tags.has(faction_id):
 		return false
-	var available_from: int = SafeDict.as_int(unit_definition.get("available_from"), 0)
-	if available_from > 0 and SafeDict.as_int(GameState.state.get("year"), 1337) < available_from:
-		return false
-	var era_range: Array = SafeDict.as_array(unit_definition.get("era", null))
-	if era_range.size() >= 2:
-		var era: int = _current_era()
-		var era_min: int = SafeDict.as_int(era_range[0], 1)
-		var era_max: int = SafeDict.as_int(era_range[1], 3)
-		if era < era_min or era > era_max:
-			return false
-	return true
+	# D-059: era tecnológica actual + año histórico mínimo (`available_from`).
+	var year: int = SafeDict.as_int(GameState.state.get("year"), 1337)
+	return TechScript.is_unit_available(unit_definition, year)
 
 
 func _current_era() -> int:
-	var year: int = SafeDict.as_int(GameState.state.get("year"), 1337)
-	return clampi(1 + int(float(year - 1337) / 21.0), 1, 3)
+	return TechScript.era_index(SafeDict.as_int(GameState.state.get("year"), 1337))
+
+
+## Ids de unidades reclutables por la facción con la era/año actuales (D-059).
+func get_available_units(faction_id: String = "") -> Array[String]:
+	var result: Array[String] = []
+	for unit_id in DataLoader.get_unit_ids():
+		var definition: Dictionary = DataLoader.get_unit(unit_id)
+		if definition.is_empty():
+			continue
+		if not _unit_allowed_for(definition, faction_id):
+			continue
+		result.append(unit_id)
+	return result
+
+
+## True si la unidad está disponible ahora para la facción (era/tags/año).
+func is_unit_available(unit_id: String, faction_id: String = "") -> bool:
+	var definition: Dictionary = DataLoader.get_unit(unit_id)
+	return not definition.is_empty() and _unit_allowed_for(definition, faction_id)

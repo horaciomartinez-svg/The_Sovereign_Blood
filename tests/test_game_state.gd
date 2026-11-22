@@ -27,7 +27,8 @@ func _check_new_game(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check_eq("turno inicial", 1, st.get("turn"))
 	runner.check_eq("14 facciones", 14, h.factions().size())
 	runner.check_eq("47 regiones", 47, h.regions().size())
-	runner.check_eq("86 personajes", 86, h.characters().size())
+	runner.check("personajes (>=86, incluye 1402/1453)", h.characters().size() >= 86,
+		str(h.characters().size()))
 	runner.check_eq("35 ejércitos iniciales", 35, h.armies().size())
 	runner.check("el estado es JSON serializable", JSON.stringify(st).length() > 1000)
 	runner.check("todas las facciones tienen gobernante", _all_rulers_present(h), _missing_rulers(h))

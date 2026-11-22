@@ -54,6 +54,37 @@ func new_game(faction: String = "england", seed_value: int = 1337) -> void:
 	gs.call("new_game", "scenario_1337", faction, seed_value)
 
 
+## Arranca una partida en un escenario concreto (Fase 3: 1402/1453/fixtures).
+func new_game_in(scenario_id: String, faction: String = "england", seed_value: int = 1337) -> void:
+	gs.call("new_game", scenario_id, faction, seed_value)
+
+
+func scenario_definition(scenario_id: String) -> Dictionary:
+	return SafeDict.as_dict(dl.call("get_scenario", scenario_id))
+
+
+## Era tecnológica actual ("I"/"II"/"III", D-059).
+func era() -> String:
+	return str(gs.call("get_era"))
+
+
+func era_index() -> int:
+	return SafeDict.as_int(gs.call("get_era_index"), 0)
+
+
+func available_units(faction_id: String) -> Array[String]:
+	var value: Variant = mil.call("get_available_units", faction_id)
+	var result: Array[String] = []
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result
+
+
+func is_unit_available(unit_id: String, faction_id: String = "") -> bool:
+	return SafeDict.as_bool(mil.call("is_unit_available", unit_id, faction_id), false)
+
+
 func state() -> Dictionary:
 	var value: Variant = gs.get("state")
 	if value is Dictionary:
