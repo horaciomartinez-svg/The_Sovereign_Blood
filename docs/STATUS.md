@@ -631,3 +631,5 @@ y sin material con copyright.
   artefactos temporales de descompilación se eliminaron.
 - **Uso previsto:** referencia de diseño para una eventual Fase 5; cualquier integración requiere decisión
   de AG-0 y no copia literal de código/datos/arte/texto.
+
+**Veredicto de cobertura (AG-4, `docs/qa/fase4_rea_coverage.md`):** **Cobertura REA Fase 4: SUFICIENTE** — M3 (economía/comercio) y M6 (militar/unidades) alta; M4 (dinastía) y M5 (diplomacia) parciales, M2 (gating) parcial y M7 (IA) unknown, documentados sin inventar datos. C3/C4/C5/C14 respaldados por M3/M6; C6/C13 se cierran con D-071/D-074 y tests propios. Ningún vacío bloquea la fase.
