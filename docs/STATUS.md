@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (CERRADA)** + **Fase 3.1 — Animación base (CERRADA)** + **Fase 3.2 — Delta a distancia/artillería (CERRADA)**; sprites §10.3 ✅ 17/17 QA 6/6; tiles §10.4 ✅ 7/7; escenarios 1402/1453 + tecnología + UI ✅; animación combate ✅ 235 frames (10×13 + 7×15) QA 6/6; QA final Fase 3 ✅ APROBADO CON OBSERVACIONES (solo retratos ilustrados Kimi pendientes) |
-| **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
-| **Siguiente fase** | Fase 4 — no definida (arte final: 69 retratos Kimi, música CC, balance y pulido) |
+| **Fase actual** | **Fase 3.3 — MVP-1337 (EN CURSO)**; Fase 3 / 3.1 / 3.2 cerradas; **1402/1453 CONGELADOS** por D-066 (datos en main, UI «EN PAUSA»); arte externo suspendido; foco: loop completo 1337, victoria/derrota, save/load, estabilidad/rendimiento, UX/audio mínimo y balance |
+| **Fase anterior** | **Fase 3.2 — Delta de animación v1.8.1 (CERRADA)**; QA APROBADO 6/6 |
+| **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3.3`; reanudar 1402/1453 y Paquete A es decisión del usuario) |
 | **GDD** | **v1.8.1** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 235 frames, §10.4 tiles N3) |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
@@ -22,6 +22,7 @@
 | **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; solo retratos ilustrados Kimi pendientes |
 | **QA Animación Fase 3.1** | **APROBADO 6/6 (17×13 frames, 170 sprites)** — `docs/qa/fase3_anim_report.md` |
 | **QA Animación Fase 3.2** | **APROBADO 6/6 (235 frames; delta 76; attack_4/impact)** — `docs/qa/fase3_anim_report.md` |
+| **QA MVP-1337 (Fase 3.3)** | ⏳ en curso — `docs/qa/fase3_mvp_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -516,3 +517,34 @@ schemas, 11.641 comprobaciones, 0 WARN/0 errores**, editor/headless 0. Hashes en
 - **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.2`**. Animación de
   combate completa (184 PNG de combate + 51 de marcha = 235 frames finales); lista para la verificación
   de Kimi contra GDD v1.8.1 antes de abrir el Paquete A (retratos) o la siguiente línea.
+
+---
+
+## 18. Fase 3.3 — MVP-1337: endurecimiento del Escenario 1 (EN CURSO)
+
+**Directiva del usuario (2026-11-23, verificada por Kimi):** suspender 1402/1453 y centrarse en que el
+MVP con **un solo escenario (1337)** esté completo y funcione correctamente. Registrada en **D-066**.
+**GDD de referencia:** v1.8.1. **Baseline:** `be28088` / tag `fase-3.2` (QA animación 6/6).
+
+**Restricciones del tramo:** 1402/1453 **congelados** (datos en main, sin tocar contenido/balance/QA);
+en `scenario_select` solo 1337 jugable y 1402/1453 con etiqueta **«EN PAUSA — disponible en versión
+completa»** mediante flag reversible; **arte externo suspendido** (no se piden retratos ni arte a Kimi;
+se mantienen/pulen fallbacks); nada de mecánicas fuera del GDD.
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| UI: pausa 1402/1453 + auditoría UX + capturas MVP | AG-3 | tarjetas deshabilitadas con etiqueta; pantallas §9 sin botones muertos; PG/tooltips; mensajes claros; capturas 1920×1080 del flujo | ⏳ |
+| Sistemas: audio mínimo + robustez loop/save/perf/balance | AG-2 | `audio_manager` autoload + tonos generados (click, campana de fin de año, espada N3); victoria/derrota §4.5 robustas; save/load en 3 puntos; IA <2 s/turno; mapa <8 ms; balance 1337/era I | ⏳ |
+| Datos: auditoría de eventos 1337 y balance | AG-1 | Peste Negra 1348 y todo `events_1337.json` disparan sin estado inválido; revisión de balance económico 1337 (sin tocar 1402/1453) | ⏳ |
+| QA MVP-1337 | AG-4 | tests C1-C10, informe `docs/qa/fase3_mvp_report.md`, capturas, veredicto APROBADO | ⏳ |
+| Gobernanza/cierre | AG-0 | D-066, STATUS, tag `fase-3.3`, push y aviso para verificación Kimi | ⏳ |
+
+**Criterios de aceptación (C1-C10):** loop completo 1337 sin crash; 4 condiciones §4.5 alcanzables y
+testeadas; N1/N2/N3 desde partida real con animación sin regresión; save/load exacto en 3 puntos; 10 años
+× 8 facciones headless sin errores; `run_all` verde, `validate_data` 0, editor 0 warnings; IA <2 s/turno y
+mapa <8 ms/frame; UX con 0 botones muertos, PG visible, audio mínimo y capturas §9; 1402/1453 congelados y
+«EN PAUSA»; sin solicitudes de arte externo y fallbacks operativos.
+
+**Cierre previsto:** `docs/qa/fase3_mvp_report.md` APROBADO en los 10 criterios → commits por agente +
+`[AG-0]`, tag anotado **`fase-3.3`**, push a main y aviso al usuario para la verificación de Kimi contra
+GDD v1.8.1 + esta directiva.
