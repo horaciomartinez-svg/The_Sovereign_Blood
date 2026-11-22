@@ -761,3 +761,107 @@ ACEPTACIÓN FASE 2: PENDIENTE — 4 criterio(s) SKIP por módulos Fase 2 en curs
 - **Post-snapshot (22:54–22:56, informativo):** AG-1 entregó `data/map_borders.json` — **118.898 B (116,1 KB ≤150 KB)**, schema_version 1, canvas 4096×3072, **47/47/47** regiones, rings 7–186 puntos (media 46,3/región) — aún **sin integrar** en `world_map.gd` (el snapshot 22:53:37 lo vio ausente). AG-3 añadió `scripts/ui/map/map_borders_layer.gd` y `map_entities_layer.gd`; `data/map_layout.json` sigue presente (D-024 pendiente). AG-1 mantiene **auxiliares temporales dentro de `data/`** (`_ag1_boundary.py`, `_ag1_mapgen.py`, `_ag1_pipeline.py`, `__pycache__/`, `_ne_*.geojson`, `_map_debug_*.png`): no son entregables y deben retirarse antes de task-15 (observación provisional MENOR, owner AG-1).
 
 *Fin de la sección Fase 2 — baseline (task-14).*
+
+---
+
+## 10. Fase 2 — Verificación final (task-15, 2026-11-21)
+
+**Contexto:** verificación final de Fase 2 sobre el árbol integrado, HEAD **`5c3aa93`** (`dbfce73` N3→campaña, `f560a40` extinción/N3, `ef25d98` capturas/D-032/D-033, `f302a3c` contrato, `8451304` mapa/retratos/escenas). Informe completo con evidencia íntegra y métricas: **`docs/qa/fase2_report.md`**.
+
+> **Veredicto: QA Fase 2: RECHAZADO** — 5/6 criterios PASS, **1 BLOQUEANTE (B-F2-01)**, 0 MAYORES, 2 MENORES.
+
+### 10.1 Comandos y códigos de salida
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase2.gd` | **1** | **5 PASS / 1 FAIL / 0 SKIP** — `FAIL F2-C1`; 2,5–3,1 s de pared |
+| 1-bis | repetición del harness | **1** | Mismos estados/detalles (solo varían ms de C3) → fallo determinista |
+| 2 | `--script tests/run_all.gd` | **0** | **709 pasados / 0 fallidos / 1 omitido**; `CI: OK` |
+| 3 | `--script tools/validate_data.gd` | **0** | 5.239 comprobaciones, **0 errores/WARN**; `map_borders.json` excluido (D-017/D-024) |
+| 4 | `--script tests/qa_acceptance.gd` (Fase 1) | **0** | **6/6 PASS** (no regresión F1) |
+| 5 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 6 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+### 10.2 Criterios §12/§10 — resultado
+
+| Criterio | Estado | Evidencia (ejecución canónica) |
+|---|---|---|
+| F2-C1 Crécy N1/N2/N3 coherentes | **FAIL** | N1 PASS (england, 703/724, 3 asaltos); **N2 incoherente: informe 0/509 vs esperado 1200/509** (unidad atacante destruida no contabilizada); N3 PASS (england, 773/641, 5 rondas) y N3→campaña D-033 PASS (17 claves, idempotente) |
+| F2-C2 Extinción inmediata | `PASS` | `resolve.extinct=true`; `dynasty_extinct`; `game_over=true` (1 señal de derrota); reloj congelado 1337·T1 |
+| F2-C3 §10.1 Mapa | `PASS` | 132.962 B ≤147.456; 47/47/47; 7.410 puntos; 0 incidencias; hit-test QA 141/141 + AG-3 141/141 en 3 vistas; terreno 4096×3072; `map_layout` ausente; benchmark 120 frames media **0,153 ms** (máx 5,895 ms) <8 ms; `map_comparison.png` |
+| F2-C4 §10.2 Retratos | `PASS` | schema con `portrait` opcional; widget `id != ""` + `is_fallback()=true`; **5/5 slots**; sucesión en el slot hijo del mapa: `edward_iii_plantagenet` → `eduardo_el_principe_negro`; capturas presentes |
+| F2-C5 Smoke escenas | `PASS` | **18/18** `.tscn` instancian/liberan; 0 scripts sin compilar (16 previas + tactical_map + close_combat) |
+| F2-C6 No regresión F1 | `PASS` | save/load 96.786 B hash `db35e62a…`; Peste Negra 1348; determinismo; 0 mutaciones UI; 18 escenas |
+
+### 10.3 BLOQUEANTE B-F2-01 — N2 no contabiliza bajas de unidades destruidas
+
+- **Reproducción:** `& "C:\Godot\Godot_v4.7.2-stable_win64_console.exe" --headless --path C:\Proyectos\TSB\sovereigns-blood --script tests/qa_acceptance_fase2.gd` → `F2-C1 [FAIL] … N2=PRESENTE (bajas N2 incoherentes: informe=0/509, esperado=1200/509 …)`.
+- **Evidencia (sonda):** antes 2 unidades (atacante 1200, defensor 900); después solo defensor 391; `commit()` → `winner=france, attacker_losses=0, defender_losses=509`; `_start_men={"attacker_u1_0":1200,"defender_u1_0":900}`.
+- **Causa raíz (AG-2):** `scripts/battle/tactical_battle.gd` — `commit()` (L404-405) calcula bajas con `_side_start_men()` (L975-983), que itera solo `_units` **actuales**; `_remove_destroyed_unit()` (L946-953) elimina las unidades destruidas → sus hombres iniciales no cuentan. Impacto: informe de N2 incoherente y, al aplicar a campaña vía `apply_outcome()`, pérdidas subaplicadas.
+- **Owner:** AG-2. **Criterio afectado:** §12 Fase 2 «resultados coherentes (bajas/vencedor)» / contrato §8.1.
+- **Re-verificación:** tras el fix (sumar `_start_men` de todas las unidades iniciales por bando o conservar bando inicial), ejecutar harness F2 ×2 → debe dar **6/6 PASS exit 0**; recomendado añadir test de regresión que aniquile una unidad y compare bajas con hombres iniciales (los tests actuales solo exigen «alguna baja >0» / «>=0», por eso no lo detectan).
+
+### 10.4 Observaciones menores e informativos
+
+| ID | Severidad | Hallazgo |
+|---|---|---|
+| M-F2-01 | MENOR | `map_comparison.png` (2834×1042) y `map_portrait.png` (1620×760) no son 1920×1080 aunque §10.1 pide capturas 1920×1080; el resto sí. 35 capturas únicas y todas las clave presentes. Owner AG-3/AG-0: documentar o reexportar. |
+| M-F2-02 | MENOR (harness) | `determinista=false` en el detalle de N2 es artefacto del harness al fallar la coherencia (no se calcula firma); ambas ejecuciones dan 0/509 → el fallo es determinista, no de RNG. |
+| M-F2-03 | INFORMATIVO | Se corrigió un bucle de fast-forward del **harness F1** (`tests/qa_acceptance.gd` C4) que paraba a los 8 trimestres y saltaba años; con el fix simula el flujo real y F1 vuelve a 6/6. Cambio solo de tests, no de producción/criterio. |
+
+- **Espionaje** (§5.4, no listado en contrato §8): sonda independiente — `propose(...,{"action":"espia"})` → `ok=true, accepted=true, cost_pg=6`, intel con armies/treasury/regent/at_war/ruler/heir/prestige, persistido en `state.factions.england.intel.france`. PASS.
+- **D-024:** `data/map_layout.json` ausente; 3 menciones solo en `tools/validator_core.gd` (comentarios/`NON_SIMULATION_DATASETS`), 0 consumo. PASS.
+- **Datos Fase 0:** hashes SHA-256 idénticos; `data/` sin auxiliares de AG-1; `map_borders.json` es el único dataset nuevo. PASS.
+- **UI-sin-mutaciones:** 30 `.gd` de `scripts/ui/**` (excl. `dev/`): 0 asignaciones a autoloads/estado, 0 escrituras `state[...]`, 0 setters. `project.godot`: config_version=5, main_scene, 10 autoloads, 1920×1080. PASS.
+- **Determinismo:** harness F2 repetido con estados/detalles idénticos; hash/población/captura invariantes; N1/N3 deterministas y N2 con valores reproducibles (el FAIL es determinista).
+
+### 10.5 Riesgos R-F2-* cerrados
+
+R-F2-01 cerrado (141/141 hit-test; autointersecciones/adyacencias geométricas solo revisión visual, documentado) · R-F2-02 cerrado con limitación headless (CPU, no GPU; media 0,153 ms) · R-F2-03 cerrado (widget real + 5 slots + sucesión en slot hijo) · **R-F2-04 FALLO en N2 (B-F2-01)**, N3 PASS · R-F2-05 cerrado (extinción inmediata) · R-F2-06 cerrado (árbol integrado, auxiliares limpiados) · R-F2-07 cerrado (D-024) · R-F2-08 cerrado (capturas en docs).
+
+**Artefactos:** `docs/qa/fase2_report.md` (informe completo), `tests/qa_acceptance_fase2.gd` (harness), `tests/qa_acceptance.gd` (fix de bucle C4), este registro.
+
+*Fin de la sección Fase 2 — verificación final (task-15).*
+
+---
+
+## 11. Fase 2 — Verificación final v1.5 (task-21, cerrada)
+
+**Contexto:** verificación final definitiva de Fase 2 con GDD v1.5, HEAD **`2d283ff`** (informe REA de batallas), con `f1e1bd1` (retratos en los 5 slots), `871d3e4` (B-F2-01), `a4ce356` (AG-1 retratos), `66b85b3`/`bfe1b4e` (AG-0 v1.5) integrados. Informe completo: **`docs/qa/fase2_report.md`** (veredicto final).
+
+> **Estado: QA Fase 2: APROBADO (v1.5)** — **6/6 criterios PASS**, 0 bloqueantes, 0 mayores, 0 menores pendientes; **REA §3.2 verificado** (`docs/rea/gk2_battle_mechanics.md` + `notes_battle.md`). **task-21 COMPLETADA; Fase 2 cerrada.**
+
+### 11.1 Comandos y códigos de salida
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase2.gd` | **0** | **6 PASS / 0 FAIL / 0 SKIP**; `ACEPTACIÓN FASE 2: OK` |
+| 1-bis | repetición del harness | **0** | Mismos estados/detalles (solo varían ms de C3) → determinista |
+| 2 | `--script tests/qa_acceptance.gd` (Fase 1) | **0** | **6/6 PASS**; hash `a511634a85de3550`, save 97.725 B |
+| 3 | `--script tests/run_all.gd` | **0** | **716 / 0 / 1**; `CI: OK` |
+| 4 | `--script tools/validate_data.gd` | **0** | **5.281 comprobaciones**, 0 errores/WARN; `map_borders.json` excluido (D-017/D-024) |
+| 5 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 6 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+### 11.2 Criterios §12/§10 — resultado v1.5
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| F2-C1 Crécy N1/N2/N3 | **PASS** | N1 england 703/724; **N2 france 1200/509 (B-F2-01 cerrado; esperado 1200/509)**; N3 england 773/641; N3→campaña D-033 idempotente; 3 niveles deterministas |
+| F2-C2 Extinción | **PASS** | `dynasty_extinct` + `game_over(false)` + reloj congelado 1337·T1 |
+| F2-C3 §10.1 Mapa | **PASS** | 132.962 B; 47/47/47; 7.410 puntos; hit-test 141/141 QA + 141/141 AG-3 en 3 vistas; terreno 4096×3072; media 0,184 ms<8; `map_comparison.png` 1920×1080; `map_layout` ausente |
+| F2-C4 §10.2 Retratos v1.5 | **PASS** | 14/14 rulers con `portrait` `res://`; **14/14 PNG 256×256**; widget texturiza **14/14** (`is_fallback=false`) y fallback con heredero sin portrait (`is_fallback=true`, id no vacío); **5/5 slots con textura** (mapa 2, árbol 2+7 fallback, diplomacia 1, batalla 2, corte 2+6 fallback); sucesión textura→heredero fallback; 4/4 capturas 1920×1080 |
+| F2-C5 Smoke escenas | **PASS** | 18/18 `.tscn`; 0 scripts sin compilar |
+| F2-C6 No regresión F1 | **PASS** | save/load 97.725 B hash `a511634a…`; Peste Negra 1348; determinismo; 0 mutaciones UI; 18 escenas |
+
+**Independiente:** 14 PNG 256×256 y 14 campos `res://` válidos/únicos (PowerShell); `PortraitFrame` en los 5 archivos de slot; 38 capturas PNG **únicas** (todas las clave a 1920×1080: map_atlas_1337/1402/1453, map_portrait, map_comparison, portraits_contact_sheet_final, succession_portrait, tactical_map, close_combat); UI 30 `.gd` con 0 mutaciones; `project.godot` config 5/main_scene/10 autoloads/1920×1080; D-024 con 0 referencias; `characters.json` cambia solo por los 14 `portrait` (esperado v1.5) y los otros 5 datasets mantienen hash Fase 0. **§10.3 sprites = Fase 3 (D-037), no criterio Fase 2.**
+
+### 11.3 REA batallas §3.2 — VERIFICADO y cierre
+
+- `docs/rea/gk2_battle_mechanics.md` (commit `2d283ff`; **12.517 B, 155 líneas, 1.998 palabras**) + anexo `notes_battle.md` (8.065 B, 1.322 palabras).
+- **Método/estado:** §1 verifica DOSBox ausente y declara las mecánicas N2/N3 **NO observadas** aspecto por aspecto (§2, 8 aspectos), sin inventar; incluye protocolo de capturas para reactivación. Limitación **aceptada como no bloqueante** por AG-0.
+- **Estructura:** §3 `SUNIT.DAT` (49.152 B = 96×512 B; periodicidad, sin paleta; límites declarados), §4 `KPAT.DAT` (45.450 B; máscaras/patrones binarios), §5 `GRPDATA.DAT` (45.475 B; banco raster/teselas); §6 lecciones §10.3 (8 criterios de diseño propio).
+- **Legalidad:** §7 declara sin desensamblado/descompilación de `.EXE`, sin copia de píxeles/paletas/assets ni texto del juego; previsualizaciones eliminadas; `docs/rea/` solo contiene 4 `.md` (sin binarios/imágenes/base64). Las 2 menciones de `.EXE` son declaraciones de no-análisis.
+- **Resultado: REA PASS.** **task-21 COMPLETADA**; Fase 2 cerrada y apta para tag `fase-2`.
+
+*Fin de la sección Fase 2 — verificación final v1.5 (task-21 cerrada).*

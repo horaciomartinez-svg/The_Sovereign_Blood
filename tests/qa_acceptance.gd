@@ -461,23 +461,26 @@ func _criterion_4_black_death() -> void:
 		return
 
 	var year := int(state.get("year", 1337))
+	var last_turn := int(state.get("turn", 0))
 	var pops_1347: Dictionary = {}
 	var pop_before_plague := 0
 	var pop_after_plague := 0
 	var advanced_any := false
 	var path := "advance_quarter"
 	var guard := 0
-	while year < 1348 and guard < 60:
+	while year < 1348 and guard < 80:
 		var year_before := year
+		var turn_before := last_turn
 		tm.call("advance_quarter")
 		guard += 1
 		state = _state()
 		year = int(state.get("year", year_before))
+		last_turn = int(state.get("turn", turn_before))
 		if year > year_before:
 			advanced_any = true
 		if year == 1347:
 			pops_1347 = _pops_by_region(state)
-		if year == year_before and guard >= 8:
+		if year == year_before and last_turn == turn_before:
 			break
 	if year < 1348 and tm.has_method("advance_year"):
 		path = "advance_year"
@@ -527,6 +530,7 @@ func _criterion_4_black_death() -> void:
 		var unaffected := 0
 		var out_of_range := 0
 		var owners_affected: Dictionary = {}
+		var owner_counts: Dictionary = {}
 		var min_ratio := 2.0
 		var max_ratio := 0.0
 		for region_id in pops_1347.keys():
@@ -539,18 +543,29 @@ func _criterion_4_black_death() -> void:
 				affected += 1
 				min_ratio = minf(min_ratio, ratio)
 				max_ratio = maxf(max_ratio, ratio)
-				owners_affected[_region_owner_of(state, str(region_id))] = true
+				var affected_owner := _region_owner_of(state, str(region_id))
+				owners_affected[affected_owner] = true
+				owner_counts[affected_owner] = int(owner_counts.get(affected_owner, 0)) + 1
 				if ratio < 0.60 or ratio > 0.70:
 					out_of_range += 1
 			else:
 				unaffected += 1
 		var owners_ok := true
+		var missing_owners: Array[String] = []
 		for faction_id in western:
 			if not owners_affected.has(faction_id):
 				owners_ok = false
+				missing_owners.append(faction_id)
+		var owner_keys: Array = owners_affected.keys()
+		owner_keys.sort()
+		var count_parts: Array[String] = []
+		for owner_key in owner_keys:
+			count_parts.append("%s=%d" % [str(owner_key), int(owner_counts.get(owner_key, 0))])
 		effect_applied = affected >= 25 and out_of_range == 0 and owners_ok
-		effect_detail = "regiones afectadas=%d (ratio %.3f–%.3f), no afectadas=%d, dueños occidentales con plaga=%d/%d, fuera de rango=%d; población total %d → %d (%+.1f%%)" % [
+		effect_detail = "regiones afectadas=%d (ratio %.3f–%.3f), no afectadas=%d, dueños occidentales con plaga=%d/%d (%s), por dueño: %s, faltan=%s, fuera de rango=%d; población total %d → %d (%+.1f%%)" % [
 			affected, min_ratio, max_ratio, unaffected, owners_affected.size(), western.size(),
+			", ".join(owner_keys), ", ".join(count_parts),
+			"ninguno" if missing_owners.is_empty() else ", ".join(missing_owners),
 			out_of_range, pop_before_plague, pop_after_plague,
 			(float(pop_after_plague - pop_before_plague) / float(maxi(1, pop_before_plague))) * 100.0,
 		]

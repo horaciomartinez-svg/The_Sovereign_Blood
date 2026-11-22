@@ -69,8 +69,8 @@ func _initialize() -> void:
 	_connect_f2_signals()
 	_criterion_1_crecy()
 	_criterion_2_extinction()
-	_criterion_3_map_10_1()
-	_criterion_4_portraits_10_2()
+	await _criterion_3_map_10_1()
+	await _criterion_4_portraits_10_2()
 	_criterion_5_scene_smoke()
 	_criterion_6_no_regression()
 	_finish()
@@ -351,9 +351,14 @@ func _criterion_1_crecy() -> void:
 		n3_ok = bool(close_a["ok"]) and bool(close_b["ok"]) and n3_same
 		n3_detail = str(close_a.get("detail", close_a.get("reason", ""))) + "; determinista=" + str(n3_same)
 
-	var detail := "N1=%s (%s; determinista=%s); N2=%s (%s); N3=%s (%s)" % [
+	# D-033: el resultado del Nivel 3 debe aplicarse a la campaña (idempotente).
+	var campaign := _check_n3_campaign_apply(battle)
+	var campaign_ok := bool(campaign["ok"])
+	var campaign_detail := str(campaign.get("detail", campaign.get("reason", "")))
+
+	var detail := "N1=%s (%s; determinista=%s); N2=%s (%s); N3=%s (%s); N3→campaña(D-033)=%s (%s)" % [
 		"PASS" if n1_ok else "FAIL", n1_detail, str(n1_det),
-		n2_status, n2_detail, n3_status, n3_detail,
+		n2_status, n2_detail, n3_status, n3_detail, str(campaign_ok), campaign_detail,
 	]
 	if not n1_ok:
 		_fail(id, name, "Nivel 1 incoherente: " + detail, started)
@@ -367,10 +372,100 @@ func _criterion_1_crecy() -> void:
 	if n3_status == "PRESENTE" and not n3_ok:
 		_fail(id, name, "Nivel 3 presente pero incoherente: " + detail, started)
 		return
+	if not campaign_ok:
+		_fail(id, name, "N3 no aplica correctamente a campaña (D-033): " + detail, started)
+		return
 	if n2_ok and n3_ok:
 		_pass(id, name, detail, started)
 		return
 	_skip(id, name, "N1 verificado; N2/N3 pendientes de AG-2/AG-3: " + detail, started)
+
+
+func _check_n3_campaign_apply(battle: Node) -> Dictionary:
+	var gs := _autoload("GameState")
+	if gs == null:
+		return {"ok": false, "reason": "GameState no montado"}
+	if not battle.has_method("apply_close_combat_outcome"):
+		return {"ok": false, "reason": "BattleManager.apply_close_combat_outcome ausente (D-033)"}
+	var start := _ensure_game_started()
+	if not bool(start["ok"]):
+		return {"ok": false, "reason": str(start["reason"])}
+	var state := _state()
+	var armies: Variant = state.get("armies", {})
+	if not (armies is Dictionary):
+		return {"ok": false, "reason": "state.armies no disponible"}
+	var attacker_id := ""
+	var defender_id := ""
+	for army_id in (armies as Dictionary).keys():
+		var army_value: Variant = (armies as Dictionary)[army_id]
+		if not (army_value is Dictionary):
+			continue
+		var faction_id := str((army_value as Dictionary).get("faction_id", ""))
+		if faction_id == "england" and attacker_id == "":
+			attacker_id = str(army_id)
+		elif faction_id == "france" and defender_id == "":
+			defender_id = str(army_id)
+	if attacker_id == "" or defender_id == "":
+		return {"ok": false, "reason": "sin ejércitos Inglaterra/Francia en el escenario"}
+	var attacker_state: Dictionary = gs.call("get_army_state", attacker_id)
+	var defender_state: Dictionary = gs.call("get_army_state", defender_id)
+	var region_id := str(defender_state.get("region_id", ""))
+	if region_id == "":
+		return {"ok": false, "reason": "ejército defensor sin región"}
+	var attacker_unit := _unit_from_state_army(attacker_state, "england")
+	var defender_unit := _unit_from_state_army(defender_state, "france")
+	var node: Variant = battle.call("launch_close_combat", attacker_unit, defender_unit)
+	if not (node is Node):
+		return {"ok": false, "reason": "launch_close_combat no devuelve Node"}
+	var duel := node as Node
+	root.add_child(duel)
+	if not duel.has_method("auto_resolve"):
+		duel.free()
+		return {"ok": false, "reason": "CloseCombat sin auto_resolve para la prueba D-033"}
+	duel.call("auto_resolve")
+	var outcome_value: Variant = duel.call("get_outcome")
+	duel.free()
+	if not (outcome_value is Dictionary) or (outcome_value as Dictionary).is_empty():
+		return {"ok": false, "reason": "sin outcome de N3 para aplicar"}
+	var outcome := outcome_value as Dictionary
+	var applied_first: Variant = battle.call("apply_close_combat_outcome", attacker_id, defender_id, region_id, outcome)
+	if not (applied_first is Dictionary) or (applied_first as Dictionary).is_empty():
+		return {"ok": false, "reason": "apply_close_combat_outcome devuelve informe vacío"}
+	var report := applied_first as Dictionary
+	if str(report.get("region_id", "")) != region_id:
+		return {"ok": false, "reason": "informe aplicado sin region_id correcto"}
+	var hash_first := _hash(gs.call("to_dict"))
+	var applied_second: Variant = battle.call("apply_close_combat_outcome", attacker_id, defender_id, region_id, outcome)
+	var hash_second := _hash(gs.call("to_dict"))
+	if not (applied_second is Dictionary) or (applied_second as Dictionary).is_empty():
+		return {"ok": false, "reason": "segunda aplicación devuelve vacío (idempotencia rota)"}
+	var idempotent := hash_first == hash_second
+	if not idempotent:
+		return {"ok": false, "reason": "aplicación N3 no idempotente (hash cambió)"}
+	return {"ok": true, "detail": "informe=%d claves; region=%s; idempotente=%s; winner=%s" % [
+		report.size(), region_id, str(idempotent), str(report.get("winner_faction", "")),
+	]}
+
+
+func _unit_from_state_army(army_state: Dictionary, faction_id: String) -> Dictionary:
+	var units: Variant = army_state.get("units", [])
+	var size := 0
+	var unit_id := "militia_spearman"
+	var strength := 4
+	if units is Array and not (units as Array).is_empty() and (units as Array)[0] is Dictionary:
+		var first := (units as Array)[0] as Dictionary
+		size = int(first.get("size", 0))
+		unit_id = str(first.get("unit_id", unit_id))
+		strength = int(first.get("strength", strength))
+	return {
+		"id": "qa_apply_%s" % faction_id,
+		"faction": faction_id,
+		"unit_id": unit_id,
+		"size": size,
+		"strength": strength,
+		"morale": 1.0,
+		"experience": 50,
+	}
 
 
 func _run_crecy_n1(battle: Node) -> Dictionary:
@@ -423,6 +518,8 @@ func _tactical_api_ok(node: Node) -> Dictionary:
 
 func _simulate_tactical(node: Node) -> Dictionary:
 	root.add_child(node)
+	var side_map: Dictionary = _unit_side_map(node.call("get_units"))
+	var start_men: Variant = node.get("_start_men")
 	var auto_used := false
 	if node.has_method("auto_resolve"):
 		node.call("auto_resolve")
@@ -467,6 +564,7 @@ func _simulate_tactical(node: Node) -> Dictionary:
 	var winner := str(node.call("get_winner"))
 	var outcome_dict := _report_dict(node.call("commit"))
 	var signature := JSON.stringify(outcome_dict)
+	var expected_losses := _expected_tactical_losses(start_men, side_map, node.call("get_units"))
 	node.free()
 	if not finished_ok:
 		return {"ok": false, "reason": "táctica no termina (auto=%s, rondas=%d, acciones=%d)" % [str(auto_used), rounds, actions]}
@@ -475,10 +573,53 @@ func _simulate_tactical(node: Node) -> Dictionary:
 	var coherence := _tactical_outcome_ok(outcome_dict, winner)
 	if not bool(coherence["ok"]):
 		return {"ok": false, "reason": "informe táctico incoherente: %s" % str(coherence.get("reason", ""))}
-	return {"ok": true, "signature": signature, "detail": "auto=%s rondas=%d acciones=%d winner=%s bajas=%s/%s" % [
+	if bool(expected_losses["ok"]):
+		var expected_a := int(expected_losses["attacker_losses"])
+		var expected_d := int(expected_losses["defender_losses"])
+		var reported_a := int(outcome_dict.get("attacker_losses", -1))
+		var reported_d := int(outcome_dict.get("defender_losses", -1))
+		if expected_a != reported_a or expected_d != reported_d:
+			return {"ok": false, "reason": "bajas N2 incoherentes: informe=%d/%d, esperado=%d/%d (start_men vs unidades finales)" % [
+				reported_a, reported_d, expected_a, expected_d,
+			]}
+	return {"ok": true, "signature": signature, "detail": "auto=%s rondas=%d acciones=%d winner=%s bajas=%s/%s (esperado %s/%s)" % [
 		str(auto_used), int(outcome_dict.get("rounds_played", rounds)), actions, winner,
 		str(outcome_dict.get("attacker_losses", "?")), str(outcome_dict.get("defender_losses", "?")),
+		str(expected_losses.get("attacker_losses", "?")), str(expected_losses.get("defender_losses", "?")),
 	]}
+
+
+func _unit_side_map(units: Variant) -> Dictionary:
+	var side_map: Dictionary = {}
+	if units is Array:
+		for unit_value in (units as Array):
+			if unit_value is Dictionary:
+				var unit := unit_value as Dictionary
+				side_map[str(unit.get("id", ""))] = str(unit.get("side", ""))
+	return side_map
+
+
+func _expected_tactical_losses(start_men: Variant, side_map: Dictionary, final_units: Variant) -> Dictionary:
+	if not (start_men is Dictionary) or (start_men as Dictionary).is_empty() or side_map.is_empty():
+		return {"ok": false}
+	var start_by_side: Dictionary = {"attacker": 0, "defender": 0}
+	for unit_id in (start_men as Dictionary).keys():
+		var side := str(side_map.get(str(unit_id), ""))
+		if start_by_side.has(side):
+			start_by_side[side] = int(start_by_side[side]) + int((start_men as Dictionary)[unit_id])
+	var current_by_side: Dictionary = {"attacker": 0, "defender": 0}
+	if final_units is Array:
+		for unit_value in (final_units as Array):
+			if unit_value is Dictionary:
+				var unit := unit_value as Dictionary
+				var side := str(unit.get("side", ""))
+				if current_by_side.has(side):
+					current_by_side[side] = int(current_by_side[side]) + int(unit.get("size", 0))
+	return {
+		"ok": true,
+		"attacker_losses": maxi(0, int(start_by_side["attacker"]) - int(current_by_side["attacker"])),
+		"defender_losses": maxi(0, int(start_by_side["defender"]) - int(current_by_side["defender"])),
+	}
 
 
 func _tactical_outcome_ok(report: Dictionary, expected_winner: String) -> Dictionary:
@@ -525,6 +666,9 @@ func _run_crecy_n3(battle: Node) -> Dictionary:
 			(node as Node).free()
 			return {"ok": false, "reason": "CloseCombat sin método %s()" % method_name}
 	root.add_child(node as Node)
+	var start_state: Variant = (node as Node).call("get_state")
+	var start_attacker := _combat_side_size(start_state, "attacker")
+	var start_defender := _combat_side_size(start_state, "defender")
 	var orders: Array[String] = ["carga", "disparo", "formacion", "finta", "retirada", "charge", "volley", "formation", "feint", "retreat"]
 	var accepted := 0
 	var rounds := 0
@@ -556,6 +700,9 @@ func _run_crecy_n3(battle: Node) -> Dictionary:
 	if outcome_final is Dictionary:
 		outcome_dict = outcome_final as Dictionary
 	var signature := JSON.stringify(outcome_dict)
+	var end_state: Variant = (node as Node).call("get_state")
+	var end_attacker := _combat_side_size(end_state, "attacker")
+	var end_defender := _combat_side_size(end_state, "defender")
 	(node as Node).free()
 	if not finished_ok:
 		return {"ok": false, "reason": "combate cerrado no termina (rondas=%d, órdenes=%d)" % [rounds, accepted]}
@@ -566,6 +713,12 @@ func _run_crecy_n3(battle: Node) -> Dictionary:
 	var defender_losses: Variant = outcome_dict.get("defender_losses", null)
 	if attacker_losses == null or defender_losses == null:
 		return {"ok": false, "reason": "outcome sin bajas"}
+	var expected_attacker_losses := maxi(0, start_attacker - end_attacker)
+	var expected_defender_losses := maxi(0, start_defender - end_defender)
+	if int(attacker_losses) != expected_attacker_losses or int(defender_losses) != expected_defender_losses:
+		return {"ok": false, "reason": "bajas N3 incoherentes: informe=%d/%d, esperado=%d/%d" % [
+			int(attacker_losses), int(defender_losses), expected_attacker_losses, expected_defender_losses,
+		]}
 	if int(attacker_losses) + int(defender_losses) <= 0:
 		return {"ok": false, "reason": "outcome con bajas 0/0"}
 	if int(outcome_dict.get("rounds", 0)) < 1:
@@ -573,6 +726,15 @@ func _run_crecy_n3(battle: Node) -> Dictionary:
 	return {"ok": true, "signature": signature, "detail": "rondas=%d órdenes=%d winner=%s bajas=%d/%d" % [
 		int(outcome_dict.get("rounds", 0)), accepted, winner, int(attacker_losses), int(defender_losses),
 	]}
+
+
+func _combat_side_size(state_data: Variant, side_name: String) -> int:
+	if not (state_data is Dictionary):
+		return 0
+	var side_value: Variant = (state_data as Dictionary).get(side_name, {})
+	if side_value is Dictionary:
+		return int((side_value as Dictionary).get("size", 0))
+	return 0
 
 
 func _make_unit_dict(faction_id: String, unit_id: String, size: int, strength: int) -> Dictionary:
@@ -895,7 +1057,7 @@ func _criterion_3_map_10_1() -> void:
 	var comparison_ok := FileAccess.file_exists("res://docs/screenshots/map_comparison.png")
 
 	# Benchmark CPU del controlador del mapa (§10.1 / contrato §2).
-	var benchmark_result: Dictionary = _benchmark_map_controller()
+	var benchmark_result: Dictionary = await _benchmark_map_controller()
 	var benchmark_ok := bool(benchmark_result["ok"])
 	var detail := "bytes=%d; regiones=%d; puntos=%d; datos=%d incidencias; hit-test %d/%d OK (%d fallos); integración map_borders=%s/map_layout_ausente=%s; terreno=%s; comparativa=%s; benchmark=%s" % [
 		bytes, total_regions, total_points, data_issues.size(), hit_checks - hit_failures.size(), hit_checks,
@@ -974,13 +1136,35 @@ func _benchmark_map_controller() -> Dictionary:
 	var packed: Variant = load("res://scenes/map/world_map.tscn")
 	if not (packed is PackedScene):
 		return {"ok": false, "detail": "world_map.tscn no carga"}
+	if not bool(_ensure_game_started()["ok"]):
+		return {"ok": false, "detail": "no hay partida para configurar el mapa"}
 	var instance: Node = (packed as PackedScene).instantiate()
 	if instance == null:
 		return {"ok": false, "detail": "world_map no instancia"}
 	root.add_child(instance)
+	# En --script, _ready() se difiere al primer frame real; se espera antes de medir.
+	await process_frame
 	if not instance.has_method("_process"):
 		instance.free()
 		return {"ok": false, "detail": "controlador sin _process medible (limitación headless)"}
+	if instance.get_child_count() == 0:
+		instance.free()
+		return {"ok": false, "detail": "world_map no construyó sus capas (_ready no ejecutado)"}
+	var interactive := _find_node_with_method(instance, "hit_test")
+	var borders := _find_node_with_method(instance, "get_center")
+	if interactive == null or borders == null:
+		instance.free()
+		return {"ok": false, "detail": "mapa sin capa interactiva (hit_test/get_center)"}
+	var region_ids: Array[String] = []
+	var borders_root: Variant = _read_json(MAP_BORDERS_PATH)
+	if borders_root is Dictionary:
+		var years_value: Variant = (borders_root as Dictionary).get("years", {})
+		if years_value is Dictionary:
+			var entries: Variant = (years_value as Dictionary).get("1337", [])
+			if entries is Array:
+				for entry_value in (entries as Array):
+					if entry_value is Dictionary:
+						region_ids.append(str((entry_value as Dictionary).get("region_id", "")))
 	var setter := ""
 	for method_name in ["set_view_year", "set_map_year", "set_year", "show_year"]:
 		if instance.has_method(method_name):
@@ -988,11 +1172,19 @@ func _benchmark_map_controller() -> Dictionary:
 			break
 	var total_us := 0
 	var max_us := 0
+	var hit_tests := 0
+	var year_switches := 0
 	for frame in range(MAP_BENCH_FRAMES):
-		if setter != "":
-			var year_value: int = YEARS[frame / 40 % YEARS.size()]
-			instance.call(setter, year_value)
 		var t0 := Time.get_ticks_usec()
+		if setter != "" and frame % 40 == 0:
+			instance.call(setter, YEARS[(frame / 40) % YEARS.size()])
+			year_switches += 1
+		if not region_ids.is_empty():
+			var region_id := region_ids[frame % region_ids.size()]
+			var center: Variant = borders.call("get_center", region_id)
+			if center is Vector2:
+				interactive.call("hit_test", center)
+				hit_tests += 1
 		instance.call("_process", 1.0 / 60.0)
 		if instance is CanvasItem:
 			(instance as CanvasItem).queue_redraw()
@@ -1002,9 +1194,24 @@ func _benchmark_map_controller() -> Dictionary:
 			max_us = elapsed
 	var avg_ms := float(total_us) / float(MAP_BENCH_FRAMES) / 1000.0
 	var max_ms := float(max_us) / 1000.0
-	var ok := avg_ms < MAP_FRAME_BUDGET_MS
-	var detail := "%d frames; media=%.3f ms; máx=%.3f ms; presupuesto=%.1f ms (nota: CPU lógica/redraw; GPU no medible en headless)" % [
-		MAP_BENCH_FRAMES, avg_ms, max_ms, MAP_FRAME_BUDGET_MS,
+	# Hover/click correcto en las 3 vistas usando la implementación real del mapa.
+	var layer_hits := 0
+	var layer_tests := 0
+	for year_value in YEARS:
+		if setter != "":
+			instance.call(setter, year_value)
+		for region_id in region_ids:
+			var center_for_year: Variant = borders.call("get_center", region_id)
+			if not (center_for_year is Vector2):
+				continue
+			var hit_id := str(interactive.call("hit_test", center_for_year))
+			layer_tests += 1
+			if hit_id == region_id:
+				layer_hits += 1
+	var ok := avg_ms < MAP_FRAME_BUDGET_MS and hit_tests > 0 and layer_tests > 0 and layer_hits == layer_tests
+	var detail := "%d frames; hit-tests benchmark=%d; cambios de vista=%d; media=%.3f ms; máx=%.3f ms; presupuesto=%.1f ms; hit-test 3 vistas AG-3=%d/%d (nota: CPU _process+hit-test+redraw; GPU no medible en headless)" % [
+		MAP_BENCH_FRAMES, hit_tests, year_switches, avg_ms, max_ms, MAP_FRAME_BUDGET_MS,
+		layer_hits, layer_tests,
 	]
 	instance.free()
 	if not ok:
@@ -1034,12 +1241,12 @@ func _png_dimensions(res_path: String) -> Vector2i:
 func _criterion_4_portraits_10_2() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F2-C4"
-	var name := "§10.2 Retratos: fallback nunca vacío, 5 slots, sucesión en el mapa y capturas"
+	var name := "§10.2 Retratos v1.5: 14/14 con textura en 5 slots, fallback heráldico y sucesión"
 	var widget_exists := FileAccess.file_exists(PORTRAIT_SCRIPT)
 	var schema_root: Variant = _read_json("res://data/schema/characters.schema.json")
 	var schema_has_portrait := _schema_has_portrait(schema_root)
-	if not widget_exists and not schema_has_portrait:
-		_skip(id, name, "AG-1/AG-3 aún no integran retratos (sin portrait_frame.gd ni campo 'portrait' en el schema)", started)
+	if not widget_exists or not schema_has_portrait:
+		_skip(id, name, "retratos aún no integrados (widget o schema 'portrait' ausente)", started)
 		return
 
 	var start := _ensure_game_started()
@@ -1047,119 +1254,229 @@ func _criterion_4_portraits_10_2() -> void:
 		_skip(id, name, str(start["reason"]), started)
 		return
 
-	# Datos: campo opcional portrait en characters.json/schema.
-	var data_ok := true
-	var data_detail := ""
-	if not schema_has_portrait:
-		data_ok = false
-		data_detail = "schema sin propiedad 'portrait'"
-	else:
-		var characters_root: Variant = _read_json("res://data/characters.json")
-		if characters_root is Dictionary and (characters_root as Dictionary).get("characters") is Array:
-			var bad_portrait := 0
-			var with_portrait := 0
-			for character_value in ((characters_root as Dictionary).get("characters") as Array):
-				if not (character_value is Dictionary):
-					continue
-				var character := character_value as Dictionary
-				if not character.has("portrait"):
-					continue
-				with_portrait += 1
-				var portrait: Variant = character.get("portrait")
-				if portrait != null and not (portrait is String):
-					bad_portrait += 1
-			data_detail = "schema OK; %d personajes con campo portrait; tipo inválido=%d" % [with_portrait, bad_portrait]
-			if bad_portrait > 0:
-				data_ok = false
-		else:
-			data_ok = false
-			data_detail = "characters.json no legible"
-
-	# Widget: API get_portrait_character_id()/is_fallback() y fallback nunca vacío.
-	var widget_ok := false
-	var widget_instantiable := false
-	var widget_detail := ""
-	if widget_exists and schema_has_portrait:
-		var script: Variant = load(PORTRAIT_SCRIPT)
-		if script is GDScript and (script as GDScript).can_instantiate():
-			widget_instantiable = true
-			var widget: Variant = (script as GDScript).new()
-			if widget != null and widget is Node:
-				var node := widget as Node
-				root.add_child(node)
-				var has_api := node.has_method("get_portrait_character_id") and node.has_method("is_fallback")
-				var bound := false
-				for configure_method in ["set_character", "configure", "setup", "bind", "set_character_id", "show_character"]:
-					if node.has_method(configure_method):
-						node.call(configure_method, "edward_iii_plantagenet")
-						bound = true
-						break
-				if has_api:
-					var portrait_id := str(node.call("get_portrait_character_id"))
-					var is_fallback := bool(node.call("is_fallback"))
-					widget_ok = portrait_id != "" and is_fallback
-					widget_detail = "id='%s'; fallback=%s; bind=%s" % [portrait_id, str(is_fallback), str(bound)]
-				else:
-					widget_detail = "widget sin get_portrait_character_id()/is_fallback()"
-				node.free()
-			else:
-				widget_detail = "portrait_frame.gd no instanciable como Node"
-		elif script is GDScript:
-			widget_detail = "portrait_frame.gd no instanciable (parse error en curso)"
-		else:
-			widget_detail = "portrait_frame.gd no compila"
-	else:
-		widget_detail = "no evaluado: AG-1 aún no añade 'portrait' al schema" if widget_exists else "portrait_frame.gd ausente"
-
-	# Los 5 slots: referencias al widget en mapa, árbol, diplomacia, batalla y corte.
-	var slots_found := 0
-	var slot_detail_parts: Array[String] = []
-	for file_path in PORTRAIT_SLOT_FILES:
-		var text := _read_text(file_path)
-		var found := text.contains("portrait_frame") or text.contains("PortraitFrame") or text.contains("portrait")
-		if found:
-			slots_found += 1
-		slot_detail_parts.append("%s=%s" % [file_path.get_file(), str(found)])
-	var slots_ok := slots_found >= PORTRAIT_SLOT_FILES.size()
-
-	# Sucesión: el retrato del mapa pasa al heredero.
-	var succession_ok := false
-	var succession_detail := "pendiente"
-	if widget_exists and widget_instantiable and schema_has_portrait:
-		var succession := _test_portrait_succession()
-		succession_ok = bool(succession["ok"])
-		succession_detail = str(succession["detail"])
-
-	# Capturas del módulo (mapa con retrato/escudo y comparativa).
-	var portrait_capture := FileAccess.file_exists("res://docs/screenshots/map_portrait.png") \
-		or FileAccess.file_exists("res://docs/screenshots/17_map_portrait.png")
-	var comparison_capture := FileAccess.file_exists("res://docs/screenshots/map_comparison.png")
-	var captures_ok := portrait_capture and comparison_capture
-
-	var detail := "datos=%s (%s); widget=%s (%s); slots=%d/%d (%s); sucesión=%s (%s); capturas retrato=%s comparativa=%s" % [
-		str(data_ok), data_detail, str(widget_ok), widget_detail, slots_found, PORTRAIT_SLOT_FILES.size(),
-		", ".join(slot_detail_parts), str(succession_ok), succession_detail,
-		str(portrait_capture), str(comparison_capture),
+	var data := _portrait_data_check()
+	var widget := _portrait_widget_check(data)
+	var slots := await _check_five_slots_textured()
+	var succession := await _test_portrait_succession_v15()
+	var captures := _portrait_captures_check()
+	var detail := "datos=%s (%s); widget=%s (%s); slots=%s (%s); sucesión=%s (%s); capturas=%s (%s)" % [
+		str(data["ok"]), str(data["detail"]), str(widget["ok"]), str(widget["detail"]),
+		str(slots["ok"]), str(slots["detail"]), str(succession["ok"]), str(succession["detail"]),
+		str(captures["ok"]), str(captures["detail"]),
 	]
-	if not widget_instantiable and not schema_has_portrait:
-		_skip(id, name, "AG-1/AG-3 aún integrando §10.2 (schema sin 'portrait'; widget no instanciable): " + detail, started)
+	if not bool(data["ok"]):
+		_fail(id, name, "datos v1.5 de retratos incompletos: " + detail, started)
 		return
-	if not data_ok:
-		_fail(id, name, "datos §10.2 incompletos: " + detail, started)
+	if not bool(widget["ok"]):
+		_fail(id, name, "widget de retrato no renderiza textura/fallback según v1.5: " + detail, started)
 		return
-	if not widget_ok:
-		_fail(id, name, "widget de retrato no cumple fallback nunca vacío: " + detail, started)
+	if not bool(slots["ok"]):
+		_fail(id, name, "los 5 slots no renderizan retrato con textura: " + detail, started)
 		return
-	if not slots_ok:
-		_fail(id, name, "faltan slots de retrato (%d/5): %s" % [slots_found, detail], started)
+	if not bool(succession["ok"]):
+		_fail(id, name, "la sucesión no actualiza correctamente el retrato (textura→heredero): " + detail, started)
 		return
-	if not succession_ok:
-		_fail(id, name, "sucesión no actualiza el retrato del mapa: " + detail, started)
-		return
-	if not captures_ok:
-		_fail(id, name, "faltan capturas §10.2/§10.1: " + detail, started)
+	if not bool(captures["ok"]):
+		_fail(id, name, "faltan capturas v1.5 requeridas (o no son 1920×1080): " + detail, started)
 		return
 	_pass(id, name, detail, started)
+
+
+func _character_map() -> Dictionary:
+	var out: Dictionary = {}
+	var characters_root: Variant = _read_json("res://data/characters.json")
+	if characters_root is Dictionary and (characters_root as Dictionary).get("characters") is Array:
+		for character_value in ((characters_root as Dictionary).get("characters") as Array):
+			if character_value is Dictionary:
+				var character := character_value as Dictionary
+				out[str(character.get("id", ""))] = character
+	return out
+
+
+func _portrait_data_check() -> Dictionary:
+	var characters := _character_map()
+	var ruler_ids: Array[String] = []
+	var fallback_id := ""
+	var used: Dictionary = {}
+	var issues: Array[String] = []
+	for character_id in characters.keys():
+		var character: Dictionary = characters[character_id]
+		var portrait := str(character.get("portrait", "")).strip_edges()
+		var role := str(character.get("role", ""))
+		if role == "ruler":
+			ruler_ids.append(str(character_id))
+			if portrait == "":
+				issues.append("%s sin portrait" % str(character_id))
+			elif not portrait.begins_with("res://"):
+				issues.append("%s portrait no-res://" % str(character_id))
+			elif not FileAccess.file_exists(portrait):
+				issues.append("%s archivo ausente" % str(character_id))
+			else:
+				var dims := _png_dimensions(portrait)
+				if dims != Vector2i(256, 256):
+					issues.append("%s PNG %dx%d" % [str(character_id), dims.x, dims.y])
+			used[portrait] = true
+		elif role == "heir" and fallback_id == "" and portrait == "":
+			fallback_id = str(character_id)
+	if fallback_id == "":
+		for character_id in characters.keys():
+			var character: Dictionary = characters[character_id]
+			if str(character.get("role", "")) != "ruler" and str(character.get("portrait", "")).strip_edges() == "":
+				fallback_id = str(character_id)
+				break
+	if ruler_ids.size() != 14:
+		issues.append("ruler con portrait: %d/14" % ruler_ids.size())
+	if used.size() != 14:
+		issues.append("retratos únicos: %d/14" % used.size())
+	if fallback_id == "":
+		issues.append("sin personaje para probar fallback")
+	ruler_ids.sort()
+	var detail := "rulers=%d/14 con portrait; PNG 256x256=%d/14; únicos=%d/14; fallback=%s; incidencias=%s" % [
+		ruler_ids.size(), ruler_ids.size() - issues.size(), used.size(), fallback_id,
+		"ninguna" if issues.is_empty() else ", ".join(issues.slice(0, 5)),
+	]
+	return {
+		"ok": issues.is_empty(),
+		"detail": detail,
+		"ruler_ids": ruler_ids,
+		"fallback_id": fallback_id,
+	}
+
+
+func _portrait_widget_check(data: Dictionary) -> Dictionary:
+	var ruler_ids: Array = data.get("ruler_ids", [])
+	var fallback_id := str(data.get("fallback_id", ""))
+	var script: Variant = load(PORTRAIT_SCRIPT)
+	if not (script is GDScript) or not (script as GDScript).can_instantiate():
+		return {"ok": false, "detail": "portrait_frame.gd no instanciable"}
+	var widget: Variant = (script as GDScript).new()
+	if not (widget is Node):
+		return {"ok": false, "detail": "portrait_frame.gd no es Node"}
+	var node := widget as Node
+	root.add_child(node)
+	if not (node.has_method("get_portrait_character_id") and node.has_method("is_fallback") and node.has_method("setup")):
+		node.free()
+		return {"ok": false, "detail": "widget sin API get_portrait_character_id/is_fallback/setup"}
+	var textured := 0
+	var failures: Array[String] = []
+	for ruler_value in ruler_ids:
+		var ruler_id := str(ruler_value)
+		node.call("setup", ruler_id)
+		var got_id := str(node.call("get_portrait_character_id"))
+		var is_fb := bool(node.call("is_fallback"))
+		if got_id == ruler_id and not is_fb:
+			textured += 1
+		else:
+			failures.append("%s(id=%s,fallback=%s)" % [ruler_id, got_id, str(is_fb)])
+	node.call("setup", fallback_id)
+	var fallback_got := str(node.call("get_portrait_character_id"))
+	var fallback_is_fb := bool(node.call("is_fallback"))
+	var fallback_ok := fallback_got == fallback_id and fallback_is_fb and fallback_got != ""
+	node.free()
+	var ok := textured == ruler_ids.size() and ruler_ids.size() == 14 and fallback_ok
+	var detail := "texturizados=%d/%d; fallback %s: id=%s is_fallback=%s; fallos=%s" % [
+		textured, ruler_ids.size(), fallback_id, fallback_got, str(fallback_is_fb),
+		"ninguno" if failures.is_empty() else ", ".join(failures.slice(0, 5)),
+	]
+	return {"ok": ok, "detail": detail}
+
+
+func _collect_descendants_with_method(node: Node, method_name: String, out: Array[Node]) -> void:
+	for child in node.get_children():
+		if child.has_method(method_name):
+			out.append(child)
+		_collect_descendants_with_method(child, method_name, out)
+
+
+func _scene_portrait_texture(scene_path: String, configure_method: String, configure_args: Array) -> Dictionary:
+	var packed: Variant = load(scene_path)
+	if not (packed is PackedScene):
+		return {"ok": false, "detail": "%s no carga" % scene_path.get_file()}
+	var instance: Node = (packed as PackedScene).instantiate()
+	if instance == null:
+		return {"ok": false, "detail": "%s no instancia" % scene_path.get_file()}
+	root.add_child(instance)
+	await process_frame
+	if configure_method != "" and instance.has_method(configure_method):
+		instance.callv(configure_method, configure_args)
+	await process_frame
+	var nodes: Array[Node] = []
+	_collect_descendants_with_method(instance, "get_portrait_character_id", nodes)
+	var textured := 0
+	var fallbacks := 0
+	var ids: Array[String] = []
+	for portrait_node in nodes:
+		var portrait_id := str(portrait_node.call("get_portrait_character_id"))
+		if portrait_id == "":
+			continue
+		ids.append(portrait_id)
+		if bool(portrait_node.call("is_fallback")):
+			fallbacks += 1
+		else:
+			textured += 1
+	instance.free()
+	var detail := "%d nodos: texturizados=%d, fallback=%d; ids=%s" % [
+		nodes.size(), textured, fallbacks, ", ".join(ids.slice(0, 4)),
+	]
+	return {"ok": textured > 0, "detail": detail}
+
+
+func _check_five_slots_textured() -> Dictionary:
+	var results: Array[Dictionary] = []
+	results.append(await _scene_portrait_texture("res://scenes/map/world_map.tscn", "", []))
+	results.append(await _scene_portrait_texture("res://scenes/family/family_tree.tscn", "setup", [PLAYER_FACTION]))
+	results.append(await _scene_portrait_texture("res://scenes/diplomacy/diplomacy_screen.tscn", "refresh", []))
+	results.append(await _scene_portrait_texture("res://scenes/battle/battle_report.tscn", "setup", [_sample_battle_report()]))
+	results.append(await _scene_portrait_texture("res://scenes/ui/court_overview.tscn", "refresh", []))
+	var ok_count := 0
+	var parts: Array[String] = []
+	var labels: Array[String] = ["mapa", "árbol", "diplomacia", "batalla", "corte"]
+	for index in range(results.size()):
+		if bool(results[index]["ok"]):
+			ok_count += 1
+		parts.append("%s[%s]" % [labels[index], str(results[index]["detail"])])
+	var detail := "%d/5 slots con textura: %s" % [ok_count, " | ".join(parts)]
+	return {"ok": ok_count == 5, "detail": detail}
+
+
+func _sample_battle_report() -> Dictionary:
+	return {
+		"attacker_faction": "england",
+		"defender_faction": "france",
+		"region_id": "region_normandia",
+		"winner_faction": "england",
+		"attacker_losses": 100,
+		"defender_losses": 200,
+		"rounds": [],
+		"rounds_played": 1,
+	}
+
+
+func _portrait_captures_check() -> Dictionary:
+	var required: Array[String] = [
+		"res://docs/screenshots/map_portrait.png",
+		"res://docs/screenshots/map_comparison.png",
+		"res://docs/screenshots/portraits_contact_sheet_final.png",
+		"res://docs/screenshots/succession_portrait.png",
+	]
+	var missing: Array[String] = []
+	var wrong_size: Array[String] = []
+	for path in required:
+		if not FileAccess.file_exists(path):
+			missing.append(path.get_file())
+			continue
+		var dims := _png_dimensions(path)
+		if dims != Vector2i(1920, 1080):
+			wrong_size.append("%s=%dx%d" % [path.get_file(), dims.x, dims.y])
+	var ok := missing.is_empty() and wrong_size.is_empty()
+	return {
+		"ok": ok,
+		"detail": "presentes=%d/%d; faltan=%s; tamaño≠1920x1080=%s" % [
+			required.size() - missing.size(), required.size(),
+			"ninguna" if missing.is_empty() else ", ".join(missing),
+			"ninguna" if wrong_size.is_empty() else ", ".join(wrong_size),
+		],
+	}
 
 
 func _schema_has_portrait(schema_root: Variant) -> bool:
@@ -1179,7 +1496,7 @@ func _schema_has_portrait(schema_root: Variant) -> bool:
 	return item_props is Dictionary and (item_props as Dictionary).has("portrait")
 
 
-func _test_portrait_succession() -> Dictionary:
+func _test_portrait_succession_v15() -> Dictionary:
 	var gs := _autoload("GameState")
 	var dyn := _autoload("DynastySystem")
 	if gs == null or dyn == null or not dyn.has_method("get_ruler") or not dyn.has_method("get_heir"):
@@ -1191,40 +1508,81 @@ func _test_portrait_succession() -> Dictionary:
 	if map_node == null:
 		return {"ok": false, "detail": "world_map no instancia"}
 	root.add_child(map_node)
-	var portrait_node := _find_node_with_method(map_node, "get_portrait_character_id")
-	if portrait_node == null:
+	await process_frame
+	if map_node.get_child_count() == 0:
 		map_node.free()
-		return {"ok": false, "detail": "el mapa no contiene widget de retrato"}
-	var ruler: Variant = dyn.call("get_ruler", PLAYER_FACTION)
-	var heir: Variant = dyn.call("get_heir", PLAYER_FACTION)
-	var ruler_id := str((ruler as Dictionary).get("id", "")) if ruler is Dictionary else ""
-	var heir_id := str((heir as Dictionary).get("id", "")) if heir is Dictionary else ""
+		return {"ok": false, "detail": "world_map no construyó sus capas"}
+	var ruler: Dictionary = dyn.call("get_ruler", PLAYER_FACTION)
+	var heir: Dictionary = dyn.call("get_heir", PLAYER_FACTION)
+	var ruler_id := str(ruler.get("id", ""))
+	var heir_id := str(heir.get("id", ""))
 	if ruler_id == "" or heir_id == "":
 		map_node.free()
 		return {"ok": false, "detail": "sin gobernante/heredero inicial"}
-	var before := str(portrait_node.call("get_portrait_character_id"))
-	# Fuerza la muerte del gobernante (deja heredero vivo) y resuelve la sucesión.
+	var characters := _character_map()
+	var ruler_char: Dictionary = characters.get(ruler_id, {})
+	var heir_char: Dictionary = characters.get(heir_id, {})
+	var ruler_has_texture := _has_texture_portrait(ruler_char)
+	var heir_has_texture := _has_texture_portrait(heir_char)
+	var before_node := _find_descendant_portrait_by_id(map_node, ruler_id)
+	if before_node == null:
+		map_node.free()
+		return {"ok": false, "detail": "no hay slot de retrato con el gobernante en el mapa"}
+	var before_fallback := bool(before_node.call("is_fallback"))
+	# Fuerza la muerte del gobernante (el heredero sigue vivo) y resuelve sucesión.
 	var state := _state()
-	var characters: Variant = state.get("characters", {})
-	if characters is Dictionary and (characters as Dictionary).has(ruler_id):
-		var character: Variant = (characters as Dictionary)[ruler_id]
-		if character is Dictionary:
-			(character as Dictionary)["alive"] = false
-			(character as Dictionary)["died"] = int(state.get("year", 1337))
+	var state_characters: Variant = state.get("characters", {})
+	if state_characters is Dictionary and (state_characters as Dictionary).has(ruler_id):
+		var character_value: Variant = (state_characters as Dictionary)[ruler_id]
+		if character_value is Dictionary:
+			(character_value as Dictionary)["alive"] = false
+			(character_value as Dictionary)["died"] = int(state.get("year", 1337))
 	dyn.call("resolve_succession", PLAYER_FACTION)
 	if _autoload("TurnManager") != null and _autoload("TurnManager").has_method("advance_quarter"):
 		_autoload("TurnManager").call("advance_quarter")
+	await process_frame
 	for method_name in ["refresh", "refresh_all", "_refresh_all", "refresh_portrait", "_refresh_sovereign", "update_portrait"]:
 		if map_node.has_method(method_name):
 			map_node.call(method_name)
 			break
-	if portrait_node.has_method("_process"):
-		portrait_node.call("_process", 1.0 / 60.0)
-	var after := str(portrait_node.call("get_portrait_character_id"))
-	var ok := after == heir_id and before == ruler_id
-	var detail := "mapa: %s → %s (heredero esperado %s)" % [before, after, heir_id]
+	await process_frame
+	var after_node := _find_descendant_portrait_by_id(map_node, heir_id)
+	if after_node == null:
+		map_node.free()
+		return {"ok": false, "detail": "tras la sucesión no hay slot con el heredero %s" % heir_id}
+	var after_fallback := bool(after_node.call("is_fallback"))
+	var expected_fallback := not heir_has_texture
+	var ok := before_fallback == (not ruler_has_texture) and after_fallback == expected_fallback
+	var detail := "gobernante %s(textura=%s) → heredero %s(textura=%s, fallback=%s; esperado fallback=%s)" % [
+		ruler_id, str(ruler_has_texture), heir_id, str(heir_has_texture),
+		str(after_fallback), str(expected_fallback),
+	]
 	map_node.free()
 	return {"ok": ok, "detail": detail}
+
+
+func _has_texture_portrait(character: Dictionary) -> bool:
+	var portrait := str(character.get("portrait", "")).strip_edges()
+	return portrait != "" and FileAccess.file_exists(portrait)
+
+
+func _find_descendant_portrait_by_id(node: Node, character_id: String) -> Node:
+	if node.has_method("get_portrait_character_id"):
+		if str(node.call("get_portrait_character_id")) == character_id:
+			return node
+	for child in node.get_children():
+		var found := _find_descendant_portrait_by_id(child, character_id)
+		if found != null:
+			return found
+	return null
+
+
+func _find_descendant_with_method(node: Node, method_name: String) -> Node:
+	for child in node.get_children():
+		var found := _find_node_with_method(child, method_name)
+		if found != null:
+			return found
+	return null
 
 
 func _find_node_with_method(node: Node, method_name: String) -> Node:
