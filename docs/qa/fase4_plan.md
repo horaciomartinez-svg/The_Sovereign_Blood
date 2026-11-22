@@ -1,4 +1,4 @@
-# Plan de QA — Fase 4: profundidad GK2 (C1-C12)
+# Plan de QA — Fase 4: profundidad GK2 (C1-C14)
 
 | Campo | Valor |
 |---|---|
@@ -6,15 +6,15 @@
 | **Fecha** | 2026-11-23 |
 | **Directiva** | D-069…D-073; GDD v1.9; contrato `docs/architecture_contracts_fase4.md`; prompt `prompt_DSH_fase4_profundidad_v1.md` |
 | **Alcance** | REA economía/menús, mercancías/comercio, ejércitos y reclutamiento con bienes, consorte, Manual, tutorial/dificultad, save/load, no regresión, 1402/1453 congelados y UX/capturas |
-| **Harness** | `tests/qa_acceptance_fase4.gd` (C1-C12; `extends SceneTree`; compila siempre; SKIP justificado; exit 0 solo con 12/12) |
+| **Harness** | `tests/qa_acceptance_fase4.gd` (C1-C14; `extends SceneTree`; compila siempre; SKIP justificado; exit 0 solo con 14/14) |
 | **Baseline** | HEAD `a5c22ff` (arranque Fase 4; módulos AG-REA/AG-1/AG-2/AG-3 en curso) |
 | **Verificación final** | task-69 (bloqueada por AG-REA/AG-1/AG-2/AG-3: task-61/62/63/65/66/67/68) |
 
-> **Semántica:** PASS = criterio cumplido; SKIP = pendiente de módulo en curso (no es rechazo); FAIL = incumplimiento. Baseline con SKIP sale 1 e imprime «PENDIENTE». **Exit 0 solo con C1-C12 PASS.**
+> **Semántica:** PASS = criterio cumplido; SKIP = pendiente de módulo en curso (no es rechazo); FAIL = incumplimiento. Baseline con SKIP sale 1 e imprime «PENDIENTE». **Exit 0 solo con C1-C14 PASS.**
 
 ---
 
-## 1. Matriz C1-C12 → test → comando → evidencia
+## 1. Matriz C1-C14 → test → comando → evidencia
 
 | # | Criterio (prompt F4 §9) | Test en `qa_acceptance_fase4.gd` | Evidencia |
 |---|---|---|---|
@@ -30,6 +30,8 @@
 | C10 | No regresión: run_all ≥1742/0, validate 0, editor 0, F1/F2/F3/MVP/anim/tiles | `_criterion_10_regression()` | batería externa + artefactos |
 | C11 | 1402/1453 diff 0; sin arte externo nuevo | `_criterion_11_frozen_art()` | hashes congelados + `git diff fase-3.3..fase-4` + petición arte |
 | C12 | UX: 0 botones muertos, PG/feedback visibles, capturas 1920×1080 | `_criterion_12_ux()` | `ui_smoke`, capturas `market`/`army_management`/`manual`/`tutorial_*` |
+| C13 | Límite de acciones: repetir diplomacia/familia/construcción/espionaje/expedición se rechaza (motor+UI); reclutar/entrenar/disolver/trabajadores/comprar-vender sí se repiten | `_criterion_13_action_limit()` | `GameState.actions_used`/`mark/is/can/reset`, motivos `action_used`, botón «Usado este turno», captura `action_used_diplomacy.png` |
+| C14 | Costes de reclutamiento diferenciados y visibles: caballería>arqueros/infantería ligera, artillería>caballería; deducción real; UI oro+hombres+mercancías | `_criterion_14_recruit_costs()` | `units.cost.gold`/`recruit_goods`, `get_unit_recruit_cost`, captura `army_costs.png` |
 
 ---
 
@@ -79,6 +81,15 @@
 ### C12 — UX/capturas
 - `ui_smoke` sin errores; 0 botones muertos en Mercado/Ejércitos/Familia/Manual/Tutorial; PG/feedback visibles; capturas nuevas 1920×1080 (mercado, ejércitos, manual, consorte, tutorial, dificultad).
 
+### C13 — Límite de acciones por turno (D-074)
+- `GameState.actions_used` por facción/turno; API `mark_action_used`, `is_action_used`, `can_use_action`, `reset_turn_actions`; reset al empezar turno/trimestre.
+- Gateadas 1/turno: diplomacia (por acción+objetivo), matrimonio/consorte, construcciones, espionaje por objetivo, expedición de mercaderes. Exentas: reclutar/entrenar/disolver, asignar trabajadores, comprar/vender.
+- Duplicado → fallo con motivo `action_used`, sin gastar PG ni aplicar efecto; UI deshabilitada con tooltip «Usado este turno»; captura `action_used_diplomacy.png`.
+
+### C14 — Costes de reclutamiento (D-075)
+- `units.json.cost.gold` diferenciado: **toda caballería > arqueros/infantería ligera** y **artillería > caballería**; `cost.recruits` por bloque y `recruit_goods`.
+- `MilitarySystem.recruit` deduce oro por bloque + mercancías; API `get_unit_recruit_cost(unit_id, amount)`; UI muestra oro+hombres+mercancías y total; captura `army_costs.png`.
+
 ---
 
 ## 3. Comandos
@@ -101,7 +112,7 @@ $repo = "C:\Proyectos\TSB\sovereigns-blood"
 & $g --headless --path $repo --quit
 ```
 
-**Baseline ejecutado (HEAD `a5c22ff`, arranque Fase 4; módulos en curso):** **3 PASS / 0 FAIL / 9 SKIP** — C2 (trade_goods 10 bienes/schema/§13), C5 (9 unidades con recruit_goods: 6 caballos/1 armas) y C11 (1402/1453 intactos + petición arte congelada) PASS; C1/C3/C4/C6/C7/C8/C9/C10/C12 SKIP. `validate_data` **13/9, 11.851 comprobaciones, 0 WARN**, editor 0; **`run_all` 1688/44 (transitorio)**: `military_system.gd` llama a `_recruit_goods_requirements()` aún inexistente → autoload MilitarySystem no monta y 9 líneas ERROR en headless. No es rechazo de QA: es compilación Fase 4 en curso (AG-2); el baseline se repetirá en task-69 sobre commits finales. Detalle en `docs/issues.md` §22.
+**Baseline ejecutado (HEAD `a5c22ff`→worktree en curso; snapshot 2026-11-23):** **10 PASS / 0 FAIL / 4 SKIP** (de 14). PASS: C2, C4, C5, C6, C7, C8, C9, C10, C11, C12. SKIP: **C1** (REA ampliado D-076: 2729 palabras >2000, recorte AG-REA pendiente), **C3** (TradeSystem presente, precios aún sin fluctuar), **C13** (API `actions_used` ya existe; UI AG-3 sin «Usado este turno») y **C14** (costes aún en ajuste AG-1: `hussite_war_wagon 80` ≤ caballería). `validate_data` **13/9, 11.851 comprobaciones, 0 WARN**, editor 0; `run_all` **1688/44** transitorio por compilación (`military_system.gd:127` `_recruit_goods_requirements()`), AG-2 debe cerrar R-F4-16. No es rechazo de QA; se repetirá en task-69 sobre commits finales. Detalle en `docs/issues.md` §22.
 
 ---
 
@@ -125,9 +136,11 @@ $repo = "C:\Proyectos\TSB\sovereigns-blood"
 | R-F4-14 | Comercio desbalancea la economía 1337 | D-068 + simulación 10 años |
 | R-F4-15 | Tutorial no serializa o no migra partidas viejas | C9 con `save_version` |
 | R-F4-16 | Compilación intermedia: `military_system.gd` referencia función ausente y bloquea autoloads/run_all | AG-2 debe cerrar compilación; task-69 exige run_all 1742/0 y headless 0 ERROR |
+| R-F4-17 | Acciones repetidas permitidas o UI sin deshabilitar | C13 API+UI/captura; excepciones verificadas |
+| R-F4-18 | Costes iguales/ocultos o deducción incorrecta | C14 orden de costes + deducción + captura |
 
 ---
 
 ## 5. Verificación final (task-69)
 
-Harness C1-C12 ×2 exit 0; batería completa; auditoría REA/legal; `git diff` 1402/1453 = 0; capturas revisadas; veredicto **«QA Fase 4: APROBADO/RECHAZADO»** en `docs/qa/fase4_report.md` + `docs/issues.md` §22.
+Harness C1-C14 14/14 PASS exit 0; batería completa; auditoría REA/legal; `git diff` 1402/1453 = 0; capturas revisadas (incl. C13/C14); veredicto **«QA Fase 4: APROBADO/RECHAZADO»** en `docs/qa/fase4_report.md` + `docs/issues.md` §22.

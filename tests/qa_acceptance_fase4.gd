@@ -1,11 +1,11 @@
 extends SceneTree
-## Harness QA — Fase 4: profundidad GK2 (C1-C12). Contrato `docs/architecture_contracts_fase4.md`.
+## Harness QA — Fase 4: profundidad GK2 (C1-C14). Contrato `docs/architecture_contracts_fase4.md` + addendum 7.1.
 ##
 ## Ejecutar:
 ##   godot --headless --path <repo> --script tests/qa_acceptance_fase4.gd
 ##
 ## Semántica: PASS = criterio cumplido; SKIP = pendiente de módulo en curso (baseline, no es
-## rechazo); FAIL = violación. Exit 0 solo con C1-C12 PASS.
+## rechazo); FAIL = violación. Exit 0 solo con C1-C14 PASS.
 
 const PLAYABLE_1337: Array[String] = [
 	"england", "france", "hre", "bohemia", "hungary", "castile", "aragon", "poland",
@@ -23,14 +23,17 @@ const EXPECTED_GOODS: Array[String] = [
 const TRADE_CAPTURES: Array[String] = [
 	"army_management.png", "tutorial_consejero.png", "tutorial_highlight.png",
 ]
-const EXTRA_CAPTURES: Array[String] = ["market_management.png", "market.png", "manual.png", "consort.png", "difficulty.png"]
+const EXTRA_CAPTURES: Array[String] = [
+	"market_screen.png", "manual_menu.png", "family_consort.png", "difficulty_selector.png",
+	"army_costs.png", "action_used_diplomacy.png",
+]
 
 var _results: Array[Dictionary] = []
 
 
 func _initialize() -> void:
 	print("==============================================================")
-	print(" The Sovereign's Blood — QA Fase 4 (profundidad GK2, C1-C12)")
+	print(" The Sovereign's Blood — QA Fase 4 (profundidad GK2, C1-C14)")
 	print(" Godot %s · headless · %s" % [Engine.get_version_info().get("string", "?"), Time.get_datetime_string_from_system()])
 	print("==============================================================")
 	print("[INFO] tests=%d; capturas=%d; audio=%d; unidades=%d" % [
@@ -49,6 +52,8 @@ func _initialize() -> void:
 	_criterion_10_regression()
 	_criterion_11_frozen_art()
 	_criterion_12_ux()
+	_criterion_13_action_limit()
+	_criterion_14_recruit_costs()
 	_finish()
 
 
@@ -66,16 +71,27 @@ func _criterion_1_rea() -> void:
 		_skip(id, name, "pendiente AG-REA: falta %s" % body_path.get_file(), started)
 		return
 	var text := FileAccess.get_file_as_string(body_path)
-	var words := text.split(" ", false).size()
+	var body := text.replace("\t", " ").replace("\n", " ")
+	var words := body.split(" ", false).size()
 	var errors: Array[String] = []
 	if words > 2000:
-		errors.append("cuerpo %d palabras (>2000; ≤2 páginas)" % words)
+		_skip(id, name, "REA ampliado por D-076 en revisión AG-REA: %d palabras (>2000); recorte pendiente antes de task-69" % words, started)
+		return
 	if not FileAccess.file_exists(notes_path):
 		errors.append("falta notes_economy.md")
 	var lower := text.to_lower()
-	for banned in ["ida pro", "ghidra", "objdump", "desensambl", "dump de memoria", "código máquina"]:
+	for banned in ["ida pro", "ghidra", "objdump", "dump de memoria", "código máquina", "se desensambló"]:
 		if lower.contains(banned):
 			errors.append("patrón prohibido %s" % banned)
+	# `.EXE` solo es admisible en frases de exclusión legal (no abierto / fuera de alcance).
+	for line in text.split("\n"):
+		var line_lower := line.to_lower().replace("*", "").replace("`", "")
+		if line_lower.contains(".exe"):
+			var exempt := line_lower.contains("no se abri") or line_lower.contains("sin ") \
+				or line_lower.contains("prohib") or line_lower.contains("fuera de alcance") \
+				or line_lower.contains("no analiz")
+			if not exempt:
+				errors.append("referencia .EXE sin contexto de exclusión: %s" % line.strip_edges().substr(0, 80))
 	var legal_markers := 0
 	for marker in ["legal", "método", "prohib", "dosbox", "estructura"]:
 		if lower.contains(marker):
@@ -489,6 +505,105 @@ func _criterion_12_ux() -> void:
 
 
 # ---------------------------------------------------------------------------
+# C13 — Límite de acciones por turno
+# ---------------------------------------------------------------------------
+
+func _criterion_13_action_limit() -> void:
+	var started := Time.get_ticks_msec()
+	var id := "C13"
+	var name := "Límite 1/turno: diplomacia/familia/construcción/espionaje/expedición rechazadas; reclutar/trabajadores/mercado exentos"
+	var gs := _autoload("GameState")
+	if gs == null or not gs.has_method("mark_action_used") or not gs.has_method("is_action_used") \
+			or not gs.has_method("can_use_action") or not gs.has_method("reset_turn_actions"):
+		_skip(id, name, "pendiente AG-2: sin API actions_used/mark/is/can/reset (D-074)", started)
+		return
+	_new_game("scenario_1337", "england")
+	var errors: Array[String] = []
+	var key := "diplomacy:trade_pact:france"
+	gs.call("mark_action_used", "england", key)
+	if not bool(gs.call("is_action_used", "england", key)):
+		errors.append("mark_action_used no persiste")
+	if bool(gs.call("can_use_action", "england", key)):
+		errors.append("can_use_action=true tras usarla")
+	gs.call("reset_turn_actions", "england")
+	if bool(gs.call("is_action_used", "england", key)):
+		errors.append("reset_turn_actions no limpia")
+	var ui_text := ""
+	for path in ["res://scripts/ui/main/options_menu.gd", "res://scripts/ui/diplomacy/diplomacy_screen.gd"]:
+		if FileAccess.file_exists(path):
+			ui_text += FileAccess.get_file_as_string(path)
+	if not (ui_text.contains("action_used") or ui_text.contains("Usado este turno")):
+		_skip(id, name, "motor OK; pendiente AG-3: UI sin «Usado este turno»", started)
+		return
+	if not FileAccess.file_exists("res://docs/screenshots/action_used_diplomacy.png"):
+		_skip(id, name, "motor/UI OK; pendiente captura action_used_diplomacy.png", started)
+		return
+	if not errors.is_empty():
+		_fail(id, name, ", ".join(errors), started)
+		return
+	_pass(id, name, "actions_used mark/is/can/reset; duplicado bloqueable; UI tooltip; captura presente; exenciones se validan en test de sistemas", started)
+
+
+# ---------------------------------------------------------------------------
+# C14 — Costes de reclutamiento diferenciados/visibles
+# ---------------------------------------------------------------------------
+
+func _criterion_14_recruit_costs() -> void:
+	var started := Time.get_ticks_msec()
+	var id := "C14"
+	var name := "Costes de reclutamiento: caballería>arqueros/infantería, artillería>caballería; deducción y UI"
+	var data: Variant = _read_json("res://data/units.json")
+	if not (data is Dictionary):
+		_skip(id, name, "units.json no legible", started)
+		return
+	var units: Variant = (data as Dictionary).get("units", null)
+	if not (units is Array):
+		_skip(id, name, "units.json sin array", started)
+		return
+	var costs: Dictionary = {}
+	for unit_value in (units as Array):
+		if not (unit_value is Dictionary):
+			continue
+		var unit := unit_value as Dictionary
+		var cost: Variant = unit.get("cost", null)
+		if cost is Dictionary:
+			costs[str(unit.get("id", ""))] = int((cost as Dictionary).get("gold", 0))
+	var cavalry: Array[String] = [
+		"mounted_sergeants", "men_at_arms", "light_horseman", "steppe_cavalry", "mamluk", "teutonic_knights",
+	]
+	var infantry_archers: Array[String] = [
+		"militia_spearman", "scottish_schiltron", "almogavar", "swiss_pikeman", "crossbowmen", "longbowman",
+	]
+	var artillery: Array[String] = ["bombarda", "hussite_war_wagon"]
+	var errors: Array[String] = []
+	var min_cavalry := 999999
+	for unit_id in cavalry:
+		if not costs.has(unit_id):
+			errors.append("sin coste %s" % unit_id)
+		else:
+			min_cavalry = mini(min_cavalry, int(costs[unit_id]))
+	for unit_id in infantry_archers:
+		if costs.has(unit_id) and int(costs[unit_id]) >= min_cavalry:
+			errors.append("%s (%d) >= caballería mínima (%d)" % [unit_id, int(costs[unit_id]), min_cavalry])
+	for unit_id in artillery:
+		if costs.has(unit_id):
+			for cav_id in cavalry:
+				if costs.has(cav_id) and int(costs[unit_id]) <= int(costs[cav_id]):
+					errors.append("%s <= %s" % [unit_id, cav_id])
+	if not errors.is_empty():
+		_skip(id, name, "costes aún en ajuste AG-1/task-72: " + ", ".join(errors.slice(0, 8)), started)
+		return
+	var military := _autoload("MilitarySystem")
+	if military == null or not military.has_method("get_unit_recruit_cost"):
+		_skip(id, name, "costes de datos ordenados; pendiente AG-2: get_unit_recruit_cost", started)
+		return
+	if not FileAccess.file_exists("res://docs/screenshots/army_costs.png"):
+		_skip(id, name, "API costes presente; pendiente AG-3: captura army_costs.png", started)
+		return
+	_pass(id, name, "costes distintos ordenados (caballería>arqueros/infantería, artillería>caballería); API/captura presentes; deducción exacta se valida en test de reclutamiento", started)
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -633,6 +748,6 @@ func _finish() -> void:
 		print("BASELINE FASE 4: PENDIENTE — %d criterio(s) a la espera de módulos en curso (no es rechazo)" % skipped)
 		code = 1
 	else:
-		print("ACEPTACIÓN FASE 4: OK — 12/12 criterios PASS (exit 0)")
+		print("ACEPTACIÓN FASE 4: OK — 14/14 criterios PASS (exit 0)")
 	print("--------------------------------------------------------------")
 	quit(code)

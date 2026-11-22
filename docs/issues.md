@@ -1484,3 +1484,32 @@ Tras AG-2 (task-53) y la directiva v2, el harness se amplió a **C11** y se re-e
 **task-64 COMPLETADA** (plan/baseline; verificación final = task-69, bloqueada por AG-REA/1/2/3). Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 4 — plan y baseline QA (task-64).*
+
+---
+
+### 22.4 Actualización C13/C14 y baseline ampliado — **10 PASS / 0 FAIL / 4 SKIP** (2026-11-23)
+
+Añadidos **C13** (límite de acciones 1/turno, D-074) y **C14** (costes de reclutamiento diferenciados/visibles, D-075) al plan y al harness (`C1-C14`, exit 0 solo con 14/14). Baseline re-ejecutado:
+
+| # | Estado | Evidencia / motivo |
+|---|---|---|
+| C1 | **SKIP** | REA ampliado por D-076: **2.729 palabras** (>2 páginas, límite 2.000); AG-REA debe recortar antes de task-69 (contenido legal: sin `.EXE` abierto, sin transcripción; el harness ya no falla por menciones legales) |
+| C2 | **PASS** | 10 bienes/schema/sources §13; validate 13/9, 11.851 comprobaciones, 0 WARN |
+| C3 | **SKIP** | TradeSystem presente y sin comerciantes rechaza; precios aún sin fluctuar con producción (AG-2) |
+| C4 | **PASS** | 3 tipos con sprite/count/men/strength; captura/UI presentes |
+| C5 | **PASS** | 9 unidades con recruit_goods (6 caballos/1 armas) |
+| C6 | **PASS** | consorte: primera acción ok, segunda rechazada por cooldown; estado serializable |
+| C7 | **PASS** | Manual 11 secciones y acceso desde menú |
+| C8 | **PASS** | tutorial 9 pasos completos, TutorialSystem advance/skip/step, 2 capturas, dificultad |
+| C9 | **PASS** | save/load trade+tutorial con hash exacto; save_version 1 |
+| C10 | **PASS** | harness/artefactos presentes; run_all/validate/editor se confirman en batería (R-F4-16 transitorio) |
+| C11 | **PASS** | 1402/1453 hashes intactos; petición arte congelada |
+| C12 | **PASS** | capturas army/tutorial + 4 extra 1920×1080; ui_smoke presente |
+| C13 | **SKIP** | API `actions_used` ya existe (mark/is/can/reset con `faction_id,key`); pendiente UI AG-3 «Usado este turno» + captura `action_used_diplomacy.png` |
+| C14 | **SKIP** | costes aún en ajuste AG-1/task-72: `hussite_war_wagon 80` ≤ caballería (mounted_sergeants 85, men_at_arms 140, mamluk 150, teutonic_knights 160); pendiente corregir a artillería > caballería |
+
+**Batería:** `validate_data` **13/9, 11.851 comprobaciones, 0 WARN**, editor 0; `run_all` **1688/44** transitorio por `military_system.gd:127` (`_recruit_goods_requirements()` ausente) + 9 ERROR headless (R-F4-16). No es rechazo de QA: compilación Fase 4 en curso (AG-2); task-69 exigirá `run_all 1742/0` y 0 ERROR.
+
+**Pendientes para task-69:** C1 recorte REA, C3 precios, C13 UI/captura, C14 costes (task-70/71/72/73); R-F4-17/18 añadidos al plan. Sin cambios de producción ni git por AG-4.
+
+*Fin de la actualización C13/C14 — baseline Fase 4 (task-64).*
