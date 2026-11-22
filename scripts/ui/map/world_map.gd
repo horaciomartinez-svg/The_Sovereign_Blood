@@ -23,6 +23,9 @@ const MapEntitiesLayer = preload("res://scripts/ui/map/map_entities_layer.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const AdvisorPanel = preload("res://scripts/ui/widgets/advisor_panel.gd")
 const TutorialHighlight = preload("res://scripts/ui/widgets/tutorial_highlight.gd")
+const UIPreferences = preload("res://scripts/ui/ui_preferences.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const UILegibility = preload("res://scripts/ui/ui_legibility.gd")
 const CouncilScene = preload("res://scenes/council/council_menu.tscn")
 const RegionPanelScene = preload("res://scenes/map/region_panel.tscn")
 const TooltipScene = preload("res://scenes/ui/tooltip.tscn")
@@ -30,6 +33,7 @@ const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
 const BattleReportScene = preload("res://scenes/battle/battle_report.tscn")
 const YearEndScene = preload("res://scenes/ui/year_end_report.tscn")
 const VictoryScene = preload("res://scenes/ui/victory_screen.tscn")
+const OrderConfirmationScene = preload("res://scenes/ui/order_confirmation.tscn")
 const FamilyScene = preload("res://scenes/family/family_tree.tscn")
 const DiplomacyScene = preload("res://scenes/diplomacy/diplomacy_screen.tscn")
 const MilitaryScene = preload("res://scenes/military/military_screen.tscn")
@@ -42,6 +46,12 @@ const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 const TERRAIN_TEXTURE := "res://assets/art/map/terrain_base.png"
 
 const QUARTER_NAMES: Array[String] = ["INVIERNO", "PRIMAVERA", "VERANO", "OTOÑO"]
+const SEASON_TINT_COLORS: Array[Color] = [
+	Color(0.35, 0.62, 0.40, 0.06),
+	Color(0.82, 0.58, 0.24, 0.065),
+	Color(0.72, 0.40, 0.18, 0.065),
+	Color(0.32, 0.46, 0.62, 0.07),
+]
 const MAP_W := 2048.0
 const MAP_H := 1536.0
 const SIDEBAR_LEFT := 300.0
@@ -98,6 +108,14 @@ var _zoom_label: Label = null
 var _zoom_controls: Control = null
 var _advisor: Control = null
 var _tutorial_highlight: Control = null
+var _season_hud: Label = null
+var _season_tint: ColorRect = null
+var _deferred_year_end: int = 0
+var _end_turn_in_progress := false
+var _closed_season := ""
+var _closed_year := 0
+var _closed_actions: Array = []
+var _bulletin_pending := false
 var _map_hint: Label = null
 var _preview_banner: PanelContainer = null
 var _view_banner: PanelContainer = null
@@ -285,6 +303,42 @@ func _build_hud() -> void:
 	_hud.theme = ThemeBuilder.get_theme()
 	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hud_layer.add_child(_hud)
+	_build_season_hud()
+
+
+func _build_season_hud() -> void:
+	# D-079: tinte sutil por estación, generado por código y desactivable en Opciones.
+	_season_tint = ColorRect.new()
+	_season_tint.anchor_left = 0.0
+	_season_tint.anchor_right = 1.0
+	_season_tint.anchor_top = 0.0
+	_season_tint.anchor_bottom = 1.0
+	_season_tint.offset_left = SIDEBAR_LEFT
+	_season_tint.offset_right = -SIDEBAR_RIGHT
+	_season_tint.offset_bottom = -26
+	_season_tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_season_tint.color = Color(0.35, 0.55, 0.40, 0.06)
+	_hud.add_child(_season_tint)
+
+	var panel := PanelContainer.new()
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.offset_left = -390
+	panel.offset_right = 390
+	panel.offset_top = 102
+	panel.offset_bottom = 132
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_DEEP, 0.82), Palette.with_alpha(Palette.GOLD_DIM, 0.8), 1, 3, 10, 3))
+	_hud.add_child(panel)
+	_season_hud = UIKit.label(panel, "", "SmallLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	_season_hud.add_theme_font_size_override("font_size", 15)
+	_season_hud.add_theme_color_override("font_color", Palette.GOLD_BRIGHT)
+	_season_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var help := UIHelp.add_button(_hud, "world_map")
+	help.offset_right = -SIDEBAR_RIGHT - 16
+	help.offset_left = -SIDEBAR_RIGHT - 58
+	help.offset_top = 100
+	help.offset_bottom = 142
 
 
 func _build_map_labels() -> void:
@@ -461,6 +515,10 @@ func _build_council() -> void:
 		_council.connect("economy_requested", func() -> void: _open_overlay(EconomyScene.resource_path, "economy"))
 	if _council.has_signal("help_requested"):
 		_council.connect("help_requested", func() -> void: _open_overlay("res://scenes/ui/help_overlay.tscn", "help"))
+	if _council.has_signal("chronicle_requested"):
+		_council.connect("chronicle_requested", func() -> void: _open_overlay("res://scenes/ui/chronicle_screen.tscn", "chronicle"))
+	if _council.has_signal("advisor_toggled"):
+		_council.connect("advisor_toggled", func(_enabled: bool) -> void: _refresh_tutorial_ui())
 	if _council.has_signal("end_turn_requested"):
 		_council.connect("end_turn_requested", _on_end_turn_requested)
 	if _council.has_signal("menu_requested"):
@@ -797,6 +855,26 @@ func _refresh_map_layers() -> void:
 # ==========================================================================
 # Refresco de datos de juego
 # ==========================================================================
+func _refresh_season_ui() -> void:
+	if _season_hud == null:
+		return
+	var fid := TSBGame.player_faction()
+	var has_game := TSBGame.has_game()
+	_season_hud.text = UILegibility.format(
+		UILegibility.text("hud.hud", "{estación} {año} — Tesoro: {oro} · PG: {pg}"),
+		{
+			"estación": TSBGame.season_name() if has_game else "Sin partida",
+			"año": TSBGame.current_year() if has_game else "",
+			"oro": TSBGame.short_number(TSBGame.gold(fid)) if has_game else "—",
+			"pg": ("%d/%d" % [TSBGame.pg_remaining(), maxi(TSBGame.pg_max(), 0)]) if has_game else "—",
+		}
+	)
+	if _season_tint != null:
+		_season_tint.visible = has_game and UIPreferences.season_tint_enabled()
+		var index := clampi(TSBGame.current_quarter() - 1, 0, 3)
+		_season_tint.color = SEASON_TINT_COLORS[index]
+
+
 func _refresh_all() -> void:
 	if _world == null or _entities == null or _borders == null or _council == null:
 		# La escena se instancio pero aun no ha entrado en el arbol (QA/probes):
@@ -811,6 +889,7 @@ func _refresh_all() -> void:
 	if _borders_notice != null:
 		_borders_notice.visible = not TSBGame.has_map_borders() and TSBGame.has_game()
 	_refresh_view_banner()
+	_refresh_season_ui()
 	_update_zoom_dependent()
 
 
@@ -821,7 +900,7 @@ func _refresh_info_sidebar() -> void:
 	var has_game := TSBGame.has_game()
 	_info_faction.text = TSBGame.faction_name(fid) if not fid.is_empty() else "Sin partida"
 	_info_date.text = "%s · %d · Era %s" % [
-		QUARTER_NAMES[TSBGame.current_quarter() - 1],
+		TSBGame.season_name(),
 		TSBGame.current_year(),
 		TSBGame.current_era(),
 	]
@@ -866,7 +945,7 @@ func _refresh_sovereign_panel() -> void:
 	_sovereign_name.text = str(ruler.get("name", "Sin gobernante"))
 	_sovereign_sub.text = "%s · %s · %d años" % [
 		TSBGame.faction_name(fid) if not fid.is_empty() else "Vista previa",
-		QUARTER_NAMES[TSBGame.current_quarter() - 1].capitalize(),
+		TSBGame.season_name().capitalize(),
 		TSBGame.character_age(ruler) if not ruler.is_empty() else 0,
 	]
 	_sovereign_heir.text = "Heredero: %s" % str(heir.get("name", "sin heredero"))
@@ -1210,7 +1289,7 @@ func _on_turn_started(_quarter: int, _year: int) -> void:
 	_refresh_all()
 	if _overlay != null and is_instance_valid(_overlay) and _overlay.has_method("refresh"):
 		_overlay.call("refresh")
-	_notify("Turno iniciado: %s de %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()])
+	_notify("Turno iniciado: %s de %d" % [TSBGame.season_name(), TSBGame.current_year()])
 
 
 func _on_turn_ended(_quarter: int, _year: int) -> void:
@@ -1219,11 +1298,17 @@ func _on_turn_ended(_quarter: int, _year: int) -> void:
 
 func _on_year_advanced_event(year: int) -> void:
 	_refresh_all()
+	if _end_turn_in_progress:
+		_deferred_year_end = year
+		return
 	_open_year_end(year)
 
 
 func _on_year_advanced_one_arg(year: int) -> void:
 	_refresh_all()
+	if _end_turn_in_progress:
+		_deferred_year_end = year
+		return
 	_open_year_end(year)
 
 
@@ -1467,17 +1552,57 @@ func _on_end_turn_requested() -> void:
 	if not TSBGame.has_game():
 		_notify("Inicia una partida (Nuevo juego) para terminar turnos.", 2)
 		return
-	if _turn_processing:
+	if _turn_processing or (_overlay != null and is_instance_valid(_overlay)):
 		return
 	_turn_processing = true
+	_open_overlay(OrderConfirmationScene.resource_path, "orders", null)
+	if _overlay == null:
+		_turn_processing = false
+		return
+	if _overlay.has_signal("confirmed"):
+		_overlay.connect("confirmed", _on_orders_confirmed)
+	if _overlay.has_signal("corrected"):
+		_overlay.connect("corrected", _on_orders_corrected)
+
+
+func _on_orders_confirmed() -> void:
+	await get_tree().process_frame
+	await _perform_end_turn()
+
+
+func _on_orders_corrected() -> void:
+	_turn_processing = false
+
+
+func _perform_end_turn() -> void:
+	if not TSBGame.has_game():
+		_turn_processing = false
+		return
 	_notify("La IA rival delibera…")
 	_council.call("refresh")
+	_closed_season = TSBGame.season_name()
+	_closed_year = TSBGame.current_year()
+	_closed_actions = TSBGame.turn_actions()
+	_end_turn_in_progress = true
 	await get_tree().process_frame
 	TSBGame.end_turn()
+	_end_turn_in_progress = false
 	_turn_processing = false
 	_refresh_all()
-	_notify("Trimestre completado: %s de %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()], 1)
+	_notify("Trimestre completado: %s de %d" % [TSBGame.season_name(), TSBGame.current_year()], 1)
 	_flush_pending_battles()
+	if _overlay == null:
+		_open_quarterly_bulletin({
+			"season": _closed_season,
+			"year": _closed_year,
+			"actions": _closed_actions,
+		})
+	else:
+		_bulletin_pending = true
+
+
+func _open_quarterly_bulletin(payload: Dictionary = {}) -> void:
+	_open_overlay("res://scenes/ui/quarterly_bulletin.tscn", "bulletin", payload)
 
 
 func _on_save_pressed() -> void:
@@ -1600,6 +1725,21 @@ func _on_overlay_closed() -> void:
 	_refresh_tutorial_ui()
 	if closed_kind in ["tactical", "battle", "victory", "year_end", "close"]:
 		UIAudio.play_music("map")
+	if closed_kind == "orders":
+		_turn_processing = false
+	if closed_kind == "bulletin" and _deferred_year_end > 0:
+		var pending_year := _deferred_year_end
+		_deferred_year_end = 0
+		_open_year_end(pending_year)
+		return
+	if _bulletin_pending and _overlay == null:
+		_bulletin_pending = false
+		_open_quarterly_bulletin({
+			"season": _closed_season,
+			"year": _closed_year,
+			"actions": _closed_actions,
+		})
+		return
 	if not _tactical_pending_report.is_empty():
 		var report := _tactical_pending_report
 		_tactical_pending_report = {}
@@ -1609,6 +1749,14 @@ func _on_overlay_closed() -> void:
 		var report := _deferred_battle_report
 		_deferred_battle_report = {}
 		_open_overlay(BattleReportScene.resource_path, "battle", report)
+		return
+	if _bulletin_pending and _overlay == null:
+		_bulletin_pending = false
+		_open_quarterly_bulletin({
+			"season": _closed_season,
+			"year": _closed_year,
+			"actions": _closed_actions,
+		})
 
 
 # ==========================================================================

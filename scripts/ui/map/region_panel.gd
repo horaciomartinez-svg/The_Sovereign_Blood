@@ -12,6 +12,7 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
 
 const WORKER_ORDER: Array[String] = ["farmers", "artisans", "merchants", "recruits"]
 const WORKER_LABELS := {
@@ -51,6 +52,7 @@ func _ready() -> void:
 	UIKit.apply_theme(self)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 20
+	UIHelp.add_button(self, "region_panel")
 	clip_contents = true
 	_build()
 	visible = false

@@ -9,6 +9,8 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
+const UIPreferences = preload("res://scripts/ui/ui_preferences.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
 
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 
@@ -25,6 +27,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 90
 	_build()
+	UIHelp.add_button(self, "options")
 	open(false)
 
 
@@ -77,6 +80,13 @@ func _rebuild_content() -> void:
 	mute_check.button_pressed = UIAudio.is_muted()
 	mute_check.toggled.connect(_on_mute_toggled)
 	_content.add_child(mute_check)
+
+	var tint_check := CheckButton.new()
+	tint_check.text = "Tinte estacional del mapa"
+	tint_check.tooltip_text = "D-079: cambia suavemente el tono del mapa según la estación. No afecta a la simulación."
+	tint_check.button_pressed = UIPreferences.season_tint_enabled()
+	tint_check.toggled.connect(func(value: bool) -> void: UIPreferences.set_season_tint_enabled(value))
+	_content.add_child(tint_check)
 
 	var audio_title := UIKit.label(_content, "AUDIO", "InkLabel")
 	audio_title.add_theme_font_size_override("font_size", 18)

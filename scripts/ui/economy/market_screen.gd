@@ -62,6 +62,7 @@ func _rebuild() -> void:
 		_set_status("Comerciantes asignados: %d." % int(merchant_slider.value) if ok else "No se pudieron asignar comerciantes.")
 		_rebuild()
 	)
+	_build_advisor_advice(fid)
 
 	if owned.is_empty():
 		var no_region := UIKit.label(_body, "No controlas regiones propias: no puedes operar en el mercado.", "InkLabel")
@@ -179,6 +180,37 @@ func _update_expedition_button(button: Button, picker: OptionButton, trade_ok: b
 	var used := TSBGame.action_used(key) or not TSBGame.can_use_action(key)
 	button.disabled = not trade_ok or used
 	button.tooltip_text = "Sin comerciantes asignados" if not trade_ok else ("Usado este turno" if used else "Vende en el extranjero; retorno a 2 trimestres.")
+
+
+func _build_advisor_advice(fid: String) -> void:
+	if not TSBGame.advisor_enabled():
+		return
+	var advice := TSBGame.trade_advice(fid, _selected_region())
+	if advice.is_empty():
+		return
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", Palette.stylebox(Palette.with_alpha(Palette.INK_DEEP, 0.10), Palette.with_alpha(Palette.GOLD_DIM, 0.7), 1, 4, 10, 7))
+	_body.add_child(panel)
+	var column := UIKit.vbox(panel, 2)
+	var title := UIKit.label(column, "El Consejero · consejo comercial", "InkLabel")
+	title.add_theme_font_size_override("font_size", 17)
+	title.add_theme_color_override("font_color", Palette.CRIMSON)
+	var text := str(advice.get("text", ""))
+	if not bool(advice.get("ok", false)):
+		text = "Consejo: %s." % str(advice.get("reason", "asigna comerciantes para operar"))
+	elif text.is_empty():
+		var kind := str(advice.get("kind", "hold"))
+		var good := str(advice.get("good_id", ""))
+		text = "%s: %s (precio %d, base %d, margen %+d%%)." % [
+			kind.capitalize(), TSBGame.trade_good(good).get("name", good),
+			int(advice.get("price", 0)), int(advice.get("base", 0)), int(roundf(float(advice.get("margin", 0.0)) * 100.0))]
+	var label := UIKit.label(column, text, "InkLabel")
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Palette.INK_TEXT)
+	var deterministic := UIKit.label(column, "Cálculo determinista a partir de precios, inventario y volumen; sin azar.", "InkLabel")
+	deterministic.add_theme_font_size_override("font_size", 12)
+	deterministic.add_theme_color_override("font_color", Palette.MUTED)
 
 
 func _selected_region() -> String:

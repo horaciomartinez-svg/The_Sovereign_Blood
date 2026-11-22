@@ -7,6 +7,7 @@ const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const UIManual = preload("res://scripts/ui/ui_manual.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
 const ParchmentBackdrop = preload("res://scripts/ui/widgets/parchment_backdrop.gd")
 const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
 
@@ -25,6 +26,7 @@ func _ready() -> void:
 	TSBGame.ensure_data()
 	UIAudio.play_music("menu")
 	_build()
+	UIHelp.add_button(self, "main_menu")
 	_refresh()
 
 

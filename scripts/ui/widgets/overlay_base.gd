@@ -8,6 +8,21 @@ signal closed
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
+
+const CONTEXT_KEYS := {
+	"family_tree": "family",
+	"diplomacy_screen": "diplomacy",
+	"military_screen": "military",
+	"economy_screen": "economy",
+	"market_screen": "market",
+	"army_management": "army_management",
+	"year_end_report": "year_end",
+	"victory_screen": "victory",
+	"court_overview": "council",
+	"battle_report": "battle_n1",
+	"chronicle_screen": "chronicle",
+}
 
 var dialog: PanelContainer = null
 var content: VBoxContainer = null
@@ -20,6 +35,34 @@ func _ready() -> void:
 	z_index = 80
 	_build_shell()
 	_build_content()
+	_build_help_button()
+
+
+func _context_help_key() -> String:
+	var script_path := ""
+	if get_script() != null:
+		script_path = str(get_script().resource_path)
+	var file_key := script_path.get_file().get_basename()
+	return str(CONTEXT_KEYS.get(file_key, ""))
+
+
+func _build_help_button() -> void:
+	var screen_key := _context_help_key()
+	if screen_key.is_empty():
+		return
+	var help_button := UIKit.button(self, "?", "SmallButton", "Ayuda contextual (D-082)")
+	help_button.custom_minimum_size = Vector2(42, 42)
+	help_button.anchor_left = 1.0
+	help_button.anchor_right = 1.0
+	help_button.anchor_top = 0.0
+	help_button.anchor_bottom = 0.0
+	help_button.offset_left = -60
+	help_button.offset_right = -18
+	help_button.offset_top = 18
+	help_button.offset_bottom = 60
+	help_button.z_index = 120
+	help_button.add_theme_font_size_override("font_size", 22)
+	help_button.pressed.connect(func() -> void: UIHelp.open_help(self, screen_key))
 
 
 func _build_shell() -> void:

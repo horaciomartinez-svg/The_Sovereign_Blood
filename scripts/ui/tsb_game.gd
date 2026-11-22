@@ -1204,6 +1204,68 @@ static func mark_action_used(key: String) -> bool:
 	return bool(result) if result != null else false
 
 
+static func season_name(quarter_override: int = -1) -> String:
+	var result: Variant = _call("GameState", "get_season_name", [quarter_override])
+	if result != null and str(result) != "":
+		return str(result)
+	var fallback := ["Primavera", "Verano", "Otoño", "Invierno"]
+	var index := current_quarter() - 1
+	if quarter_override >= 1 and quarter_override <= 4:
+		index = quarter_override - 1
+	return fallback[clampi(index, 0, 3)]
+
+
+static func season_label() -> String:
+	var result: Variant = _call("GameState", "get_season_label", [])
+	if result != null and str(result) != "":
+		return str(result)
+	return "%s %d" % [season_name(), current_year()]
+
+
+static func turn_actions() -> Array:
+	var result: Variant = _call("GameState", "get_turn_actions", [])
+	return (result as Array).duplicate(true) if result is Array else []
+
+
+static func chronicle(year: int = -1) -> Array:
+	var result: Variant = _call("GameState", "get_chronicle", [])
+	var entries: Array = (result as Array).duplicate(true) if result is Array else []
+	if year < 0:
+		return entries
+	var filtered: Array = []
+	for entry: Variant in entries:
+		if entry is Dictionary and int((entry as Dictionary).get("year", -1)) == year:
+			filtered.append(entry)
+	return filtered
+
+
+static func advisor_enabled() -> bool:
+	var result: Variant = _call("GameState", "is_advisor_enabled", [])
+	if result != null:
+		return bool(result)
+	return difficulty() == "beginner"
+
+
+static func set_advisor_enabled(value: bool) -> bool:
+	var result: Variant = _call("GameState", "set_advisor_enabled", [value])
+	return bool(result) if result != null else false
+
+
+static func trade_advice(faction_id: String, region_id: String = "") -> Dictionary:
+	var result: Variant = _call("TradeSystem", "get_trade_advice", [faction_id, region_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func context_help(screen: String) -> Dictionary:
+	var result: Variant = _call("DataLoader", "get_context_help", [screen])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func legibility_texts() -> Dictionary:
+	var result: Variant = _call("DataLoader", "get_legibility_texts", [])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
 static func consort_info(faction_id: String) -> Dictionary:
 	var result: Variant = _call("DynastySystem", "get_consort_info", [faction_id])
 	return (result as Dictionary).duplicate(true) if result is Dictionary else {}

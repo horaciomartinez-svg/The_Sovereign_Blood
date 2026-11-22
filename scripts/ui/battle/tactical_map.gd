@@ -13,6 +13,8 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const UILegibility = preload("res://scripts/ui/ui_legibility.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const GameConstants = preload("res://scripts/utils/game_constants.gd")
@@ -49,6 +51,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 82
+	UIHelp.add_button(self, "battle_n2")
 	var dim := ColorRect.new()
 	dim.color = Color(0.02, 0.03, 0.05, 0.70)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -294,12 +297,21 @@ func _rebuild_side(state: Dictionary) -> void:
 		marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(marker)
 		var unit_name := str(TSBGame.unit(str(data.get("unit_id", ""))).get("name", data.get("unit_id", "—")))
+		var commander_badge := ""
+		if bool(data.get("commander", false)):
+			var command_stat := int(data.get("commander_stat", -1))
+			if command_stat < 0:
+				var ruler_stats: Variant = TSBGame.ruler(str(data.get("faction", ""))).get("stats", {})
+				if ruler_stats is Dictionary:
+					command_stat = int((ruler_stats as Dictionary).get("command", 50))
+			var wounded := bool(data.get("commander_wounded", data.get("wounded", false)))
+			commander_badge = " · ★ Mando %d · %s" % [command_stat, "herido" if wounded else "sano"]
 		var label := UIKit.label(row, "%s · %d · q%d,r%d%s" % [
 			unit_name,
 			int(data.get("size", 0)),
 			int(data.get("q", 0)),
 			int(data.get("r", 0)),
-			" · ★" if bool(data.get("commander", false)) else "",
+			commander_badge,
 		], "InkLabel")
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		label.add_theme_font_size_override("font_size", 13)
@@ -318,6 +330,68 @@ func _rebuild_side(state: Dictionary) -> void:
 			obj_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			obj_label.add_theme_font_size_override("font_size", 12)
 			obj_label.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.1))
+	_build_selected_unit_detail(state)
+
+
+func _build_selected_unit_detail(state: Dictionary) -> void:
+	var selected: Dictionary = {}
+	for unit_value: Variant in (state.get("units", []) as Array):
+		if unit_value is Dictionary and str((unit_value as Dictionary).get("id", "")) == _selected_unit:
+			selected = unit_value
+			break
+	UIKit.hsep(_side_box, Palette.with_alpha(Palette.GOLD_DIM, 0.6))
+	var title := UIKit.label(_side_box, "Unidad seleccionada", "InkLabel")
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Palette.CRIMSON)
+	if selected.is_empty():
+		var hint := UIKit.label(_side_box, "Selecciona una unidad propia en el campo para ver hombres, armas, apoyo, moral, entrenamiento y comandante.", "InkLabel")
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hint.add_theme_font_size_override("font_size", 13)
+		hint.add_theme_color_override("font_color", Palette.MUTED)
+		return
+	var unit_id := str(selected.get("unit_id", ""))
+	var unit_data := TSBGame.unit(unit_id)
+	var unit_name := str(unit_data.get("name", unit_id))
+	var unit_type := str(unit_data.get("type", "infantería")).replace("_", " ")
+	var region_id := str(state.get("region_id", ""))
+	var support := TSBGame.support(region_id) if not region_id.is_empty() else 0
+	var commander := bool(selected.get("commander", false))
+	var commander_status := str(selected.get("commander_status", selected.get("commander_health", "sano")))
+	var wounded := bool(selected.get("commander_wounded", selected.get("wounded", false)))
+	var status_text := "herido" if wounded or commander_status.to_lower() in ["herido", "wounded"] else "sano"
+	status_text = UILegibility.text("battle_panel.n2.commander_status.%s" % status_text, status_text.capitalize())
+	var command := int(selected.get("commander_stat", -1))
+	var leader_id := str(selected.get("source_leader", ""))
+	if command < 0 and (commander or not leader_id.is_empty()):
+		var ruler_stats: Variant = TSBGame.ruler(str(selected.get("faction", ""))).get("stats", {})
+		if ruler_stats is Dictionary:
+			command = int((ruler_stats as Dictionary).get("command", 50))
+	var leader_name := str(TSBGame.character(leader_id).get("name", ""))
+	var lines: Array[String] = [
+		"%s: %d" % [UILegibility.text("battle_panel.n2.labels.hombres", "Hombres"), int(selected.get("size", 0))],
+		"%s: %s · %s %d" % [UILegibility.text("battle_panel.n2.labels.armas", "Armas"), unit_type, "fuerza", int(unit_data.get("strength", 0))],
+		"%s: %d/100" % [UILegibility.text("battle_panel.n2.labels.apoyo", "Apoyo"), support],
+		"%s: %d%%" % [UILegibility.text("battle_panel.n2.labels.moral", "Moral"), int(roundf(float(selected.get("morale", 1.0)) * 100.0))],
+		"%s: %d/100" % [UILegibility.text("battle_panel.n2.labels.entrenamiento", "Entrenamiento"), int(selected.get("experience", 0))],
+	]
+	for line: String in lines:
+		var label := UIKit.label(_side_box, line, "InkLabel")
+		label.add_theme_font_size_override("font_size", 14)
+		label.add_theme_color_override("font_color", Palette.INK_TEXT)
+	if commander or not leader_id.is_empty():
+		var commander_text := "%s: %s · %s" % [
+			UILegibility.text("battle_panel.n2.labels.comandante", "Comandante"),
+			leader_name if not leader_name.is_empty() else "comandante", status_text]
+		if command >= 0:
+			commander_text += " · %s %d" % [UILegibility.text("battle_panel.n2.labels.mando", "Mando"), command]
+		var commander_label := UIKit.label(_side_box, commander_text, "InkLabel")
+		commander_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		commander_label.add_theme_font_size_override("font_size", 14)
+		commander_label.add_theme_color_override("font_color", Palette.GOLD_DIM if status_text == "sano" else Palette.CRIMSON)
+	else:
+		var no_commander := UIKit.label(_side_box, "Comandante: sin comandante asignado.", "InkLabel")
+		no_commander.add_theme_font_size_override("font_size", 13)
+		no_commander.add_theme_color_override("font_color", Palette.MUTED)
 	var log_title := UIKit.label(_side_box, "Registro", "InkLabel")
 	log_title.add_theme_font_size_override("font_size", 18)
 	log_title.add_theme_color_override("font_color", Palette.CRIMSON)

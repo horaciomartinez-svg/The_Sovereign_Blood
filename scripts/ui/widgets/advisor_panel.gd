@@ -76,7 +76,7 @@ func _connect_tutorial_signals() -> void:
 
 
 func refresh() -> void:
-	var active := TSBGame.tutorial_active()
+	var active := TSBGame.tutorial_active() and TSBGame.advisor_enabled()
 	visible = active
 	if not active:
 		return

@@ -10,6 +10,8 @@ const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const UILegibility = preload("res://scripts/ui/ui_legibility.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const BattleProjectileLayer = preload("res://scripts/ui/battle/battle_projectile_layer.gd")
@@ -63,6 +65,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 85
+	UIHelp.add_button(self, "battle_n3")
 	UIAudio.play_music("battle_n3")
 	var dim := ColorRect.new()
 	dim.color = Color(0.02, 0.03, 0.05, 0.72)
@@ -408,6 +411,38 @@ func _unit_card(parent: Node, unit: Dictionary, title_text: String, is_attacker:
 	detail_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail_label.add_theme_font_size_override("font_size", 13)
 	detail_label.add_theme_color_override("font_color", Palette.INK_TEXT.darkened(0.15))
+	# D-083: armas, apoyo, entrenamiento y comandante (solo lectura).
+	var unit_id := str(unit.get("unit_id", ""))
+	var unit_data := TSBGame.unit(unit_id)
+	var unit_type := str(unit.get("type", unit_data.get("type", "infanteria"))).replace("_", " ")
+	var region_id := str(_battlefield_context.get("region_id", _campaign_context.get("region_id", "")))
+	var support := TSBGame.support(region_id) if not region_id.is_empty() else 0
+	var wounded := bool(unit.get("commander_wounded", unit.get("wounded", false)))
+	var commander_status := "herido" if wounded else str(unit.get("commander_status", "sano"))
+	var command := int(unit.get("commander_stat", -1))
+	if command < 0:
+		var ruler_stats: Variant = TSBGame.ruler(faction_id).get("stats", {})
+		if ruler_stats is Dictionary:
+			command = int((ruler_stats as Dictionary).get("command", 50))
+	var detail_lines: Array[String] = [
+		"%s: %s · %s %d · %s %d/100" % [
+			UILegibility.text("battle_panel.n3.labels.armas", "Armas"), unit_type, "fuerza",
+			int(unit_data.get("strength", 0)), UILegibility.text("battle_panel.n3.labels.apoyo", "Apoyo"), support],
+		"%s: %d/100" % [UILegibility.text("battle_panel.n3.labels.entrenamiento", "Entrenamiento"), int(unit.get("experience", 0))],
+	]
+	var status_label := UILegibility.text("battle_panel.n3.commander_status.%s" % commander_status, commander_status)
+	if command >= 0:
+		detail_lines.append("%s: %s · %s %d" % [
+			UILegibility.text("battle_panel.n3.labels.comandante", "Comandante"), status_label,
+			UILegibility.text("battle_panel.n3.labels.mando", "Mando"), command])
+	else:
+		detail_lines.append("%s: %s · %s —" % [
+			UILegibility.text("battle_panel.n3.labels.comandante", "Comandante"), status_label,
+			UILegibility.text("battle_panel.n3.labels.mando", "Mando")])
+	var extra := UIKit.label(text, "\n".join(detail_lines), "InkLabel")
+	extra.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	extra.add_theme_font_size_override("font_size", 12)
+	extra.add_theme_color_override("font_color", Palette.GOLD_DIM if not wounded else Palette.CRIMSON)
 
 
 func _play_card(card_id: String) -> void:

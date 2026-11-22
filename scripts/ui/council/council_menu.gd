@@ -8,12 +8,15 @@ signal diplomacy_requested
 signal military_requested
 signal economy_requested
 signal help_requested
+signal chronicle_requested
+signal advisor_toggled(enabled: bool)
 signal end_turn_requested
 signal menu_requested
 
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
 
 const QUARTER_NAMES: Array[String] = ["INVIERNO", "PRIMAVERA", "VERANO", "OTOÑO"]
 
@@ -22,6 +25,7 @@ var _date_label: Label = null
 var _pg_label: Label = null
 var _pg_bar: ProgressBar = null
 var _phase_label: Label = null
+var _advisor_check: CheckButton = null
 var _end_turn_button: Button = null
 
 
@@ -64,6 +68,10 @@ func _build() -> void:
 	crown.add_child(crest)
 	var title := UIKit.label(crown, "CONSEJO", "TitleLabel")
 	title.add_theme_font_size_override("font_size", 34)
+	var help := UIKit.button(crown, "?", "SmallButton", "Ayuda contextual del Consejo")
+	help.custom_minimum_size = Vector2(32, 32)
+	help.add_theme_font_size_override("font_size", 18)
+	help.pressed.connect(func() -> void: UIHelp.open_help(self, "council"))
 
 	_faction_label = UIKit.label(column, "—", "SmallLabel")
 	_faction_label.add_theme_font_size_override("font_size", 16)
@@ -93,7 +101,18 @@ func _build() -> void:
 	_order_row(orders, "Diplomacia", "propuestas y tratados", "0–10 PG", diplomacy_requested)
 	_order_row(orders, "Militar", "ejércitos y movimiento", "1 PG / ej.", military_requested)
 	_order_row(orders, "Economía", "mano de obra y tesoro", "1 PG / orden", economy_requested)
+	_order_row(orders, "Crónica", "histórico del reino", "—", chronicle_requested)
 	_order_row(orders, "Ayuda", "resumen y manual del jugador", "—", help_requested)
+
+	_advisor_check = CheckButton.new()
+	_advisor_check.text = "Consejero"
+	_advisor_check.tooltip_text = "D-082: activa o desactiva el Consejero en partida (se guarda con la partida)."
+	_advisor_check.add_theme_font_size_override("font_size", 15)
+	_advisor_check.toggled.connect(func(value: bool) -> void:
+		TSBGame.set_advisor_enabled(value)
+		advisor_toggled.emit(value)
+	)
+	column.add_child(_advisor_check)
 
 	UIKit.spacer(column, 4)
 	UIKit.hsep(column)
@@ -149,7 +168,7 @@ func refresh() -> void:
 	if has_game:
 		_faction_label.text = TSBGame.faction_name(fid)
 		_faction_label.add_theme_color_override("font_color", Palette.PARCHMENT)
-		_date_label.text = "%s · %d" % [QUARTER_NAMES[TSBGame.current_quarter() - 1], TSBGame.current_year()]
+		_date_label.text = "%s · %d" % [TSBGame.season_name(), TSBGame.current_year()]
 		var pg := TSBGame.pg_remaining()
 		var pg_max := maxi(TSBGame.pg_max(), 1)
 		_pg_label.text = "%d / %d" % [pg, pg_max]
@@ -167,3 +186,5 @@ func refresh() -> void:
 		_phase_label.text = "Los sistemas de turno (AG-2) aún están en integración; puedes explorar el mapa."
 		_end_turn_button.disabled = true
 		_end_turn_button.tooltip_text = "Inicia una partida cuando los sistemas estén integrados"
+	if _advisor_check != null:
+		_advisor_check.set_pressed_no_signal(TSBGame.advisor_enabled())

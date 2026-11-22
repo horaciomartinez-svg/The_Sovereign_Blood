@@ -10,6 +10,7 @@ const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const ParchmentBackdrop = preload("res://scripts/ui/widgets/parchment_backdrop.gd")
 const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
+const UIHelp = preload("res://scripts/ui/ui_help.gd")
 
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 const WORLD_MAP_SCENE := "res://scenes/map/world_map.tscn"
@@ -105,6 +106,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	TSBGame.ensure_data()
 	_build()
+	UIHelp.add_button(self, "scenario_select")
 	var initial := "scenario_1337"
 	if not _scenario_available(initial):
 		for meta: Dictionary in SCENARIO_DEFAULTS:
