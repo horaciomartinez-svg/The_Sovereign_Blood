@@ -29,6 +29,7 @@ const TestTacticalBattleScript = preload("res://tests/test_tactical_battle.gd")
 const TestCloseCombatScript = preload("res://tests/test_close_combat.gd")
 const TestEspionageScript = preload("res://tests/test_espionage.gd")
 const TestCrecyScript = preload("res://tests/test_crecy.gd")
+const TestSpritesScript = preload("res://tests/test_sprites.gd")
 const HarnessScript = preload("res://tests/harness.gd")
 const ValidatorCore = preload("res://tools/validator_core.gd")
 
@@ -36,7 +37,7 @@ const ValidatorCore = preload("res://tools/validator_core.gd")
 func _initialize() -> void:
 	var version_info: Dictionary = Engine.get_version_info()
 	print("==============================================================")
-	print(" The Sovereign's Blood — CI headless (Fase 0 + Fase 1 + Fase 2)")
+	print(" The Sovereign's Blood — CI headless (Fase 0 + Fase 1 + Fase 2 + Fase 3)")
 	print(" Godot %s" % str(version_info.get("string", "")))
 	print("==============================================================")
 	var runner: TestRunnerScript = TestRunnerScript.new()
@@ -64,6 +65,8 @@ func _initialize() -> void:
 	TestCloseCombatScript.new().run(runner, harness)
 	TestEspionageScript.new().run(runner, harness)
 	TestCrecyScript.new().run(runner, harness)
+	# Fase 3 (D-040/D-042): sprites de unidades, animación y proyectiles.
+	TestSpritesScript.new().run(runner, harness)
 	_run_data_validation(runner)
 
 	var summary: Dictionary = runner.summary()

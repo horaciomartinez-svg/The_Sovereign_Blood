@@ -17,7 +17,29 @@
       },
       "multipliers": {},
       "requires": [],
-      "faction_tags": []
+      "faction_tags": [],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/militia_spearman_march_1.png",
+          "res://assets/art/sprites/units/militia_spearman_march_2.png",
+          "res://assets/art/sprites/units/militia_spearman_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "scottish_schiltron",
@@ -63,7 +85,29 @@
         "france",
         "hre",
         "aragon"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/crossbowmen_march_1.png",
+          "res://assets/art/sprites/units/crossbowmen_march_2.png",
+          "res://assets/art/sprites/units/crossbowmen_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "longbowman",
@@ -85,7 +129,29 @@
       "requires": [],
       "faction_tags": [
         "england"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/longbowman_march_1.png",
+          "res://assets/art/sprites/units/longbowman_march_2.png",
+          "res://assets/art/sprites/units/longbowman_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "mounted_sergeants",
@@ -134,7 +200,29 @@
         "castile",
         "aragon",
         "poland"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/men_at_arms_march_1.png",
+          "res://assets/art/sprites/units/men_at_arms_march_2.png",
+          "res://assets/art/sprites/units/men_at_arms_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "light_horseman",
@@ -158,7 +246,29 @@
         "castile",
         "hungary",
         "poland"
-      ]
+      ],
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/light_horseman_march_1.png",
+          "res://assets/art/sprites/units/light_horseman_march_2.png",
+          "res://assets/art/sprites/units/light_horseman_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          80
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "steppe_cavalry",
@@ -249,7 +359,29 @@
       "faction_tags": [
         "hre"
       ],
-      "available_from": 1386
+      "available_from": 1386,
+      "sprite_sheet": {
+        "frames": [
+          "res://assets/art/sprites/units/swiss_pikeman_march_1.png",
+          "res://assets/art/sprites/units/swiss_pikeman_march_2.png",
+          "res://assets/art/sprites/units/swiss_pikeman_march_3.png"
+        ],
+        "anim": {
+          "march": [
+            0,
+            1,
+            2
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "size": [
+          64,
+          64
+        ],
+        "anchor": "bottom_center",
+        "facing": "E"
+      }
     },
     {
       "id": "dismounted_men_at_arms",

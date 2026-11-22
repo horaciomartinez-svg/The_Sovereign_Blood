@@ -54,6 +54,8 @@ signal tactical_battle_started(attacker_faction: String, defender_faction: Strin
 signal tactical_battle_finished(winner_faction: String, region_id: String)
 signal close_combat_started(attacker_faction: String, defender_faction: String)
 signal close_combat_finished(winner_faction: String)
+## Proyectil disparado en N2/N3 (Fase 3 §3, D-042): payload del render.
+signal projectile_fired(payload: Dictionary)
 
 # --- Eventos de partida, guardado y UI ---
 signal game_event_triggered(event_id: String, payload: Dictionary)

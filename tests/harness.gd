@@ -437,3 +437,22 @@ func ai_profile(faction_id: String) -> String:
 
 func ai_set_profile(faction_id: String, profile: String) -> void:
 	ai.call("set_profile", faction_id, profile)
+
+
+# --- Fase 3: datos de sprites (D-040/D-042) ------------------------------
+
+func unit_definition(unit_id: String) -> Dictionary:
+	return SafeDict.as_dict(dl.call("get_unit", unit_id))
+
+
+func unit_sprite(unit_id: String) -> Dictionary:
+	return SafeDict.as_dict(dl.call("get_unit_sprite", unit_id))
+
+
+func unit_ids() -> Array[String]:
+	var value: Variant = dl.call("get_unit_ids")
+	var result: Array[String] = []
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result

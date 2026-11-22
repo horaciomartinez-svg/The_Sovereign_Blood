@@ -18,6 +18,10 @@ extends Node
 const SafeDict = preload("res://scripts/utils/safe_dict.gd")
 const Constants = preload("res://scripts/utils/game_constants.gd")
 const SeededRNGScript = preload("res://scripts/utils/rng.gd")
+const BATTLE_SPRITES = preload("res://scripts/battle/battle_sprites.gd")
+
+## Proyectil disparado en el duelo (Fase 3 §3).
+signal projectile_fired(payload: Dictionary)
 
 var round: int = 1
 var finished: bool = false
@@ -34,6 +38,10 @@ var _orders_per_round: Dictionary = {"attacker": Constants.CLOSE_COMBAT_HAND_BAS
 var _pending_attacker_card: String = ""
 var _last_round: Dictionary = {}
 var _max_rounds: int = Constants.CLOSE_COMBAT_MAX_ROUNDS
+## Fase 3 (D-042): reloj de animación determinista y proyectiles del duelo.
+var _animation_ms: float = 0.0
+var _projectiles: Array[Dictionary] = []
+var _projectile_seq: int = 0
 
 
 ## Configura el duelo a partir de dos dicts de unidad del estado/ejército.
@@ -48,6 +56,9 @@ func setup(attacker_unit: Dictionary, defender_unit: Dictionary) -> void:
 	_pending_attacker_card = ""
 	_last_round = {}
 	log_entries.clear()
+	_animation_ms = 0.0
+	_projectiles = []
+	_projectile_seq = 0
 	var attacker_command: int = SafeDict.as_int(attacker.get("commander_stat"), Constants.BATTLE_COMMANDER_STAT_BASE)
 	var defender_command: int = SafeDict.as_int(defender.get("commander_stat"), Constants.BATTLE_COMMANDER_STAT_BASE)
 	_orders_per_round["attacker"] = Constants.CLOSE_COMBAT_HAND_BASE
@@ -122,7 +133,49 @@ func get_state() -> Dictionary:
 		"winner": winner,
 		"last_round": _last_round.duplicate(true),
 		"log": log_entries.duplicate(true),
+		# Fase 3 §3 (aditivo): animación y proyectiles para el render.
+		"animation_ms": _animation_ms,
+		"projectiles": get_projectiles(),
 	}
+
+
+## Unidades del duelo (aditivo, mismo formato que TacticalBattle.get_units()).
+func get_units() -> Array[Dictionary]:
+	return [attacker.duplicate(true), defender.duplicate(true)]
+
+
+## Avanza el reloj de animación/proyectiles (lo llama el render, sin RNG).
+func tick_animation(delta_ms: float) -> void:
+	_animation_ms += maxf(0.0, delta_ms)
+	var active: Array[Dictionary] = []
+	for projectile_value in _projectiles:
+		var projectile: Dictionary = SafeDict.as_dict(projectile_value)
+		var started_ms: float = SafeDict.as_float(projectile.get("started_ms"), 0.0)
+		var duration_ms: float = maxf(1.0, SafeDict.as_float(projectile.get("duration_ms"), 1.0))
+		if _animation_ms - started_ms >= duration_ms:
+			continue
+		active.append(projectile)
+	_projectiles = active
+
+
+## Proyectiles activos del duelo con posición/t interpolados por el reloj.
+func get_projectiles() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for projectile_value in _projectiles:
+		var projectile: Dictionary = SafeDict.as_dict(projectile_value)
+		var duration_ms: float = maxf(1.0, SafeDict.as_float(projectile.get("duration_ms"), 1.0))
+		var started_ms: float = SafeDict.as_float(projectile.get("started_ms"), 0.0)
+		var elapsed_ms: float = clampf(_animation_ms - started_ms, 0.0, duration_ms)
+		var t: float = clampf(elapsed_ms / duration_ms, 0.0, 1.0)
+		var copy: Dictionary = projectile.duplicate(true)
+		copy["elapsed_ms"] = snappedf(elapsed_ms, 0.1)
+		copy["t"] = snappedf(t, 0.001)
+		copy["position"] = BATTLE_SPRITES.projectile_position(
+			SafeDict.as_dict(projectile.get("from", null)),
+			SafeDict.as_dict(projectile.get("to", null)),
+			SafeDict.as_float(projectile.get("arc_height"), 0.0), t)
+		result.append(copy)
+	return result
 
 
 func get_outcome() -> Dictionary:
@@ -212,6 +265,11 @@ func _resolve_round(attacker_card: String, defender_card: String) -> Dictionary:
 	result["defender_size"] = SafeDict.as_int(defender.get("size"), 0)
 	result["attacker_morale"] = snappedf(SafeDict.as_float(attacker.get("morale"), 1.0), 0.001)
 	result["defender_morale"] = snappedf(SafeDict.as_float(defender.get("morale"), 1.0), 0.001)
+	# Fase 3 §3: los duelistas a distancia disparan su proyectil (sin RNG).
+	if not BATTLE_SPRITES.projectile_for_unit(SafeDict.as_string(attacker.get("unit_id"), "")).is_empty():
+		_fire_projectile(attacker, defender, "attacker")
+	if not BATTLE_SPRITES.projectile_for_unit(SafeDict.as_string(defender.get("unit_id"), "")).is_empty():
+		_fire_projectile(defender, attacker, "defender")
 	# Fin por destrucción, moral rota o retirada ordenada.
 	var attacker_destroyed: bool = _is_destroyed(attacker)
 	var defender_destroyed: bool = _is_destroyed(defender)
@@ -392,6 +450,11 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		var ruler: Dictionary = GameState.get_character_state(ruler_id)
 		var stats: Dictionary = SafeDict.as_dict(ruler.get("stats", null))
 		commander_stat = SafeDict.as_int(stats.get("command"), Constants.BATTLE_COMMANDER_STAT_BASE)
+	# Fase 3 (D-040/D-042): sprite/orientación; atacante mira a E y defensor a O
+	# (el render espeja el asset base que mira a E).
+	var sprite_sheet: Dictionary = SafeDict.as_dict(definition.get("sprite_sheet", null))
+	var frames: Array[String] = BATTLE_SPRITES.frames_of(sprite_sheet)
+	var facing: String = "E" if unit_side == "attacker" else "W"
 	return {
 		"id": SafeDict.as_string(unit.get("id"), "unit_%s" % unit_side),
 		"side": unit_side,
@@ -404,7 +467,47 @@ func _normalize_unit(source: Dictionary, unit_side: String) -> Dictionary:
 		"experience": SafeDict.as_int(unit.get("experience"), 0),
 		"commander_stat": commander_stat,
 		"terrain": SafeDict.as_string(unit.get("terrain"), "plains"),
+		"facing": facing,
+		"mirror": BATTLE_SPRITES.mirror_for(facing),
+		"moving": false,
+		"march_frame": 0,
+		"sprite_frame_path": frames[0] if not frames.is_empty() else "",
+		"sprite_sheet": _sprite_or_null(sprite_sheet),
 	}
+
+
+## Dict de sprite o null (fallback) como en TacticalBattle.
+func _sprite_or_null(sprite: Dictionary) -> Variant:
+	if sprite.is_empty():
+		return null
+	return sprite.duplicate(true)
+
+
+## Dispara un proyectil del duelista a su rival (coordenadas normalizadas 0..1
+## para que la UI las mapee a su layout; sin RNG de combate).
+func _fire_projectile(shooter: Dictionary, target: Dictionary, shooter_side: String) -> void:
+	var spec: Dictionary = BATTLE_SPRITES.projectile_for_unit(
+		SafeDict.as_string(shooter.get("unit_id"), ""))
+	if spec.is_empty():
+		return
+	_projectile_seq += 1
+	var shooter_left: bool = shooter_side == "attacker"
+	var payload: Dictionary = {
+		"id": "duel_proj_%d" % _projectile_seq,
+		"type": SafeDict.as_string(spec.get("type"), ""),
+		"sprite": SafeDict.as_string(spec.get("sprite"), ""),
+		"space": "normalized",
+		"from": {"x": 0.3 if shooter_left else 0.7, "y": 0.42},
+		"to": {"x": 0.7 if shooter_left else 0.3, "y": 0.58},
+		"duration_ms": SafeDict.as_int(spec.get("duration_ms"), 0),
+		"arc_height": SafeDict.as_float(spec.get("arc_height"), 0.0),
+		"ballistic": SafeDict.as_bool(spec.get("ballistic"), true),
+		"started_ms": _animation_ms,
+		"target_id": SafeDict.as_string(target.get("id"), ""),
+	}
+	_projectiles.append(payload)
+	emit_signal("projectile_fired", payload.duplicate(true))
+	EventBus.emit_signal("projectile_fired", payload.duplicate(true))
 
 
 func _rng() -> SeededRNGScript:

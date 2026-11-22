@@ -114,6 +114,20 @@ func get_unit(id: String) -> Dictionary:
 	return entry
 
 
+## Hoja de sprites opcional de una unidad (Fase 3 §10.3); {} si es fallback.
+func get_unit_sprite(id: String) -> Dictionary:
+	var entry: Dictionary = units.get(id, {})
+	var sprite: Variant = entry.get("sprite_sheet", null)
+	if sprite is Dictionary:
+		return sprite
+	return {}
+
+
+## True si la unidad tiene sprites de producción (sólo las 6 núcleo, D-042).
+func has_unit_sprite(id: String) -> bool:
+	return not get_unit_sprite(id).is_empty()
+
+
 func get_scenario(id: String) -> Dictionary:
 	var entry: Dictionary = scenarios.get(id, {})
 	return entry

@@ -23,8 +23,12 @@ const SeededRNGScript = preload("res://scripts/utils/rng.gd")
 const ARMY_SCRIPT = preload("res://scripts/model/army.gd")
 const REGION_SCRIPT = preload("res://scripts/model/region_state.gd")
 const CLOSE_COMBAT_SCRIPT = preload("res://scripts/battle/close_combat.gd")
+const BATTLE_SPRITES = preload("res://scripts/battle/battle_sprites.gd")
 
 const TERRAINS: Array[String] = ["plains", "forest", "hills", "river", "city"]
+
+## Proyectil disparado (Fase 3 §3): payload de `get_projectiles()`.
+signal projectile_fired(payload: Dictionary)
 
 var battle_id: String = ""
 var attacker_faction: String = ""
@@ -54,6 +58,11 @@ var _region_wealth: int = 50
 var _region_name: String = ""
 var _log: Array[Dictionary] = []
 var _applied: bool = false
+## Fase 3 (D-040/D-042): reloj de animación determinista y proyectiles activos.
+## Lo avanza el render con `tick_animation(delta_ms)`; NO usa RNG ni reloj real.
+var _animation_ms: float = 0.0
+var _projectiles: Array[Dictionary] = []
+var _projectile_seq: int = 0
 
 
 ## Configura la batalla a partir de los modelos del sistema militar.
@@ -81,6 +90,10 @@ func setup(attacker_army: ARMY_SCRIPT, defender_army: ARMY_SCRIPT, region: REGIO
 	_units = []
 	_start_men = {}
 	_start_men_by_side = {"attacker": 0, "defender": 0}
+	# Fase 3: reloj de animación y proyectiles limpios.
+	_animation_ms = 0.0
+	_projectiles = []
+	_projectile_seq = 0
 	_commander_stat = {
 		"attacker": _commander_stat_for(attacker_army.leader_id, attacker_faction),
 		"defender": _commander_stat_for(defender_army.leader_id, defender_faction),
@@ -117,6 +130,9 @@ func get_state() -> Dictionary:
 		"hexes": get_hexes(),
 		"units": get_units(),
 		"commander_bonus": _commander_bonus.duplicate(true),
+		# Fase 3 §3 (aditivo): animación/proyectiles para el render de AG-3.
+		"animation_ms": _animation_ms,
+		"projectiles": get_projectiles(),
 	}
 
 
@@ -130,14 +146,56 @@ func get_hexes() -> Array[Dictionary]:
 func get_units() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for unit_value in _units:
-		var unit: Dictionary = SafeDict.as_dict(unit_value)
-		result.append(unit.duplicate(true))
+		result.append(_public_unit(SafeDict.as_dict(unit_value)))
 	return result
 
 
 func get_unit(unit_id: String) -> Dictionary:
 	var unit: Dictionary = _find_unit(unit_id)
-	return unit.duplicate(true)
+	if unit.is_empty():
+		return {}
+	return _public_unit(unit)
+
+
+## Avanza el reloj de animación/proyectiles (lo llama el render). Determinista:
+## sólo depende de los `delta_ms` recibidos y no consume RNG de combate.
+func tick_animation(delta_ms: float) -> void:
+	_animation_ms += maxf(0.0, delta_ms)
+	var active: Array[Dictionary] = []
+	for projectile_value in _projectiles:
+		var projectile: Dictionary = SafeDict.as_dict(projectile_value)
+		var started_ms: float = SafeDict.as_float(projectile.get("started_ms"), 0.0)
+		var duration_ms: float = maxf(1.0, SafeDict.as_float(projectile.get("duration_ms"), 1.0))
+		var elapsed_ms: float = maxf(0.0, _animation_ms - started_ms)
+		if elapsed_ms >= duration_ms:
+			continue
+		active.append(projectile)
+	_projectiles = active
+
+
+## Proyectiles activos con posición/t interpolados por el reloj de animación.
+func get_projectiles() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for projectile_value in _projectiles:
+		var projectile: Dictionary = SafeDict.as_dict(projectile_value)
+		var duration_ms: float = maxf(1.0, SafeDict.as_float(projectile.get("duration_ms"), 1.0))
+		var started_ms: float = SafeDict.as_float(projectile.get("started_ms"), 0.0)
+		var elapsed_ms: float = clampf(_animation_ms - started_ms, 0.0, duration_ms)
+		var t: float = clampf(elapsed_ms / duration_ms, 0.0, 1.0)
+		var position: Dictionary = BATTLE_SPRITES.projectile_position(
+			SafeDict.as_dict(projectile.get("from", null)),
+			SafeDict.as_dict(projectile.get("to", null)),
+			SafeDict.as_float(projectile.get("arc_height"), 0.0), t)
+		var copy: Dictionary = projectile.duplicate(true)
+		copy["elapsed_ms"] = snappedf(elapsed_ms, 0.1)
+		copy["t"] = snappedf(t, 0.001)
+		copy["position"] = position
+		result.append(copy)
+	return result
+
+
+func get_animation_time_ms() -> float:
+	return _animation_ms
 
 
 func get_objectives() -> Array[Dictionary]:
@@ -241,6 +299,11 @@ func move_unit(unit_id: String, q: int, r: int) -> bool:
 	unit["q"] = q
 	unit["r"] = r
 	unit["moves_left"] = maxi(0, SafeDict.as_int(unit.get("moves_left"), 0) - cost)
+	# Fase 3 (D-042): orientación según el movimiento y ciclo de marcha.
+	var facing: String = BATTLE_SPRITES.facing_from_delta(q - origin_q, r - origin_r)
+	unit["facing"] = facing
+	unit["mirror"] = BATTLE_SPRITES.mirror_for(facing)
+	unit["moving"] = true
 	_capture_objective_at(q, r, SafeDict.as_string(unit.get("faction"), ""))
 	_log_append("move", "%s se mueve de (%d,%d) a (%d,%d)" % [unit_id, origin_q, origin_r, q, r])
 	_check_finish()
@@ -265,6 +328,13 @@ func attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	if SafeDict.as_int(attacker.get("orders_left"), 0) <= 0:
 		result["reason"] = "no_orders"
 		return result
+	# Fase 3 (D-042): mirar hacia el objetivo (sin consumir RNG).
+	var attack_facing: String = BATTLE_SPRITES.facing_from_delta(
+		SafeDict.as_int(defender.get("q"), 0) - SafeDict.as_int(attacker.get("q"), 0),
+		SafeDict.as_int(defender.get("r"), 0) - SafeDict.as_int(attacker.get("r"), 0))
+	attacker["facing"] = attack_facing
+	attacker["mirror"] = BATTLE_SPRITES.mirror_for(attack_facing)
+	attacker["moving"] = false
 	var distance: int = _hex_distance(
 		SafeDict.as_int(attacker.get("q"), 0), SafeDict.as_int(attacker.get("r"), 0),
 		SafeDict.as_int(defender.get("q"), 0), SafeDict.as_int(defender.get("r"), 0))
@@ -300,6 +370,9 @@ func attack_unit(attacker_id: String, defender_id: String) -> Dictionary:
 	result["attacker_destroyed"] = _is_unit_destroyed(attacker)
 	result["winner"] = _side_of_unit(attacker) if result["defender_destroyed"] else ""
 	_log_append("attack", "%s ataca a %s: -%d / -%d" % [attacker_id, defender_id, defender_losses, attacker_losses])
+	# Fase 3 §3 (D-042): proyectil visible en ataques a distancia (sin RNG).
+	if distance > 1:
+		_fire_projectile(attacker, defender)
 	if result["defender_destroyed"]:
 		_remove_destroyed_unit(defender_id)
 	if result["attacker_destroyed"]:
@@ -324,6 +397,13 @@ func resolve_duel(attacker_unit_id: String, defender_unit_id: String, order_id: 
 	if SafeDict.as_int(attacker.get("orders_left"), 0) <= 0:
 		result["reason"] = "no_orders"
 		return result
+	# Fase 3: orientarse al rival durante el choque.
+	var duel_facing: String = BATTLE_SPRITES.facing_from_delta(
+		SafeDict.as_int(defender.get("q"), 0) - SafeDict.as_int(attacker.get("q"), 0),
+		SafeDict.as_int(defender.get("r"), 0) - SafeDict.as_int(attacker.get("r"), 0))
+	attacker["facing"] = duel_facing
+	attacker["mirror"] = BATTLE_SPRITES.mirror_for(duel_facing)
+	attacker["moving"] = false
 	var duel: CLOSE_COMBAT_SCRIPT = CLOSE_COMBAT_SCRIPT.new()
 	var attacker_input: Dictionary = attacker.duplicate(true)
 	var defender_input: Dictionary = defender.duplicate(true)
@@ -530,6 +610,7 @@ func _spawn_units(army: ARMY_SCRIPT, unit_side: String) -> void:
 		var unit_id: String = "%s_%s_%d" % [unit_side, SafeDict.as_string(source.get("id"), "u"), unit_index]
 		var unit_definition: Dictionary = DataLoader.get_unit(SafeDict.as_string(source.get("unit_id"), ""))
 		var unit_type: String = SafeDict.as_string(unit_definition.get("type"), "infantry")
+		var sprite_sheet: Dictionary = SafeDict.as_dict(unit_definition.get("sprite_sheet", null))
 		var moves: int = clampi(SafeDict.as_int(unit_definition.get("move"), Constants.TACTICAL_DEFAULT_MOVES), 1, Constants.TACTICAL_MAX_MOVES)
 		var spawn: Dictionary = SafeDict.as_dict(spawn_hexes[mini(spawn_index, spawn_hexes.size() - 1)])
 		spawn_index += 1
@@ -551,6 +632,11 @@ func _spawn_units(army: ARMY_SCRIPT, unit_side: String) -> void:
 			"moves_left": moves,
 			"max_moves": moves,
 			"orders_left": 1,
+			# Fase 3 (D-040/D-042): orientación, marcha y hoja de sprites.
+			"facing": "E",
+			"mirror": false,
+			"moving": false,
+			"sprite_sheet": _sprite_or_null(sprite_sheet),
 		}
 		_units.append(unit)
 		_start_men[unit_id] = size
@@ -618,6 +704,7 @@ func _reset_units_for_round() -> void:
 		var unit: Dictionary = SafeDict.as_dict(unit_value)
 		unit["moves_left"] = SafeDict.as_int(unit.get("max_moves"), Constants.TACTICAL_DEFAULT_MOVES)
 		unit["orders_left"] = 1
+		unit["moving"] = false
 
 
 func _run_ai_side(ai_side: String) -> void:
@@ -898,6 +985,59 @@ func _is_hex_free(q: int, r: int, ignore_unit_id: String) -> bool:
 func _terrain_at(q: int, r: int) -> String:
 	var hex: Dictionary = SafeDict.as_dict(_hexes.get(_hex_key(q, r), null))
 	return SafeDict.as_string(hex.get("terrain"), "plains")
+
+
+## Copia pública de una unidad con la animación calculada para el render; no
+## muta el estado interno (march_frame/sprite_frame_path se derivan del reloj).
+func _public_unit(unit: Dictionary) -> Dictionary:
+	var copy: Dictionary = unit.duplicate(true)
+	var sprite_sheet: Dictionary = SafeDict.as_dict(copy.get("sprite_sheet", null))
+	var moving: bool = SafeDict.as_bool(copy.get("moving"), false)
+	var march_frame: int = BATTLE_SPRITES.march_frame(sprite_sheet, _animation_ms, moving)
+	copy["march_frame"] = march_frame
+	copy["sprite_frame_path"] = BATTLE_SPRITES.frame_path(sprite_sheet, march_frame)
+	copy["sprite_sheet"] = _sprite_or_null(sprite_sheet)
+	return copy
+
+
+## Dispara un proyectil estético/lógico del atacante al defensor (sin RNG).
+func _fire_projectile(attacker: Dictionary, defender: Dictionary) -> void:
+	var spec: Dictionary = BATTLE_SPRITES.projectile_for_unit(
+		SafeDict.as_string(attacker.get("unit_id"), ""))
+	if spec.is_empty():
+		return
+	_projectile_seq += 1
+	var payload: Dictionary = {
+		"id": "proj_%d" % _projectile_seq,
+		"type": SafeDict.as_string(spec.get("type"), ""),
+		"sprite": SafeDict.as_string(spec.get("sprite"), ""),
+		"from": _hex_center_px(SafeDict.as_int(attacker.get("q"), 0), SafeDict.as_int(attacker.get("r"), 0)),
+		"to": _hex_center_px(SafeDict.as_int(defender.get("q"), 0), SafeDict.as_int(defender.get("r"), 0)),
+		"duration_ms": SafeDict.as_int(spec.get("duration_ms"), 0),
+		"arc_height": SafeDict.as_float(spec.get("arc_height"), 0.0),
+		"ballistic": SafeDict.as_bool(spec.get("ballistic"), true),
+		"started_ms": _animation_ms,
+	}
+	_projectiles.append(payload)
+	emit_signal("projectile_fired", payload.duplicate(true))
+	EventBus.emit_signal("projectile_fired", payload.duplicate(true))
+
+
+## Posición lógica de referencia del centro de un hex (la UI aplica su zoom).
+func _hex_center_px(q: int, r: int) -> Dictionary:
+	return {
+		"q": q,
+		"r": r,
+		"x": 72.0 * float(q) + 36.0 * float(r),
+		"y": 64.0 * float(r),
+	}
+
+
+## Dict de sprite o null (contrato get_units: dict o null = fallback).
+func _sprite_or_null(sprite: Dictionary) -> Variant:
+	if sprite.is_empty():
+		return null
+	return sprite.duplicate(true)
 
 
 func _hex_key(q: int, r: int) -> String:
