@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3.3 — MVP-1337 (EN CURSO)**; Fase 3 / 3.1 / 3.2 cerradas; **1402/1453 CONGELADOS** por D-066 (datos en main, UI «EN PAUSA»); arte externo suspendido; foco: loop completo 1337, victoria/derrota, save/load, estabilidad/rendimiento, UX/audio mínimo y balance |
+| **Fase actual** | **Fase 3.3 — MVP-1337 (CERRADA)**; Fase 3 / 3.1 / 3.2 cerradas; **1402/1453 CONGELADOS** por D-066 (datos en main, UI «EN PAUSA»); arte externo suspendido; **QA MVP 11/11 APROBADO**; banda sonora de 6 pistas originales TSB integrada |
 | **Fase anterior** | **Fase 3.2 — Delta de animación v1.8.1 (CERRADA)**; QA APROBADO 6/6 |
-| **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3.3`; reanudar 1402/1453 y Paquete A es decisión del usuario) |
+| **Siguiente fase** | Fase 4 — no definida (reanudar 1402/1453, Paquete A de retratos y ampliación de contenido es decisión del usuario) |
 | **GDD** | **v1.8.1** — `GDD_The_Sovereign's_Blood.md` (§10.2 retratos, §10.3 sprites 17/17 + animación 235 frames, §10.4 tiles N3) |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
@@ -14,6 +14,7 @@
 | **Fecha de cierre Fase 3** | 2026-11-22 |
 | **Fecha de cierre Fase 3.1** | 2026-11-22 |
 | **Fecha de cierre Fase 3.2** | 2026-11-23 |
+| **Fecha de cierre Fase 3.3** | 2026-11-23 |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
@@ -22,7 +23,7 @@
 | **QA Final Fase 3** | **APROBADO CON OBSERVACIONES (7/7)** — `docs/qa/fase3_report.md`; solo retratos ilustrados Kimi pendientes |
 | **QA Animación Fase 3.1** | **APROBADO 6/6 (17×13 frames, 170 sprites)** — `docs/qa/fase3_anim_report.md` |
 | **QA Animación Fase 3.2** | **APROBADO 6/6 (235 frames; delta 76; attack_4/impact)** — `docs/qa/fase3_anim_report.md` |
-| **QA MVP-1337 (Fase 3.3)** | ⏳ en curso — `docs/qa/fase3_mvp_report.md` |
+| **QA MVP-1337 (Fase 3.3)** | **APROBADO 11/11** — `docs/qa/fase3_mvp_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -548,6 +549,30 @@ mapa <8 ms/frame; UX con 0 botones muertos, PG visible, audio mínimo y capturas
 mapa y batallas, crossfade/loop limpio, opciones de volumen persistentes, `docs/audio_licenses.md` completo
 y sin material con copyright.
 
-**Cierre previsto:** `docs/qa/fase3_mvp_report.md` APROBADO en los 11 criterios → commits por agente +
-`[AG-0]`, tag anotado **`fase-3.3`**, push a main y aviso al usuario para la verificación de Kimi contra
-GDD v1.8.1 + esta directiva.
+**Cierre — Fase 3.3 CERRADA (QA MVP-1337: APROBADO 11/11).**
+- **Loop completo 1337:** las 8 facciones jugables arrancan; trimestres completos; fin de año; fin de partida con
+  motivo; England llega a 1399 con victoria por supervivencia. 4 condiciones §4.5 (prestigio, conquista ≥70%,
+  supervivencia, extinción/pérdida total) alcanzables y testeadas.
+- **Batallas N1/N2/N3** ejecutables desde partida real, con sprites/animación v1.8.1 sin regresión (QA anim 6/6).
+- **Save/load exacto** en 3 puntos (turno intermedio, batalla pendiente con `pending_battle` level 2/3, fin de
+  año) con hash/RNG; **10 años × 8 facciones** headless sin errores y estado serializable.
+- **Estabilidad/rendimiento:** `run_all` **1742/0/2**, `validate_data` **12 datasets/8 schemas, 11.681
+  comprobaciones, 0 WARN/0 errores**, editor/headless 0 ERROR/WARNING; IA **13-25 ms/turno** (<2 s), mapa
+  **0,021-0,025 ms/frame** (<8 ms).
+- **UX:** 15 capturas MVP + 5 de audio 1920×1080; PG siempre visible, tarjetas 1402/1453 «EN PAUSA — disponible
+  en versión completa» (flag reversible), feedback de guardado/acciones, sin botones muertos; `ui_smoke` 47
+  scripts/18 escenas.
+- **Banda sonora (D-067):** 6 pistas OGG Vorbis **originales TSB (CC0)** en formas históricas PD — menú, mapa,
+  N2, N3, fin de año y cierre; buses Master/Music(−6 dB)/SFX; `data/audio_tracks.json` (6 contextos);
+  crossfade 1,8 s; opciones Música/SFX persistentes en `user://audio_config.json`; música no se corta en
+  save/load; SFX click/campana/espada; `docs/audio_licenses.md` **sin material de terceros** (R1 eliminado).
+- **Balance (D-068):** tesoros a 10 años ×1,10-×1,95 (antes ×5-×14), 8/8 facciones vivas; apoyo en montaña sin
+  espiral; Peste Negra 1348 con mortandad dinástica; guerra anglo-francesa y eventos 1337 disparan; heredero de
+  Polonia válido; reclutamiento solo era I.
+- **Observaciones no bloqueantes:** escucha humana de la música pendiente (verificación técnica headless y
+  licencias OK); el nodo de batalla no se serializa (solo `pending_battle`/contexto, la UI lo reabre); rendimiento
+  GPU no medible en CI; 2 tests omitidos intencionales. 1402/1453 y Paquete A de retratos siguen congelados por
+  decisión del usuario.
+- **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-3.3`**. Se avisa al usuario
+  para la verificación de Kimi contra GDD v1.8.1 + directiva v2; tras ella se decidirá Fase 4 (reanudar
+  1402/1453, Paquete A y ampliación de contenido).
