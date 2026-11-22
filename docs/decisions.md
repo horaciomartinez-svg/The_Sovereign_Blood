@@ -159,3 +159,13 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** §12 Fase 2 exige que la pérdida de líder sin herederos termine la partida; §5.3 describe crisis/interregno y extinción.
 **Decisión:** si muere el gobernante y no queda ningún miembro vivo de su casa (sin heredero ni parientes), `DynastySystem` emite `dynasty_extinct` y `TurnManager` declara derrota inmediata (jugador: `game_over(false, "dinastía extinta")`; IA: eliminación). Si hay parientes sin heredero directo, se mantiene la crisis/interregno existente.
 **Consecuencia:** condición de derrota §4.5 implementada y testeable; sin turnos fantasma tras la extinción.
+
+## D-032 · `map_borders.json` como dato de presentación en el validador (2026-11-21)
+**Contexto:** el validador detectaba `data/map_borders.json` como dataset sin schema y emitía 2 `[WARN]`; es geometría de presentación del mapa (§10.1), no estado de simulación, y QA la valida con criterios propios.
+**Decisión:** `tools/validator_core.gd` excluye `map_borders.json` junto a `map_layout.json` (D-018) mediante `NON_SIMULATION_DATASETS`; los 6 datasets de juego siguen validándose con sus schemas y reglas cruzadas. QA valida `map_borders` por invariantes propios (47/47/47, ≥150 KB, anillos, hit-test).
+**Consecuencia:** `validate_data.gd` vuelve a 0 `[WARN]`; la validación de simulación no se dispersa con datos de render.
+
+## D-033 · Aplicación del Nivel 3 al estado de campaña (2026-11-21)
+**Contexto:** AG-3 comprobó que el combate cerrado (Nivel 3) resolvía el duelo pero no aplicaba el resultado a la campaña (faltaba el mapeo unidad→ejército/región), a diferencia de N1/N2.
+**Decisión:** AG-2 añade `BattleManager.apply_close_combat_outcome(attacker_army_id, defender_army_id, region_id, outcome) -> Dictionary`, que traduce el resultado del duelo a bajas/captura vía `MilitarySystem.apply_battle_outcome` (idempotente). AG-3 lo invoca cuando el jugador resuelve el combate cerrado en el contexto de una batalla de campaña; el acceso directo desde el selector de nivel se mantiene como vista previa. Contrato de Fase 2 actualizado en §4.
+**Consecuencia:** jugar una batalla en Nivel 3 tiene efecto en la partida, igual que N1/N2; test de regresión en AG-2/AG-4.
