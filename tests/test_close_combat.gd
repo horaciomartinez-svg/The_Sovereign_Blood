@@ -13,6 +13,97 @@ func run(runner: TestRunnerScript, h: HarnessScript) -> void:
 	_check_orders_and_rounds(runner, h)
 	_check_card_rules(runner, h)
 	_check_determinism(runner, h)
+	_check_apply_to_campaign(runner, h)
+
+
+var _battle_resolved_events: int = 0
+
+
+func _on_battle_resolved(_report: Dictionary) -> void:
+	_battle_resolved_events += 1
+
+
+## D-033: el resultado del duelo se aplica a la campaña (bajas/captura) de forma
+## idempotente y sin dobles emisiones.
+func _check_apply_to_campaign(runner: TestRunnerScript, h: HarnessScript) -> void:
+	h.new_game("england", 1337)
+	h.faction("england")["pg"] = 80
+	h.recruit("england", "region_londres", "longbowman", 400)
+	h.recruit("france", "region_normandia", "men_at_arms", 600)
+	var attacker_id: String = _army_in(h, "england", "region_londres")
+	var defender_id: String = _army_in(h, "france", "region_normandia")
+	runner.check("hay ejércitos de campaña para el duelo", attacker_id != "" and defender_id != "")
+	if attacker_id == "" or defender_id == "":
+		return
+	var attacker_men_before: int = h.army_men(attacker_id)
+	var defender_men_before: int = h.army_men(defender_id)
+	var attacker_model: Variant = h.get_army_model(attacker_id)
+	var defender_model: Variant = h.get_army_model(defender_id)
+	var attacker_unit: Dictionary = SafeDict.as_dict(
+		SafeDict.as_array(attacker_model.get("units"))[0]).duplicate(true)
+	var defender_unit: Dictionary = SafeDict.as_dict(
+		SafeDict.as_array(defender_model.get("units"))[0]).duplicate(true)
+	attacker_unit["commander_stat"] = 88
+	attacker_unit["faction"] = "england"
+	defender_unit["commander_stat"] = 74
+	defender_unit["faction"] = "france"
+	var node: Node = h.launch_close_combat(attacker_unit, defender_unit)
+	if node == null:
+		return
+	var outcome: Dictionary = SafeDict.as_dict(node.call("auto_resolve"))
+	node.free()
+	var resolved_handler := Callable(self, "_on_battle_resolved")
+	_battle_resolved_events = 0
+	if h.bus != null:
+		h.bus.connect("battle_resolved", resolved_handler)
+	var reports_before: int = h.battle_reports().size()
+	var report: Dictionary = h.apply_close_combat_outcome(attacker_id, defender_id, "region_normandia", outcome)
+	runner.check("apply_close_combat_outcome devuelve informe", not report.is_empty(), str(report))
+	if report.is_empty():
+		if h.bus != null:
+			h.bus.disconnect("battle_resolved", resolved_handler)
+		return
+	runner.check_eq("el informe aplicado es de Nivel 3", 3, SafeDict.as_int(report.get("level"), 0))
+	runner.check_eq("informe asociado al ejército atacante", attacker_id,
+		SafeDict.as_string(report.get("attacker_army_id"), ""))
+	runner.check_eq("ganador coherente con el duelo",
+		SafeDict.as_string(outcome.get("winner_faction"), ""), SafeDict.as_string(report.get("winner_faction"), ""))
+	runner.check_eq("bajas del atacante del duelo",
+		SafeDict.as_int(outcome.get("attacker_losses"), 0), SafeDict.as_int(report.get("attacker_losses"), -1))
+	runner.check_eq("informe registrado en la partida", reports_before + 1, h.battle_reports().size())
+	runner.check_eq("una sola señal battle_resolved", 1, _battle_resolved_events)
+	var attacker_men_after: int = h.army_men(attacker_id)
+	var defender_men_after: int = h.army_men(defender_id)
+	runner.check("las bajas del atacante se aplican al ejército",
+		attacker_men_after == maxi(0, attacker_men_before - SafeDict.as_int(report.get("attacker_losses"), 0)),
+		"%d → %d" % [attacker_men_before, attacker_men_after])
+	runner.check("las bajas del defensor se aplican al ejército",
+		defender_men_after == maxi(0, defender_men_before - SafeDict.as_int(report.get("defender_losses"), 0)),
+		"%d → %d" % [defender_men_before, defender_men_after])
+	if SafeDict.as_bool(report.get("region_captured"), false):
+		runner.check_eq("la región capturada pasa al atacante", "england", str(h.region("region_normandia")["owner"]))
+	# Idempotencia: mismo outcome aplicado dos veces no duplica efectos ni señales.
+	var report_again: Dictionary = h.apply_close_combat_outcome(attacker_id, defender_id, "region_normandia", outcome)
+	runner.check_eq("idempotente: devuelve el mismo informe", JSON.stringify(report), JSON.stringify(report_again))
+	runner.check_eq("idempotente: no duplica el informe", reports_before + 1, h.battle_reports().size())
+	runner.check_eq("idempotente: no re-emite battle_resolved", 1, _battle_resolved_events)
+	runner.check_eq("idempotente: los hombres no cambian otra vez",
+		attacker_men_after, h.army_men(attacker_id))
+	if h.bus != null:
+		h.bus.disconnect("battle_resolved", resolved_handler)
+	# Outcome inválido / ejército inexistente → {} sin crash.
+	runner.check("outcome vacío no aplica nada", h.apply_close_combat_outcome(attacker_id, defender_id, "region_normandia", {}).is_empty())
+	runner.check("ejército inexistente no aplica nada",
+		h.apply_close_combat_outcome("army_nope", defender_id, "region_normandia", {"winner_side": "attacker"}).is_empty())
+
+
+func _army_in(h: HarnessScript, faction_id: String, region_id: String) -> String:
+	for army_id in h.armies().keys():
+		var army: Dictionary = SafeDict.as_dict(h.armies().get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") == faction_id \
+				and SafeDict.as_string(army.get("region_id"), "") == region_id:
+			return str(army_id)
+	return ""
 
 
 func _check_setup_and_api(runner: TestRunnerScript, h: HarnessScript) -> void:

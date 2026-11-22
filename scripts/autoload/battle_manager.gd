@@ -174,6 +174,115 @@ func launch_close_combat(attacker_unit: Dictionary, defender_unit: Dictionary) -
 	return duel
 
 
+## Aplica el resultado de un duelo Nivel 3 a la campaña (D-033): traduce
+## `CloseCombat.get_outcome()` a bajas/captura/botín vía
+## `MilitarySystem.apply_battle_outcome`. Idempotente: repetir con el mismo dict
+## de `outcome` devuelve el mismo informe sin volver a aplicar ni emitir.
+func apply_close_combat_outcome(
+		attacker_army_id: String,
+		defender_army_id: String,
+		region_id: String,
+		outcome: Dictionary) -> Dictionary:
+	if outcome.is_empty():
+		return {}
+	var applied: Variant = outcome.get("_applied_report", null)
+	if applied is Dictionary:
+		return (applied as Dictionary).duplicate(true)
+	var attacker: Dictionary = GameState.get_army_state(attacker_army_id)
+	var defender: Dictionary = GameState.get_army_state(defender_army_id)
+	if attacker.is_empty() or defender.is_empty():
+		return {}
+	var attacker_faction: String = SafeDict.as_string(attacker.get("faction_id"), "")
+	var defender_faction: String = SafeDict.as_string(defender.get("faction_id"), "")
+	var winner_side: String = SafeDict.as_string(outcome.get("winner_side"), "")
+	var winner_faction: String = ""
+	if winner_side == "attacker":
+		winner_faction = attacker_faction
+	elif winner_side == "defender":
+		winner_faction = defender_faction
+	var attacker_men: int = _army_state_men(attacker)
+	var defender_men: int = _army_state_men(defender)
+	var attacker_losses: int = clampi(SafeDict.as_int(outcome.get("attacker_losses"), 0), 0, attacker_men)
+	var defender_losses: int = clampi(SafeDict.as_int(outcome.get("defender_losses"), 0), 0, defender_men)
+	var region: Dictionary = GameState.get_region_state(region_id)
+	var captured: bool = winner_side == "attacker" and winner_faction != ""
+	var loot_gold: int = 0
+	if captured and not region.is_empty():
+		loot_gold = int(roundf(float(SafeDict.as_int(region.get("base_wealth"), 50)) * Constants.LOOT_GOLD_PER_WEALTH))
+	var report: Dictionary = {
+		"level": 3,
+		"attacker_faction": attacker_faction,
+		"defender_faction": defender_faction,
+		"region_id": region_id,
+		"attacker_army_id": attacker_army_id,
+		"defender_army_id": defender_army_id,
+		"winner_faction": winner_faction,
+		"attacker_losses": attacker_losses,
+		"defender_losses": defender_losses,
+		"rounds": SafeDict.as_array(outcome.get("log", null)).duplicate(true),
+		"rounds_played": SafeDict.as_int(outcome.get("rounds"), 0),
+		"region_captured": captured,
+		"loot_gold": loot_gold,
+		"leader_killed": false,
+		"leader_captured": false,
+		"army_snapshot": {
+			"attacker": _loss_snapshot(attacker, attacker_losses),
+			"defender": _loss_snapshot(defender, defender_losses),
+		},
+		"notes": "Nivel 3 (combate cerrado) en %s: vence %s; bajas %d/%d" % [
+			region_id, winner_faction if winner_faction != "" else "nadie", attacker_losses, defender_losses,
+		],
+	}
+	if not MilitarySystem.apply_battle_outcome(report):
+		return {}
+	outcome["_applied_report"] = report.duplicate(true)
+	EventBus.emit_signal("close_combat_finished", winner_faction)
+	return report
+
+
+## Hombres de un ejército en el estado (Dictionary).
+func _army_state_men(army_state: Dictionary) -> int:
+	var total: int = 0
+	for unit_value in SafeDict.as_array(army_state.get("units", null)):
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		total += SafeDict.as_int(unit.get("size"), 0)
+	return total
+
+
+## Snapshot de unidades con las bajas del duelo repartidas proporcionalmente.
+func _loss_snapshot(army_state: Dictionary, losses: int) -> Array:
+	var units: Array = SafeDict.as_array(army_state.get("units", null))
+	var total_men: int = _army_state_men(army_state)
+	var snapshot: Array = []
+	var remaining: int = maxi(0, losses)
+	var unit_count: int = units.size()
+	var index: int = 0
+	for unit_value in units:
+		var unit: Dictionary = SafeDict.as_dict(unit_value)
+		var size: int = SafeDict.as_int(unit.get("size"), 0)
+		var cut: int = 0
+		if remaining > 0 and total_men > 0:
+			if index == unit_count - 1:
+				cut = mini(size, remaining)
+			else:
+				cut = mini(size, int(roundf(float(size) * float(losses) / float(total_men))))
+			remaining -= cut
+		var new_size: int = maxi(0, size - cut)
+		var morale: float = SafeDict.as_float(unit.get("morale"), 1.0)
+		if size > 0 and cut > 0:
+			morale = maxf(0.05, morale - 0.2 * float(cut) / float(size))
+		snapshot.append({
+			"source_unit_id": SafeDict.as_string(unit.get("id"), ""),
+			"id": SafeDict.as_string(unit.get("id"), ""),
+			"unit_id": SafeDict.as_string(unit.get("unit_id"), ""),
+			"size": new_size,
+			"morale": snappedf(morale, 0.001),
+			"experience": SafeDict.as_int(unit.get("experience"), 0),
+		})
+		index += 1
+	return snapshot
+
+
 # ---------------------------------------------------------------------------
 # Interno
 # ---------------------------------------------------------------------------

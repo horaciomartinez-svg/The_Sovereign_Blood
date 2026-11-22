@@ -238,16 +238,18 @@ func resolve_succession(faction_id: String) -> Dictionary:
 	var characters: Dictionary = SafeDict.as_dict(st.get("characters", null))
 	var current_year: int = SafeDict.as_int(st.get("year"), 1337)
 	var faction_house: String = SafeDict.as_string(faction.get("house"), "")
+	# Fase 2 (D-031, task-17): si no queda NINGÚN miembro vivo de la casa del
+	# gobernante en la facción, la dinastía se extingue aunque sobrevivan nobles
+	# de otras casas. Emite dynasty_extinct y el jugador pierde la partida.
+	if faction_house != "" and _faction_house_members_alive(characters, faction_id, faction_house).is_empty():
+		var extinction_events: Array[Dictionary] = []
+		_extinguish(faction_id, extinction_events)
+		result["extinct"] = true
+		_log_event("extincion_casa_%s_%d" % [faction_id, current_year],
+			"La casa %s se extingue: %s queda sin gobernante ni parientes." % [faction_house, faction_id])
+		return result
 	var heir_id: String = _choose_heir(faction_id, characters, current_year)
 	if heir_id == "":
-		# Fase 2 (D-031): extinción solo si no queda ningún miembro vivo de la casa.
-		if faction_house != "" and _house_members_alive(characters, faction_house).is_empty():
-			var extinction_events: Array[Dictionary] = []
-			_extinguish(faction_id, extinction_events)
-			result["extinct"] = true
-			_log_event("extincion_casa_%s_%d" % [faction_id, current_year],
-				"La casa %s se extingue: %s queda sin gobernante ni parientes." % [faction_house, faction_id])
-			return result
 		faction["ruler_id"] = ""
 		faction["heir_id"] = ""
 		faction["regent_id"] = ""
@@ -352,6 +354,24 @@ func check_ruling_line(faction_id: String) -> Dictionary:
 		if SafeDict.as_bool(ruler.get("alive"), false):
 			return {"ok": true, "heir_id": ruler_id, "reason": "ruler_alive"}
 	return resolve_succession(faction_id)
+
+
+## Miembros vivos de la casa gobernante DENTRO de una facción (D-031/task-17).
+## La extinción se decide con esta lista: nobles de otras casas no cuentan.
+func _faction_house_members_alive(characters: Dictionary, faction_id: String, house: String) -> Array[String]:
+	var result: Array[String] = []
+	if house == "":
+		return result
+	for character_id in SafeDict.sorted_keys(characters):
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		if SafeDict.as_string(character.get("house"), "") != house:
+			continue
+		if SafeDict.as_string(character.get("faction"), "") != faction_id:
+			continue
+		result.append(character_id)
+	return result
 
 
 ## Miembros vivos de una casa dinástica (en cualquier facción). D-031.
@@ -502,9 +522,18 @@ func _choose_heir(faction_id: String, characters: Dictionary, year: int, exclude
 				best_child = child_id
 	if best_child != "":
 		return best_child
-	# Cualquier pariente vivo de la facción (el de mayor edad).
-	var best_relative: String = ""
-	var best_relative_born: int = 9999
+	# Fase 2 (D-031, task-17): la sucesión se mantiene en la casa gobernante.
+	var faction_house: String = SafeDict.as_string(faction.get("house"), "")
+	if faction_house == "":
+		# Sin información de casa: comportamiento clásico (cualquier pariente vivo).
+		return _oldest_faction_relative(characters, faction_id, year, exclude_id)
+	return _oldest_house_member(characters, faction_id, faction_house, year, exclude_id)
+
+
+## Pariente vivo más antiguo de la facción (fallback sin información de casa).
+func _oldest_faction_relative(characters: Dictionary, faction_id: String, year: int, exclude_id: String) -> String:
+	var best_id: String = ""
+	var best_born: int = 9999
 	for character_id in SafeDict.sorted_keys(characters):
 		if character_id == exclude_id:
 			continue
@@ -515,32 +544,49 @@ func _choose_heir(faction_id: String, characters: Dictionary, year: int, exclude
 			continue
 		if SafeDict.as_int(character.get("born"), 9999) > year:
 			continue
-		if SafeDict.as_int(character.get("born"), 9999) < best_relative_born:
-			best_relative_born = SafeDict.as_int(character.get("born"), 9999)
-			best_relative = character_id
-	if best_relative != "":
-		return best_relative
-	# Fase 2 (D-031): miembro vivo de la casa gobernante en otra facción.
-	var faction_house: String = SafeDict.as_string(faction.get("house"), "")
-	if faction_house != "":
-		var best_house: String = ""
-		var best_house_born: int = 9999
-		for character_id in SafeDict.sorted_keys(characters):
-			if character_id == exclude_id:
-				continue
-			var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
-			if SafeDict.as_string(character.get("house"), "") != faction_house:
-				continue
-			if not SafeDict.as_bool(character.get("alive"), false):
-				continue
-			if SafeDict.as_int(character.get("born"), 9999) > year:
-				continue
-			if SafeDict.as_int(character.get("born"), 9999) < best_house_born:
-				best_house_born = SafeDict.as_int(character.get("born"), 9999)
-				best_house = character_id
-		if best_house != "":
-			return best_house
-	return ""
+		if SafeDict.as_int(character.get("born"), 9999) < best_born:
+			best_born = SafeDict.as_int(character.get("born"), 9999)
+			best_id = character_id
+	return best_id
+
+
+## Miembro vivo elegible más antiguo de la casa (prefiere la propia facción y,
+## si no hay, otra facción == adopción dinástica).
+func _oldest_house_member(characters: Dictionary, faction_id: String, house: String, year: int, exclude_id: String) -> String:
+	var best_id: String = ""
+	var best_born: int = 9999
+	for character_id in SafeDict.sorted_keys(characters):
+		if character_id == exclude_id:
+			continue
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if SafeDict.as_string(character.get("house"), "") != house:
+			continue
+		if SafeDict.as_string(character.get("faction"), "") != faction_id:
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		if SafeDict.as_int(character.get("born"), 9999) > year:
+			continue
+		if SafeDict.as_int(character.get("born"), 9999) < best_born:
+			best_born = SafeDict.as_int(character.get("born"), 9999)
+			best_id = character_id
+	if best_id != "":
+		return best_id
+	# Miembro de la casa en otra facción: adopción dinástica (D-031).
+	for character_id in SafeDict.sorted_keys(characters):
+		if character_id == exclude_id:
+			continue
+		var character: Dictionary = SafeDict.as_dict(characters.get(character_id, null))
+		if SafeDict.as_string(character.get("house"), "") != house:
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		if SafeDict.as_int(character.get("born"), 9999) > year:
+			continue
+		if SafeDict.as_int(character.get("born"), 9999) < best_born:
+			best_born = SafeDict.as_int(character.get("born"), 9999)
+			best_id = character_id
+	return best_id
 
 
 func _choose_regent(faction_id: String, characters: Dictionary, year: int, exclude_id: String) -> String:
@@ -579,9 +625,11 @@ func _advance_interregna(factions: Dictionary, characters: Dictionary, year: int
 				"Termina el interregno en %s." % faction_id))
 			continue
 		if year >= interregnum_until:
-			# Fase 2 (D-031): extinción solo si la casa no tiene miembros vivos.
+			# Fase 2 (D-031, task-17): la casa solo cuenta por sus miembros vivos
+			# en la propia facción; sin ellos, extinción aunque haya otras casas.
 			var faction_house: String = SafeDict.as_string(faction.get("house"), "")
-			var house_alive: bool = faction_house != "" and not _house_members_alive(characters, faction_house).is_empty()
+			var house_alive: bool = faction_house != "" \
+				and not _faction_house_members_alive(characters, faction_id, faction_house).is_empty()
 			if house_alive:
 				faction["interregnum_until"] = year + Constants.INTERREGNUM_YEARS
 				events.append(_log_event("interregno_prorrogado_%s_%d" % [faction_id, year],
@@ -624,6 +672,9 @@ func _extinguish(faction_id: String, events: Array[Dictionary]) -> void:
 		"La dinastía de %s se extingue: sus tierras quedan sin señor." % faction_id))
 	EventBus.emit_signal("ui_notification",
 		"La dinastía de %s se ha extinguido." % faction_id, 2)
+	# Fase 2 (D-031/task-17): si es la facción del jugador, derrota inmediata y
+	# reloj congelado (TurnManager comprueba game_over en sus avances).
+	TurnManager.on_dynasty_extinct(faction_id)
 
 
 func _strongest_neighbour_owner(region_id: String, factions: Dictionary) -> String:

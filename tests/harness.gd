@@ -375,6 +375,16 @@ func battle_reports() -> Array:
 	return SafeDict.as_array(state().get("battle_reports", null))
 
 
+## Aplica un duelo Nivel 3 (CloseCombat.get_outcome) a la campaña (D-033).
+func apply_close_combat_outcome(attacker_army_id: String, defender_army_id: String,
+		region_id: String, outcome: Dictionary) -> Dictionary:
+	var value: Variant = battle.call("apply_close_combat_outcome", attacker_army_id,
+		defender_army_id, region_id, outcome)
+	if value is Dictionary:
+		return value
+	return {}
+
+
 # --- Fase 2: espionaje / reloj / fin de partida --------------------------
 
 func intel(faction_id: String, target_id: String) -> Dictionary:

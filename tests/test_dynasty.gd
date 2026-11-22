@@ -157,6 +157,32 @@ func _check_crisis_and_extinction(runner: TestRunnerScript, h: HarnessScript) ->
 	runner.check("IA eliminada", SafeDict.as_bool(h.faction("byzantium").get("eliminated"), false))
 	runner.check("la partida del jugador continúa", not SafeDict.as_bool(h.state().get("game_over"), false))
 	runner.check("regiones de la IA extinguida reasignadas", _no_regions_of(h, "byzantium"))
+	# F2-C2 (task-17): si la casa gobernante no tiene vivos, la dinastía se extingue
+	# aunque sobrevivan nobles de OTRAS casas: no hereda un noble ajeno.
+	h.new_game("england", 1337)
+	var plantagenets_killed: int = 0
+	for character_id in h.characters().keys():
+		var character: Dictionary = h.character(str(character_id))
+		if SafeDict.as_string(character.get("faction"), "") != "england":
+			continue
+		if SafeDict.as_string(character.get("house"), "") != "plantagenet":
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		character["alive"] = false
+		character["died"] = h.year()
+		plantagenets_killed += 1
+	runner.check("se mataron los plantagenet de la facción", plantagenets_killed >= 3, str(plantagenets_killed))
+	runner.check("quedan nobles de otras casas en Inglaterra",
+		_alive_other_house_nobles(h, "england", "plantagenet") > 0)
+	var other_house: Dictionary = h.resolve_succession("england")
+	runner.check("extinción aunque sobrevivan otras casas", bool(other_house.get("extinct")), str(other_house))
+	runner.check("game_over por extinción con otras casas vivas", SafeDict.as_bool(h.state().get("game_over"), false))
+	runner.check_eq("motivo con otras casas vivas", "dinastía extinta",
+		SafeDict.as_string(h.state().get("game_over_reason"), ""))
+	var frozen_quarter: int = h.quarter()
+	h.advance_quarter()
+	runner.check_eq("reloj congelado con otras casas vivas", frozen_quarter, h.quarter())
 
 
 func _check_family_tree(runner: TestRunnerScript, h: HarnessScript) -> void:
@@ -174,6 +200,21 @@ func _check_family_tree(runner: TestRunnerScript, h: HarnessScript) -> void:
 
 
 # --- helpers -------------------------------------------------------------
+
+## Nobles vivos de una facción que NO son de la casa indicada (D-031/task-17).
+func _alive_other_house_nobles(h: HarnessScript, faction_id: String, house: String) -> int:
+	var count: int = 0
+	for character_id in h.characters().keys():
+		var character: Dictionary = h.character(str(character_id))
+		if SafeDict.as_string(character.get("faction"), "") != faction_id:
+			continue
+		if SafeDict.as_string(character.get("house"), "") == house:
+			continue
+		if not SafeDict.as_bool(character.get("alive"), false):
+			continue
+		count += 1
+	return count
+
 
 func _stat(character: Dictionary, stat_name: String) -> int:
 	return SafeDict.as_int(SafeDict.as_dict(character.get("stats", null)).get(stat_name), 0)

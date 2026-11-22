@@ -284,6 +284,23 @@ func _refresh_all_pg() -> void:
 		faction["pg"] = calculate_pg(faction_id)
 
 
+## Derrota inmediata del jugador cuando su dinastía se extingue (D-031/task-17).
+## La facción IA queda eliminada por DynastySystem._extinguish; el reloj se
+## congela porque advance_quarter/advance_year/end_turn comprueban game_over.
+func on_dynasty_extinct(faction_id: String) -> void:
+	var st: Dictionary = GameState.state
+	if st.is_empty() or faction_id == "":
+		return
+	if SafeDict.as_bool(st.get("game_over"), false):
+		return
+	if faction_id != GameState.current_faction_id:
+		return
+	GameState.end_game(false, "dinastía extinta")
+	phase = "idle"
+	emit_signal("phase_changed", phase)
+	EventBus.emit_signal("turn_phase_changed", phase)
+
+
 func _check_game_over() -> void:
 	var st: Dictionary = GameState.state
 	if st.is_empty() or SafeDict.as_bool(st.get("game_over"), false):
