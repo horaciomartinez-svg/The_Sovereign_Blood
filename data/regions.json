@@ -1,0 +1,1181 @@
+{
+  "schema_version": 1,
+  "regions": [
+    {
+      "id": "region_londres",
+      "name": "Londres",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_inglaterra_norte",
+        "region_inglaterra_sur"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "england",
+          "population": 120000,
+          "base_wealth": 75,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/London"
+        }
+      }
+    },
+    {
+      "id": "region_inglaterra_sur",
+      "name": "Sur de Inglaterra",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_aquitania",
+        "region_inglaterra_norte",
+        "region_londres",
+        "region_normandia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "england",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_England"
+        }
+      }
+    },
+    {
+      "id": "region_inglaterra_norte",
+      "name": "Norte de Inglaterra",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_edimburgo",
+        "region_inglaterra_sur",
+        "region_londres"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "england",
+          "population": 250000,
+          "base_wealth": 45,
+          "buildings": [
+            "castle",
+            "walls"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_England"
+        }
+      }
+    },
+    {
+      "id": "region_aquitania",
+      "name": "Aquitania y Gascuña",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_bretana",
+        "region_burgos",
+        "region_inglaterra_sur",
+        "region_languedoc"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "england",
+          "population": 300000,
+          "base_wealth": 60,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Aquitaine"
+        }
+      }
+    },
+    {
+      "id": "region_ile_de_france",
+      "name": "Isla de Francia",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_borgona",
+        "region_flandes",
+        "region_normandia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 700000,
+          "base_wealth": 85,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "university"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/%C3%8Ele-de-France"
+        }
+      }
+    },
+    {
+      "id": "region_normandia",
+      "name": "Normandía",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_bretana",
+        "region_flandes",
+        "region_ile_de_france",
+        "region_inglaterra_sur"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 520000,
+          "base_wealth": 60,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Normandy"
+        }
+      }
+    },
+    {
+      "id": "region_flandes",
+      "name": "Flandes",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_ile_de_france",
+        "region_normandia",
+        "region_renania"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 450000,
+          "base_wealth": 90,
+          "buildings": [
+            "workshops",
+            "market",
+            "walls",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/County_of_Flanders"
+        }
+      }
+    },
+    {
+      "id": "region_bretana",
+      "name": "Bretaña",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_aquitania",
+        "region_normandia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 300000,
+          "base_wealth": 45,
+          "buildings": [
+            "castle",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Brittany"
+        }
+      }
+    },
+    {
+      "id": "region_borgona",
+      "name": "Borgoña",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_avignon",
+        "region_ile_de_france",
+        "region_languedoc",
+        "region_lorena"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 300000,
+          "base_wealth": 60,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Burgundy"
+        }
+      }
+    },
+    {
+      "id": "region_languedoc",
+      "name": "Languedoc",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_aquitania",
+        "region_avignon",
+        "region_barcelona",
+        "region_borgona"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "france",
+          "population": 400000,
+          "base_wealth": 55,
+          "buildings": [
+            "market",
+            "granary",
+            "walls"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Languedoc"
+        }
+      }
+    },
+    {
+      "id": "region_avignon",
+      "name": "Aviñón y el Condado Venaissin",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_borgona",
+        "region_languedoc"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "papacy",
+          "population": 80000,
+          "base_wealth": 60,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Avignon",
+          "note": "Sede pontificia desde 1309."
+        }
+      }
+    },
+    {
+      "id": "region_baviera",
+      "name": "Baviera",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_austria",
+        "region_franconia",
+        "region_praga"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 350000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Bavaria"
+        }
+      }
+    },
+    {
+      "id": "region_franconia",
+      "name": "Franconia",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_baviera",
+        "region_praga",
+        "region_renania"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Franconia"
+        }
+      }
+    },
+    {
+      "id": "region_renania",
+      "name": "Renania",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_flandes",
+        "region_franconia",
+        "region_lombardia",
+        "region_lorena"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 400000,
+          "base_wealth": 70,
+          "buildings": [
+            "market",
+            "workshops",
+            "cathedral",
+            "walls"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Rhineland"
+        }
+      }
+    },
+    {
+      "id": "region_lorena",
+      "name": "Lorena",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_borgona",
+        "region_renania"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 180000,
+          "base_wealth": 45,
+          "buildings": [
+            "castle",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Lorraine"
+        }
+      }
+    },
+    {
+      "id": "region_austria",
+      "name": "Austria",
+      "terrain": "mountain",
+      "has_city": true,
+      "adjacency": [
+        "region_baviera",
+        "region_buda",
+        "region_lombardia",
+        "region_moravia",
+        "region_praga"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "market",
+            "walls"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Duchy_of_Austria"
+        }
+      }
+    },
+    {
+      "id": "region_praga",
+      "name": "Praga",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_austria",
+        "region_baviera",
+        "region_cracovia",
+        "region_franconia",
+        "region_moravia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "bohemia",
+          "population": 350000,
+          "base_wealth": 80,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "cathedral",
+            "mine"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Prague",
+          "note": "Capital de Bohemia y sede imperial de los Wittelsbach (Luis IV residía en Múnich)."
+        }
+      }
+    },
+    {
+      "id": "region_moravia",
+      "name": "Moravia",
+      "terrain": "forest",
+      "has_city": true,
+      "adjacency": [
+        "region_austria",
+        "region_buda",
+        "region_cracovia",
+        "region_praga"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "bohemia",
+          "population": 250000,
+          "base_wealth": 50,
+          "buildings": [
+            "castle",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Moravia"
+        }
+      }
+    },
+    {
+      "id": "region_buda",
+      "name": "Buda y la llanura húngara",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_austria",
+        "region_croacia",
+        "region_moravia",
+        "region_transilvania"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hungary",
+          "population": 300000,
+          "base_wealth": 60,
+          "buildings": [
+            "castle",
+            "market",
+            "mine"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Buda"
+        }
+      }
+    },
+    {
+      "id": "region_transilvania",
+      "name": "Transilvania",
+      "terrain": "mountain",
+      "has_city": true,
+      "adjacency": [
+        "region_buda",
+        "region_croacia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hungary",
+          "population": 250000,
+          "base_wealth": 40,
+          "buildings": [
+            "castle",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Transylvania"
+        }
+      }
+    },
+    {
+      "id": "region_croacia",
+      "name": "Croacia",
+      "terrain": "mountain",
+      "has_city": true,
+      "adjacency": [
+        "region_buda",
+        "region_tesalonica",
+        "region_transilvania"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hungary",
+          "population": 180000,
+          "base_wealth": 35,
+          "buildings": [
+            "castle",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Croatia_(1102%E2%80%931526)"
+        }
+      }
+    },
+    {
+      "id": "region_burgos",
+      "name": "Burgos y Castilla la Vieja",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_aquitania",
+        "region_toledo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "castile",
+          "population": 350000,
+          "base_wealth": 60,
+          "buildings": [
+            "market",
+            "workshops",
+            "castle"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Castile"
+        }
+      }
+    },
+    {
+      "id": "region_toledo",
+      "name": "Toledo y Castilla la Nueva",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_burgos",
+        "region_granada",
+        "region_sevilla",
+        "region_valencia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "castile",
+          "population": 400000,
+          "base_wealth": 60,
+          "buildings": [
+            "castle",
+            "market",
+            "workshops"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Toledo"
+        }
+      }
+    },
+    {
+      "id": "region_sevilla",
+      "name": "Sevilla y el valle del Guadalquivir",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_granada",
+        "region_malaga",
+        "region_toledo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "castile",
+          "population": 380000,
+          "base_wealth": 65,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Seville"
+        }
+      }
+    },
+    {
+      "id": "region_barcelona",
+      "name": "Barcelona y Cataluña",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_languedoc",
+        "region_sicilia",
+        "region_valencia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "aragon",
+          "population": 350000,
+          "base_wealth": 70,
+          "buildings": [
+            "market",
+            "shipyard",
+            "walls",
+            "workshops"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Principality_of_Catalonia"
+        }
+      }
+    },
+    {
+      "id": "region_valencia",
+      "name": "Valencia",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_barcelona",
+        "region_granada",
+        "region_toledo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "aragon",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Valencia"
+        }
+      }
+    },
+    {
+      "id": "region_sicilia",
+      "name": "Sicilia",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_barcelona",
+        "region_barqa",
+        "region_napoles"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "aragon",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "market",
+            "shipyard",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Sicily"
+        }
+      }
+    },
+    {
+      "id": "region_granada",
+      "name": "Granada",
+      "terrain": "mountain",
+      "has_city": true,
+      "adjacency": [
+        "region_malaga",
+        "region_sevilla",
+        "region_toledo",
+        "region_valencia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "granada",
+          "population": 300000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "walls",
+            "market",
+            "workshops"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Emirate_of_Granada"
+        }
+      }
+    },
+    {
+      "id": "region_malaga",
+      "name": "Málaga y la costa nazarí",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_granada",
+        "region_sevilla"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "granada",
+          "population": 200000,
+          "base_wealth": 45,
+          "buildings": [
+            "shipyard",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/M%C3%A1laga"
+        }
+      }
+    },
+    {
+      "id": "region_cracovia",
+      "name": "Cracovia y Pequeña Polonia",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_gran_polonia",
+        "region_moravia",
+        "region_praga"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "poland",
+          "population": 250000,
+          "base_wealth": 55,
+          "buildings": [
+            "castle",
+            "market",
+            "walls",
+            "mine"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Krak%C3%B3w"
+        }
+      }
+    },
+    {
+      "id": "region_gran_polonia",
+      "name": "Gran Polonia",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_cracovia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "poland",
+          "population": 220000,
+          "base_wealth": 45,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Greater_Poland"
+        }
+      }
+    },
+    {
+      "id": "region_edimburgo",
+      "name": "Edimburgo y Lothian",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_escocia_occidental",
+        "region_inglaterra_norte"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "scotland",
+          "population": 200000,
+          "base_wealth": 35,
+          "buildings": [
+            "castle",
+            "walls",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Edinburgh"
+        }
+      }
+    },
+    {
+      "id": "region_escocia_occidental",
+      "name": "Tierras Altas y costa occidental de Escocia",
+      "terrain": "mountain",
+      "has_city": false,
+      "adjacency": [
+        "region_edimburgo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "scotland",
+          "population": 150000,
+          "base_wealth": 25,
+          "buildings": [
+            "castle",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Scottish_Highlands"
+        }
+      }
+    },
+    {
+      "id": "region_roma",
+      "name": "Roma y el Lacio",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_napoles",
+        "region_toscana"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "papacy",
+          "population": 300000,
+          "base_wealth": 60,
+          "buildings": [
+            "walls",
+            "market",
+            "cathedral",
+            "university"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Papal_States"
+        }
+      }
+    },
+    {
+      "id": "region_napoles",
+      "name": "Nápoles",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_roma",
+        "region_sicilia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "papacy",
+          "population": 350000,
+          "base_wealth": 65,
+          "buildings": [
+            "castle",
+            "market",
+            "shipyard",
+            "university"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Kingdom_of_Naples",
+          "note": "Reino de Nápoles, feudo papal (simplificación de facción en 1337)."
+        }
+      }
+    },
+    {
+      "id": "region_lombardia",
+      "name": "Lombardía",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_austria",
+        "region_renania",
+        "region_toscana"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 500000,
+          "base_wealth": 80,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "castle"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Lombardy",
+          "note": "Italia imperial nominal; señoríos urbanos de facto."
+        }
+      }
+    },
+    {
+      "id": "region_toscana",
+      "name": "Toscana",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_lombardia",
+        "region_roma"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "hre",
+          "population": 400000,
+          "base_wealth": 80,
+          "buildings": [
+            "market",
+            "workshops",
+            "walls",
+            "university"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Tuscany",
+          "note": "Italia imperial nominal; ciudades-Estado de facto."
+        }
+      }
+    },
+    {
+      "id": "region_el_cairo",
+      "name": "El Cairo",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_alejandria",
+        "region_jerusalen"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "mamluks",
+          "population": 500000,
+          "base_wealth": 90,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Cairo"
+        }
+      }
+    },
+    {
+      "id": "region_alejandria",
+      "name": "Alejandría",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_barqa",
+        "region_el_cairo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "mamluks",
+          "population": 250000,
+          "base_wealth": 70,
+          "buildings": [
+            "shipyard",
+            "market",
+            "walls"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Alexandria"
+        }
+      }
+    },
+    {
+      "id": "region_barqa",
+      "name": "Cirenaica (Barqa)",
+      "terrain": "coast",
+      "has_city": false,
+      "adjacency": [
+        "region_alejandria",
+        "region_sicilia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "mamluks",
+          "population": 80000,
+          "base_wealth": 25,
+          "buildings": [
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Cyrenaica",
+          "note": "Costa del norte de África bajo influencia mameluca (estimación de alcance)."
+        }
+      }
+    },
+    {
+      "id": "region_damasco",
+      "name": "Damasco",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_anatolia_occidental",
+        "region_jerusalen"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "mamluks",
+          "population": 300000,
+          "base_wealth": 70,
+          "buildings": [
+            "market",
+            "walls",
+            "workshops",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Damascus"
+        }
+      }
+    },
+    {
+      "id": "region_jerusalen",
+      "name": "Jerusalén y Palestina",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_damasco",
+        "region_el_cairo"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "mamluks",
+          "population": 150000,
+          "base_wealth": 40,
+          "buildings": [
+            "walls",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Jerusalem"
+        }
+      }
+    },
+    {
+      "id": "region_constantinopla",
+      "name": "Constantinopla",
+      "terrain": "city",
+      "has_city": true,
+      "adjacency": [
+        "region_anatolia_occidental",
+        "region_crimea",
+        "region_tesalonica"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "byzantium",
+          "population": 200000,
+          "base_wealth": 65,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard",
+            "cathedral",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Constantinople"
+        }
+      }
+    },
+    {
+      "id": "region_tesalonica",
+      "name": "Tesalónica",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_constantinopla",
+        "region_croacia"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "byzantium",
+          "population": 150000,
+          "base_wealth": 50,
+          "buildings": [
+            "walls",
+            "market",
+            "shipyard"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Thessaloniki"
+        }
+      }
+    },
+    {
+      "id": "region_anatolia_occidental",
+      "name": "Anatolia occidental",
+      "terrain": "mountain",
+      "has_city": true,
+      "adjacency": [
+        "region_constantinopla",
+        "region_damasco"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "byzantium",
+          "population": 250000,
+          "base_wealth": 45,
+          "buildings": [
+            "castle",
+            "market",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Byzantine_Empire"
+        }
+      }
+    },
+    {
+      "id": "region_sarai",
+      "name": "Sarai",
+      "terrain": "plains",
+      "has_city": true,
+      "adjacency": [
+        "region_crimea"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "golden_horde",
+          "population": 300000,
+          "base_wealth": 65,
+          "buildings": [
+            "market",
+            "walls",
+            "granary"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Sarai_(city)"
+        }
+      }
+    },
+    {
+      "id": "region_crimea",
+      "name": "Crimea",
+      "terrain": "coast",
+      "has_city": true,
+      "adjacency": [
+        "region_constantinopla",
+        "region_sarai"
+      ],
+      "year_data": {
+        "1337": {
+          "owner": "golden_horde",
+          "population": 120000,
+          "base_wealth": 50,
+          "buildings": [
+            "shipyard",
+            "market"
+          ],
+          "estimate": true,
+          "source": "https://en.wikipedia.org/wiki/Crimea"
+        }
+      }
+    }
+  ]
+}

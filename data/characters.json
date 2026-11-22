@@ -1,0 +1,2611 @@
+{
+  "schema_version": 1,
+  "scenario": "scenario_1337",
+  "characters": [
+    {
+      "id": "edward_iii_plantagenet",
+      "name": "Eduardo III",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1312,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 88,
+        "intrigue": 72,
+        "charisma": 84,
+        "loyalty": 90,
+        "education": 80
+      },
+      "traits": [
+        "pretendiente_francia",
+        "rey_guerrero"
+      ],
+      "claims": [
+        {
+          "target": "france",
+          "strength": 0.8
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Edward_III_of_England",
+      "estimate": true,
+      "family": {
+        "father": "edward_ii_plantagenet",
+        "mother": "isabel_de_francia",
+        "spouse": "philippa_de_hainault",
+        "children": [
+          "eduardo_el_principe_negro"
+        ]
+      }
+    },
+    {
+      "id": "philippa_de_hainault",
+      "name": "Felipa de Hainault",
+      "house": "hainault",
+      "faction": "england",
+      "born": 1314,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 40,
+        "intrigue": 55,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 65
+      },
+      "traits": [
+        "madre_ejemplar",
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Philippa_of_Hainault",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "edward_iii_plantagenet",
+        "children": [
+          "eduardo_el_principe_negro"
+        ]
+      }
+    },
+    {
+      "id": "eduardo_el_principe_negro",
+      "name": "Eduardo de Woodstock, el Príncipe Negro",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1330,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 92,
+        "intrigue": 70,
+        "charisma": 80,
+        "loyalty": 80,
+        "education": 75
+      },
+      "traits": [
+        "comandante",
+        "valiente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Edward_the_Black_Prince",
+      "estimate": true,
+      "note": "Heredero de 7 años en 1337; mando militar desde los años 1340.",
+      "family": {
+        "father": "edward_iii_plantagenet",
+        "mother": "philippa_de_hainault",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "edward_ii_plantagenet",
+      "name": "Eduardo II",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1284,
+      "died": 1327,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 40,
+        "charisma": 50,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "rey_depuesto"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Edward_II_of_England",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "isabel_de_francia",
+        "children": [
+          "edward_iii_plantagenet",
+          "joan_of_england"
+        ]
+      }
+    },
+    {
+      "id": "isabel_de_francia",
+      "name": "Isabel de Francia",
+      "house": "capeto",
+      "faction": "england",
+      "born": 1295,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 45,
+        "intrigue": 80,
+        "charisma": 65,
+        "loyalty": 50,
+        "education": 70
+      },
+      "traits": [
+        "loba_de_francia",
+        "reina_intrigante"
+      ],
+      "claims": [
+        {
+          "target": "france",
+          "strength": 0.2
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Isabella_of_France",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "edward_ii_plantagenet",
+        "children": [
+          "edward_iii_plantagenet",
+          "joan_of_england"
+        ]
+      }
+    },
+    {
+      "id": "henry_of_grosmont",
+      "name": "Enrique de Grosmont, duque de Lancaster",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1310,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 82,
+        "intrigue": 60,
+        "charisma": 72,
+        "loyalty": 88,
+        "education": 70
+      },
+      "traits": [
+        "caballero",
+        "diplomatico"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Henry_of_Grosmont,_1st_Duke_of_Lancaster",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "william_montagu",
+      "name": "William Montagu, conde de Salisbury",
+      "house": "montagu",
+      "faction": "england",
+      "born": 1301,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 78,
+        "intrigue": 65,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 72
+      },
+      "traits": [
+        "comandante",
+        "leal"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/William_Montagu,_1st_Earl_of_Salisbury",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "robert_morley",
+      "name": "Robert Morley",
+      "house": "morley",
+      "faction": "england",
+      "born": 1290,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 72,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 80,
+        "education": 60
+      },
+      "traits": [
+        "mariscal"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Robert_Morley,_2nd_Baron_Morley",
+      "estimate": true,
+      "note": "Año de nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "thomas_brotherton",
+      "name": "Thomas de Brotherton, conde de Norfolk",
+      "house": "plantagenet",
+      "faction": "england",
+      "born": 1300,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 65
+      },
+      "traits": [
+        "principe_real"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Thomas_of_Brotherton,_1st_Earl_of_Norfolk",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "philippe_vi_de_valois",
+      "name": "Felipe VI de Valois",
+      "house": "valois",
+      "faction": "france",
+      "born": 1293,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 74,
+        "intrigue": 68,
+        "charisma": 70,
+        "loyalty": 80,
+        "education": 75
+      },
+      "traits": [
+        "legitimidad_discutida",
+        "rey_consagrado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Philip_VI_of_France",
+      "estimate": true,
+      "family": {
+        "father": "charles_de_valois",
+        "mother": null,
+        "spouse": "jeanne_de_bourgogne",
+        "children": [
+          "jean_ii_de_france",
+          "philippe_d_orleans"
+        ]
+      }
+    },
+    {
+      "id": "jeanne_de_bourgogne",
+      "name": "Juana de Borgoña, la Coja",
+      "house": "borgona",
+      "faction": "france",
+      "born": 1293,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 35,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 65
+      },
+      "traits": [
+        "politica",
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Joan_the_Lame",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "philippe_vi_de_valois",
+        "children": [
+          "jean_ii_de_france",
+          "philippe_d_orleans"
+        ]
+      }
+    },
+    {
+      "id": "jean_ii_de_france",
+      "name": "Juan II el Bueno",
+      "house": "valois",
+      "faction": "france",
+      "born": 1319,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 70,
+        "intrigue": 60,
+        "charisma": 72,
+        "loyalty": 75,
+        "education": 68
+      },
+      "traits": [
+        "caballero",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_II_of_France",
+      "estimate": true,
+      "family": {
+        "father": "philippe_vi_de_valois",
+        "mother": "jeanne_de_bourgogne",
+        "spouse": "bonne_de_luxembourg",
+        "children": []
+      }
+    },
+    {
+      "id": "charles_de_valois",
+      "name": "Carlos de Valois",
+      "house": "valois",
+      "faction": "france",
+      "born": 1270,
+      "died": 1325,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 65,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 60
+      },
+      "traits": [
+        "fundador_valois"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_of_Valois",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "philippe_vi_de_valois"
+        ]
+      }
+    },
+    {
+      "id": "philippe_d_orleans",
+      "name": "Felipe de Valois, duque de Orleans",
+      "house": "valois",
+      "faction": "france",
+      "born": 1336,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 62,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "principe"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Philip_of_Valois,_Duke_of_Orl%C3%A9ans",
+      "estimate": true,
+      "family": {
+        "father": "philippe_vi_de_valois",
+        "mother": "jeanne_de_bourgogne",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bertrand_du_guesclin",
+      "name": "Bertrand du Guesclin",
+      "house": "guesclin",
+      "faction": "france",
+      "born": 1320,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 88,
+        "intrigue": 60,
+        "charisma": 64,
+        "loyalty": 90,
+        "education": 65
+      },
+      "traits": [
+        "guerrillero",
+        "leal"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bertrand_du_Guesclin",
+      "estimate": true,
+      "note": "Noble joven en 1337; mando efectivo desde los años 1350 (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "raoul_de_brienne",
+      "name": "Raoul de Brienne, condestable de Francia",
+      "house": "brienne",
+      "faction": "france",
+      "born": 1319,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 76,
+        "intrigue": 60,
+        "charisma": 68,
+        "loyalty": 85,
+        "education": 68
+      },
+      "traits": [
+        "caballero",
+        "condestable"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Raoul_I_de_Brienne,_Count_of_Eu",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "jean_de_marigny",
+      "name": "Jean de Marigny, arzobispo de Rouen",
+      "house": "marigny",
+      "faction": "france",
+      "born": 1295,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 68,
+        "intrigue": 72,
+        "charisma": 60,
+        "loyalty": 78,
+        "education": 80
+      },
+      "traits": [
+        "capitan_general",
+        "prelado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Jean_de_Marigny",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "ludwig_iv_wittelsbach",
+      "name": "Luis IV de Baviera",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1282,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 75,
+        "charisma": 70,
+        "loyalty": 72,
+        "education": 68
+      },
+      "traits": [
+        "elector",
+        "emperador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_IV,_Holy_Roman_Emperor",
+      "estimate": true,
+      "note": "Residía habitualmente en Múnich; Praga es la capital imperial según GDD §4.2.",
+      "family": {
+        "father": "ludwig_ii_de_baviera",
+        "mother": null,
+        "spouse": "margareta_de_hainaut",
+        "children": [
+          "ludwig_v_de_baviera"
+        ]
+      }
+    },
+    {
+      "id": "margareta_de_hainaut",
+      "name": "Margarita de Hainaut",
+      "house": "hainault",
+      "faction": "hre",
+      "born": 1311,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 35,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 60
+      },
+      "traits": [
+        "emperatriz"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Margaret_II,_Countess_of_Hainaut",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "ludwig_iv_wittelsbach",
+        "children": [
+          "ludwig_v_de_baviera"
+        ]
+      }
+    },
+    {
+      "id": "ludwig_v_de_baviera",
+      "name": "Luis V de Baviera",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1315,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 70,
+        "intrigue": 60,
+        "charisma": 65,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "duque",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_V,_Duke_of_Bavaria",
+      "estimate": true,
+      "note": "Hijo del primer matrimonio de Luis IV; madre no incluida en el dataset.",
+      "family": {
+        "father": "ludwig_iv_wittelsbach",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "ludwig_ii_de_baviera",
+      "name": "Luis II de Baviera",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1229,
+      "died": 1294,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 50,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "duque"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_II,_Duke_of_Bavaria",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "ludwig_iv_wittelsbach"
+        ]
+      }
+    },
+    {
+      "id": "rupert_i_wittelsbach",
+      "name": "Roberto I del Palatinado",
+      "house": "wittelsbach",
+      "faction": "hre",
+      "born": 1309,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 70,
+        "charisma": 65,
+        "loyalty": 75,
+        "education": 70
+      },
+      "traits": [
+        "elector_palatino"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Rupert_I,_Elector_Palatine",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "werner_von_urslingen",
+      "name": "Werner von Urslingen",
+      "house": "urslingen",
+      "faction": "hre",
+      "born": 1308,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 80,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "condottiero",
+        "mercenario"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Werner_von_Urslingen",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "jan_lucembursky",
+      "name": "Juan I de Luxemburgo, rey de Bohemia",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1296,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 80,
+        "charisma": 72,
+        "loyalty": 70,
+        "education": 70
+      },
+      "traits": [
+        "ciego",
+        "rey_caballero"
+      ],
+      "claims": [
+        {
+          "target": "poland",
+          "strength": 0.4
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/John_of_Bohemia",
+      "estimate": true,
+      "note": "Rey titular de Polonia (1310-1346).",
+      "family": {
+        "father": "heinrich_vii_luxembourg",
+        "mother": null,
+        "spouse": "elisabeth_de_bohemia",
+        "children": [
+          "charles_iv_luxembourg",
+          "bonne_de_luxembourg",
+          "margarethe_de_luxembourg",
+          "jan_jindrich_luxembourg"
+        ]
+      }
+    },
+    {
+      "id": "elisabeth_de_bohemia",
+      "name": "Isabel de Bohemia",
+      "house": "premyslid",
+      "faction": "bohemia",
+      "born": 1292,
+      "died": 1330,
+      "role": "spouse",
+      "stats": {
+        "command": 40,
+        "intrigue": 70,
+        "charisma": 62,
+        "loyalty": 80,
+        "education": 65
+      },
+      "traits": [
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Elizabeth_of_Bohemia_(1292%E2%80%931330)",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "jan_lucembursky",
+        "children": [
+          "charles_iv_luxembourg",
+          "bonne_de_luxembourg",
+          "margarethe_de_luxembourg",
+          "jan_jindrich_luxembourg"
+        ]
+      }
+    },
+    {
+      "id": "charles_iv_luxembourg",
+      "name": "Carlos IV de Luxemburgo",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1316,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 82,
+        "intrigue": 78,
+        "charisma": 75,
+        "loyalty": 80,
+        "education": 85
+      },
+      "traits": [
+        "diplomatico",
+        "futuro_emperador",
+        "heredero"
+      ],
+      "claims": [
+        {
+          "target": "hre",
+          "strength": 0.3
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Charles_IV,_Holy_Roman_Emperor",
+      "estimate": true,
+      "family": {
+        "father": "jan_lucembursky",
+        "mother": "elisabeth_de_bohemia",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bonne_de_luxembourg",
+      "name": "Bonne de Luxemburgo",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1315,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 65,
+        "charisma": 70,
+        "loyalty": 80,
+        "education": 60
+      },
+      "traits": [
+        "princesa"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bonne_of_Luxembourg",
+      "estimate": true,
+      "family": {
+        "father": "jan_lucembursky",
+        "mother": "elisabeth_de_bohemia",
+        "spouse": "jean_ii_de_france",
+        "children": []
+      }
+    },
+    {
+      "id": "margarethe_de_luxembourg",
+      "name": "Margarita de Luxemburgo",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1313,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 50,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "princesa"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Margaret_of_Bohemia,_Duchess_of_Bavaria",
+      "estimate": true,
+      "family": {
+        "father": "jan_lucembursky",
+        "mother": "elisabeth_de_bohemia",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "jan_jindrich_luxembourg",
+      "name": "Juan Enrique de Luxemburgo, margrave de Moravia",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1322,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "margrave"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_Henry,_Margrave_of_Moravia",
+      "estimate": true,
+      "family": {
+        "father": "jan_lucembursky",
+        "mother": "elisabeth_de_bohemia",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "petr_z_rozmberka",
+      "name": "Petr I de Rožmberk",
+      "house": "rozmberk",
+      "faction": "bohemia",
+      "born": 1300,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 72,
+        "intrigue": 60,
+        "charisma": 65,
+        "loyalty": 75,
+        "education": 60
+      },
+      "traits": [
+        "noble_bohemio"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Peter_I_of_Rosenberg",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "heinrich_vii_luxembourg",
+      "name": "Enrique VII de Luxemburgo",
+      "house": "luxembourg",
+      "faction": "bohemia",
+      "born": 1275,
+      "died": 1313,
+      "role": "relative",
+      "stats": {
+        "command": 70,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "emperador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Henry_VII,_Holy_Roman_Emperor",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "jan_lucembursky"
+        ]
+      }
+    },
+    {
+      "id": "karoly_robert_anjou",
+      "name": "Carlos Roberto de Anjou",
+      "house": "anjou",
+      "faction": "hungary",
+      "born": 1288,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 80,
+        "intrigue": 72,
+        "charisma": 70,
+        "loyalty": 80,
+        "education": 72
+      },
+      "traits": [
+        "dinastico",
+        "rey_restaurador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_I_of_Hungary",
+      "estimate": true,
+      "family": {
+        "father": "charles_martel_anjou",
+        "mother": null,
+        "spouse": "erzsebet_lengyel",
+        "children": [
+          "lajos_i_anjou",
+          "andras_anjou"
+        ]
+      }
+    },
+    {
+      "id": "erzsebet_lengyel",
+      "name": "Isabel de Polonia, reina de Hungría",
+      "house": "piast",
+      "faction": "hungary",
+      "born": 1305,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 40,
+        "intrigue": 80,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 65
+      },
+      "traits": [
+        "madre_dinastica",
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Elizabeth_of_Poland,_Queen_of_Hungary",
+      "estimate": true,
+      "family": {
+        "father": "wladyslaw_i_piast",
+        "mother": null,
+        "spouse": "karoly_robert_anjou",
+        "children": [
+          "lajos_i_anjou",
+          "andras_anjou"
+        ]
+      }
+    },
+    {
+      "id": "lajos_i_anjou",
+      "name": "Luis I el Grande de Hungría",
+      "house": "anjou",
+      "faction": "hungary",
+      "born": 1326,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 85,
+        "intrigue": 72,
+        "charisma": 78,
+        "loyalty": 82,
+        "education": 78
+      },
+      "traits": [
+        "futuro_rey",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Louis_I_of_Hungary",
+      "estimate": true,
+      "family": {
+        "father": "karoly_robert_anjou",
+        "mother": "erzsebet_lengyel",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "andras_anjou",
+      "name": "Andrés de Anjou, duque de Calabria",
+      "house": "anjou",
+      "faction": "hungary",
+      "born": 1327,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "principe"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Andrew,_Duke_of_Calabria",
+      "estimate": true,
+      "note": "Casado con Juana I de Nápoles; asesinado en 1345.",
+      "family": {
+        "father": "karoly_robert_anjou",
+        "mother": "erzsebet_lengyel",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "charles_martel_anjou",
+      "name": "Carlos Martel de Anjou",
+      "house": "anjou",
+      "faction": "hungary",
+      "born": 1271,
+      "died": 1295,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "pretendiente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Charles_Martel_of_Anjou",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "karoly_robert_anjou"
+        ]
+      }
+    },
+    {
+      "id": "miklos_zapolya",
+      "name": "Miklós Zápolya, ban de Croacia",
+      "house": "zapolya",
+      "faction": "hungary",
+      "born": 1300,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 70,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "ban",
+        "comandante"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Kingdom_of_Hungary_(1301%E2%80%931526)",
+      "estimate": true,
+      "note": "Datos biográficos escasos; stats y fecha de nacimiento estimadas.",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "alfonso_xi_borgona",
+      "name": "Alfonso XI el Justiciero",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1311,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 84,
+        "intrigue": 65,
+        "charisma": 72,
+        "loyalty": 82,
+        "education": 70
+      },
+      "traits": [
+        "reconquista",
+        "rey_guerrero"
+      ],
+      "claims": [
+        {
+          "target": "granada",
+          "strength": 0.7
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Alfonso_XI_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": "fernando_iv_borgona",
+        "mother": "constanza_de_portugal",
+        "spouse": "maria_de_portugal",
+        "children": [
+          "pedro_i_de_castilla",
+          "enrique_ii_de_castilla"
+        ]
+      }
+    },
+    {
+      "id": "constanza_de_portugal",
+      "name": "Constanza de Portugal, reina de Castilla",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1290,
+      "died": 1313,
+      "role": "relative",
+      "stats": {
+        "command": 40,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Constance_of_Portugal,_Queen_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "fernando_iv_borgona",
+        "children": [
+          "alfonso_xi_borgona"
+        ]
+      }
+    },
+    {
+      "id": "maria_de_portugal",
+      "name": "María de Portugal, reina de Castilla",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1313,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 35,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Maria_of_Portugal,_Queen_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "alfonso_xi_borgona",
+        "children": [
+          "pedro_i_de_castilla"
+        ]
+      }
+    },
+    {
+      "id": "pedro_i_de_castilla",
+      "name": "Pedro I el Cruel",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1334,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 72,
+        "intrigue": 70,
+        "charisma": 62,
+        "loyalty": 60,
+        "education": 65
+      },
+      "traits": [
+        "cruel",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Peter_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": "alfonso_xi_borgona",
+        "mother": "maria_de_portugal",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "enrique_ii_de_castilla",
+      "name": "Enrique II de Trastámara",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1334,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 78,
+        "intrigue": 82,
+        "charisma": 70,
+        "loyalty": 55,
+        "education": 65
+      },
+      "traits": [
+        "bastardo",
+        "pretendiente"
+      ],
+      "claims": [
+        {
+          "target": "castile",
+          "strength": 0.4
+        }
+      ],
+      "source": "https://en.wikipedia.org/wiki/Henry_II_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": "alfonso_xi_borgona",
+        "mother": "leonor_de_guzman",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "leonor_de_guzman",
+      "name": "Leonor de Guzmán",
+      "house": "guzman",
+      "faction": "castile",
+      "born": 1310,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 45,
+        "intrigue": 80,
+        "charisma": 72,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "amante_real",
+        "influyente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Leonor_de_Guzm%C3%A1n",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "enrique_ii_de_castilla"
+        ]
+      }
+    },
+    {
+      "id": "fernando_iv_borgona",
+      "name": "Fernando IV el Emplazado",
+      "house": "borgona",
+      "faction": "castile",
+      "born": 1285,
+      "died": 1312,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 50,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "rey_menor"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ferdinand_IV_of_Castile",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "constanza_de_portugal",
+        "children": [
+          "alfonso_xi_borgona"
+        ]
+      }
+    },
+    {
+      "id": "juan_manuel_de_castilla",
+      "name": "Juan Manuel, príncipe de Villena",
+      "house": "manuel",
+      "faction": "castile",
+      "born": 1282,
+      "died": null,
+      "role": "advisor",
+      "stats": {
+        "command": 70,
+        "intrigue": 80,
+        "charisma": 65,
+        "loyalty": 60,
+        "education": 85
+      },
+      "traits": [
+        "escritor",
+        "politico"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Juan_Manuel,_Prince_of_Villena",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "garci_lasso_de_la_vega",
+      "name": "Garci Lasso de la Vega, canciller de Castilla",
+      "house": "lasso",
+      "faction": "castile",
+      "born": 1290,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 68,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 62
+      },
+      "traits": [
+        "canciller",
+        "comandante"
+      ],
+      "claims": [],
+      "source": "https://es.wikipedia.org/wiki/Alfonso_XI_de_Castilla",
+      "estimate": true,
+      "note": "Datos biográficos escasos; nacimiento y muerte aproximados (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "pere_iv_d_arago",
+      "name": "Pedro IV el Ceremonioso",
+      "house": "barcelona",
+      "faction": "aragon",
+      "born": 1319,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 82,
+        "intrigue": 85,
+        "charisma": 72,
+        "loyalty": 75,
+        "education": 75
+      },
+      "traits": [
+        "ceremonioso",
+        "rey_astuto"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Peter_IV_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": "alfons_iv_d_arago",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "alfons_iv_d_arago",
+      "name": "Alfonso IV el Benigno",
+      "house": "barcelona",
+      "faction": "aragon",
+      "born": 1299,
+      "died": 1336,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "rey"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Alfonso_IV_of_Aragon",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "pere_iv_d_arago",
+          "jaume_d_urgell"
+        ]
+      }
+    },
+    {
+      "id": "jaume_d_urgell",
+      "name": "Jaime de Aragón, conde de Urgel",
+      "house": "barcelona",
+      "faction": "aragon",
+      "born": 1321,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 62,
+        "loyalty": 70,
+        "education": 60
+      },
+      "traits": [
+        "conde",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/James_I,_Count_of_Urgell",
+      "estimate": true,
+      "note": "Hermano de Pedro IV y heredero presunto hasta 1347.",
+      "family": {
+        "father": "alfons_iv_d_arago",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bernat_de_cabrera",
+      "name": "Bernat de Cabrera",
+      "house": "cabrera",
+      "faction": "aragon",
+      "born": 1298,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 74,
+        "intrigue": 65,
+        "charisma": 65,
+        "loyalty": 72,
+        "education": 62
+      },
+      "traits": [
+        "comandante",
+        "noble_catalan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bernat_de_Cabrera",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "lope_de_luna",
+      "name": "Lope de Luna",
+      "house": "luna",
+      "faction": "aragon",
+      "born": 1315,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 76,
+        "intrigue": 60,
+        "charisma": 62,
+        "loyalty": 70,
+        "education": 58
+      },
+      "traits": [
+        "comandante",
+        "noble_aragones"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Lope_de_Luna",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "kazimierz_iii_piast",
+      "name": "Casimiro III el Grande",
+      "house": "piast",
+      "faction": "poland",
+      "born": 1310,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 82,
+        "intrigue": 72,
+        "charisma": 75,
+        "loyalty": 80,
+        "education": 78
+      },
+      "traits": [
+        "diplomatico",
+        "rey_constructor"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Casimir_III_the_Great",
+      "estimate": true,
+      "family": {
+        "father": "wladyslaw_i_piast",
+        "mother": null,
+        "spouse": "aldona_de_lituania",
+        "children": []
+      }
+    },
+    {
+      "id": "aldona_de_lituania",
+      "name": "Aldona de Lituania, reina de Polonia",
+      "house": "gediminas",
+      "faction": "poland",
+      "born": 1309,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 35,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 75,
+        "education": 55
+      },
+      "traits": [
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Aldona_of_Lithuania",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "kazimierz_iii_piast",
+        "children": []
+      }
+    },
+    {
+      "id": "wladyslaw_i_piast",
+      "name": "Władysław I el Corto",
+      "house": "piast",
+      "faction": "poland",
+      "born": 1261,
+      "died": 1333,
+      "role": "relative",
+      "stats": {
+        "command": 70,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "rey_reunificador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/W%C5%82adys%C5%82aw_I_the_Elbow-High",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "kazimierz_iii_piast",
+          "erzsebet_lengyel"
+        ]
+      }
+    },
+    {
+      "id": "bolko_ii_opole",
+      "name": "Bolko II de Opole",
+      "house": "piast",
+      "faction": "poland",
+      "born": 1300,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "duque_silesia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bolko_II_of_Opole",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "spycimir_z_tarnowa",
+      "name": "Spycimir Leliwita, castellano de Cracovia",
+      "house": "leliwita",
+      "faction": "poland",
+      "born": 1280,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 65,
+        "intrigue": 60,
+        "charisma": 58,
+        "loyalty": 68,
+        "education": 55
+      },
+      "traits": [
+        "diplomatico",
+        "noble_polaco"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Spycimir_Leliwita",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "david_ii_bruce",
+      "name": "David II de Escocia",
+      "house": "bruce",
+      "faction": "scotland",
+      "born": 1324,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 70,
+        "intrigue": 60,
+        "charisma": 65,
+        "loyalty": 75,
+        "education": 68
+      },
+      "traits": [
+        "exiliado",
+        "rey_menor"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/David_II_of_Scotland",
+      "estimate": true,
+      "family": {
+        "father": "robert_i_bruce",
+        "mother": null,
+        "spouse": "joan_of_england",
+        "children": []
+      }
+    },
+    {
+      "id": "joan_of_england",
+      "name": "Juana de Inglaterra, reina de Escocia",
+      "house": "plantagenet",
+      "faction": "scotland",
+      "born": 1321,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 35,
+        "intrigue": 50,
+        "charisma": 55,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "reina_consorte"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Joan_of_the_Tower",
+      "estimate": true,
+      "family": {
+        "father": "edward_ii_plantagenet",
+        "mother": "isabel_de_francia",
+        "spouse": "david_ii_bruce",
+        "children": []
+      }
+    },
+    {
+      "id": "robert_ii_stewart",
+      "name": "Roberto II Estuardo",
+      "house": "stewart",
+      "faction": "scotland",
+      "born": 1316,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 72,
+        "intrigue": 70,
+        "charisma": 68,
+        "loyalty": 75,
+        "education": 65
+      },
+      "traits": [
+        "heredero",
+        "mayordomo"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Robert_II_of_Scotland",
+      "estimate": true,
+      "note": "Sobrino de David II; heredero presunto.",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "robert_i_bruce",
+      "name": "Roberto I Bruce",
+      "house": "bruce",
+      "faction": "scotland",
+      "born": 1274,
+      "died": 1329,
+      "role": "relative",
+      "stats": {
+        "command": 80,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 80,
+        "education": 60
+      },
+      "traits": [
+        "rey_independencia"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Robert_the_Bruce",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "david_ii_bruce"
+        ]
+      }
+    },
+    {
+      "id": "andrew_murray",
+      "name": "Andrew Murray, regente de Escocia",
+      "house": "murray",
+      "faction": "scotland",
+      "born": 1298,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 78,
+        "intrigue": 60,
+        "charisma": 60,
+        "loyalty": 80,
+        "education": 60
+      },
+      "traits": [
+        "comandante",
+        "regente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Andrew_Murray_(died_1338)",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "william_douglas",
+      "name": "William Douglas, señor de Liddesdale",
+      "house": "douglas",
+      "faction": "scotland",
+      "born": 1300,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 76,
+        "intrigue": 60,
+        "charisma": 62,
+        "loyalty": 72,
+        "education": 55
+      },
+      "traits": [
+        "comandante",
+        "fronterizo"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/William_Douglas,_Lord_of_Liddesdale",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "benedict_xii",
+      "name": "Benedicto XII (Jacques Fournier)",
+      "house": "fournier",
+      "faction": "papacy",
+      "born": 1285,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 72,
+        "intrigue": 80,
+        "charisma": 70,
+        "loyalty": 85,
+        "education": 88
+      },
+      "traits": [
+        "papa",
+        "teologo"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Pope_Benedict_XII",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "clemente_vi",
+      "name": "Clemente VI (Pierre Roger)",
+      "house": "roger",
+      "faction": "papacy",
+      "born": 1291,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 85,
+        "charisma": 72,
+        "loyalty": 70,
+        "education": 82
+      },
+      "traits": [
+        "cardenal",
+        "futuro_papa"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Pope_Clement_VI",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "hugues_roger",
+      "name": "Hugues Roger",
+      "house": "roger",
+      "faction": "papacy",
+      "born": 1293,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 50,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 75,
+        "education": 70
+      },
+      "traits": [
+        "cardenal"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Hugues_Roger",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "bertrand_du_pouget",
+      "name": "Bertrand du Pouget",
+      "house": "pouget",
+      "faction": "papacy",
+      "born": 1280,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 65,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 75
+      },
+      "traits": [
+        "cardenal",
+        "legado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Bertrand_du_Pouget",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "yusuf_i_nazari",
+      "name": "Yusuf I de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1318,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 78,
+        "intrigue": 72,
+        "charisma": 68,
+        "loyalty": 80,
+        "education": 65
+      },
+      "traits": [
+        "constructor",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Yusuf_I_of_Granada",
+      "estimate": true,
+      "note": "Cónyuge no documentado en fuentes abiertas; se deja null.",
+      "family": {
+        "father": "ismail_i_nazari",
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "muhammad_v_nazari"
+        ]
+      }
+    },
+    {
+      "id": "ismail_i_nazari",
+      "name": "Ismail I de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1279,
+      "died": 1325,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 50
+      },
+      "traits": [
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Ismail_I_of_Granada",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "muhammad_iv_nazari",
+          "yusuf_i_nazari"
+        ]
+      }
+    },
+    {
+      "id": "muhammad_iv_nazari",
+      "name": "Muhammad IV de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1315,
+      "died": 1333,
+      "role": "relative",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Muhammad_IV_of_Granada",
+      "estimate": true,
+      "family": {
+        "father": "ismail_i_nazari",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "muhammad_v_nazari",
+      "name": "Muhammad V de Granada",
+      "house": "nazari",
+      "faction": "granada",
+      "born": 1338,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 80,
+        "intrigue": 72,
+        "charisma": 70,
+        "loyalty": 78,
+        "education": 70
+      },
+      "traits": [
+        "heredero",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Muhammad_V_of_Granada",
+      "estimate": true,
+      "note": "Nacido en 1338, después del inicio del escenario; heredero reflejado para la sucesión.",
+      "family": {
+        "father": "yusuf_i_nazari",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "an_nasir_muhammad",
+      "name": "An-Nasir Muhammad",
+      "house": "qalawun",
+      "faction": "mamluks",
+      "born": 1285,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 82,
+        "intrigue": 85,
+        "charisma": 70,
+        "loyalty": 75,
+        "education": 72
+      },
+      "traits": [
+        "constructor",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/An-Nasir_Muhammad",
+      "estimate": true,
+      "family": {
+        "father": "qalawun",
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "abu_bakr_al_mansur",
+          "ahmad_al_nasir"
+        ]
+      }
+    },
+    {
+      "id": "abu_bakr_al_mansur",
+      "name": "Al-Mansur Abu Bakr",
+      "house": "qalawun",
+      "faction": "mamluks",
+      "born": 1321,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Al-Mansur_Abu_Bakr",
+      "estimate": true,
+      "family": {
+        "father": "an_nasir_muhammad",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "ahmad_al_nasir",
+      "name": "An-Nasir Ahmad",
+      "house": "qalawun",
+      "faction": "mamluks",
+      "born": 1316,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 60,
+        "charisma": 50,
+        "loyalty": 55,
+        "education": 50
+      },
+      "traits": [
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/An-Nasir_Ahmad",
+      "estimate": true,
+      "family": {
+        "father": "an_nasir_muhammad",
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "qawsun",
+      "name": "Emir Qawsun",
+      "house": "qawsun",
+      "faction": "mamluks",
+      "born": 1290,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 78,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 50,
+        "education": 60
+      },
+      "traits": [
+        "emir",
+        "favorito"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Qawsun",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "qalawun",
+      "name": "Qalawun",
+      "house": "qalawun",
+      "faction": "mamluks",
+      "born": 1222,
+      "died": 1290,
+      "role": "relative",
+      "stats": {
+        "command": 80,
+        "intrigue": 65,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "fundador",
+        "sultan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Qalawun",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "an_nasir_muhammad"
+        ]
+      }
+    },
+    {
+      "id": "oz_beg",
+      "name": "Öz Beg Kan",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1282,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 84,
+        "intrigue": 72,
+        "charisma": 70,
+        "loyalty": 78,
+        "education": 60
+      },
+      "traits": [
+        "islamizador",
+        "kan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/%C3%96z_Beg_Khan",
+      "estimate": true,
+      "family": {
+        "father": "togrilcha",
+        "mother": null,
+        "spouse": "taidula_katun",
+        "children": [
+          "jani_beg",
+          "tinibeg_khan"
+        ]
+      }
+    },
+    {
+      "id": "taidula_katun",
+      "name": "Taidula Khatun",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1290,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 40,
+        "intrigue": 70,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "jatun",
+        "reina"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Taidula_Khatun",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "oz_beg",
+        "children": [
+          "jani_beg",
+          "tinibeg_khan"
+        ]
+      }
+    },
+    {
+      "id": "jani_beg",
+      "name": "Jani Beg",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1317,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 78,
+        "intrigue": 65,
+        "charisma": 65,
+        "loyalty": 70,
+        "education": 55
+      },
+      "traits": [
+        "heredero",
+        "kan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Jani_Beg",
+      "estimate": true,
+      "family": {
+        "father": "oz_beg",
+        "mother": "taidula_katun",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "tinibeg_khan",
+      "name": "Tinibeg",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1320,
+      "died": null,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 50,
+        "charisma": 50,
+        "loyalty": 60,
+        "education": 45
+      },
+      "traits": [
+        "kan"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Tinibeg",
+      "estimate": true,
+      "note": "Nacimiento aproximado (estimate).",
+      "family": {
+        "father": "oz_beg",
+        "mother": "taidula_katun",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "qutlugh_timur",
+      "name": "Qutlugh Timur",
+      "house": "qutlugh",
+      "faction": "golden_horde",
+      "born": 1290,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 72,
+        "intrigue": 60,
+        "charisma": 55,
+        "loyalty": 65,
+        "education": 50
+      },
+      "traits": [
+        "comandante",
+        "emir"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Golden_Horde",
+      "estimate": true,
+      "note": "Datos biográficos escasos; nacimiento y stats estimados.",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "togrilcha",
+      "name": "Togrilcha",
+      "house": "borjigin",
+      "faction": "golden_horde",
+      "born": 1240,
+      "died": 1290,
+      "role": "relative",
+      "stats": {
+        "command": 55,
+        "intrigue": 50,
+        "charisma": 45,
+        "loyalty": 55,
+        "education": 40
+      },
+      "traits": [
+        "noble"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Golden_Horde",
+      "estimate": true,
+      "note": "Datos biográficos escasos; fechas estimadas.",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "oz_beg"
+        ]
+      }
+    },
+    {
+      "id": "andronikos_iii_palaiologos",
+      "name": "Andrónico III Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1297,
+      "died": null,
+      "role": "ruler",
+      "stats": {
+        "command": 76,
+        "intrigue": 72,
+        "charisma": 65,
+        "loyalty": 75,
+        "education": 70
+      },
+      "traits": [
+        "emperador",
+        "soldado"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Andronikos_III_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "michael_ix_palaiologos",
+        "mother": null,
+        "spouse": "anna_de_saboya",
+        "children": [
+          "john_v_palaiologos"
+        ]
+      }
+    },
+    {
+      "id": "anna_de_saboya",
+      "name": "Ana de Saboya",
+      "house": "saboya",
+      "faction": "byzantium",
+      "born": 1306,
+      "died": null,
+      "role": "spouse",
+      "stats": {
+        "command": 40,
+        "intrigue": 75,
+        "charisma": 60,
+        "loyalty": 70,
+        "education": 65
+      },
+      "traits": [
+        "emperatriz",
+        "regente"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Anna_of_Savoy",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": "andronikos_iii_palaiologos",
+        "children": [
+          "john_v_palaiologos"
+        ]
+      }
+    },
+    {
+      "id": "john_v_palaiologos",
+      "name": "Juan V Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1332,
+      "died": null,
+      "role": "heir",
+      "stats": {
+        "command": 60,
+        "intrigue": 55,
+        "charisma": 60,
+        "loyalty": 65,
+        "education": 60
+      },
+      "traits": [
+        "emperador",
+        "heredero"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_V_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": "andronikos_iii_palaiologos",
+        "mother": "anna_de_saboya",
+        "spouse": null,
+        "children": []
+      }
+    },
+    {
+      "id": "michael_ix_palaiologos",
+      "name": "Miguel IX Paleólogo",
+      "house": "paleologo",
+      "faction": "byzantium",
+      "born": 1277,
+      "died": 1320,
+      "role": "relative",
+      "stats": {
+        "command": 65,
+        "intrigue": 55,
+        "charisma": 55,
+        "loyalty": 60,
+        "education": 55
+      },
+      "traits": [
+        "coemperador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/Michael_IX_Palaiologos",
+      "estimate": true,
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": [
+          "andronikos_iii_palaiologos"
+        ]
+      }
+    },
+    {
+      "id": "john_vi_kantakouzenos",
+      "name": "Juan VI Cantacuceno",
+      "house": "kantakouzenos",
+      "faction": "byzantium",
+      "born": 1292,
+      "died": null,
+      "role": "general",
+      "stats": {
+        "command": 82,
+        "intrigue": 80,
+        "charisma": 70,
+        "loyalty": 65,
+        "education": 78
+      },
+      "traits": [
+        "megas_domestikos",
+        "usurpador"
+      ],
+      "claims": [],
+      "source": "https://en.wikipedia.org/wiki/John_VI_Kantakouzenos",
+      "estimate": true,
+      "note": "Primer ministro y general; futuro emperador rival (1347-1354).",
+      "family": {
+        "father": null,
+        "mother": null,
+        "spouse": null,
+        "children": []
+      }
+    }
+  ]
+}

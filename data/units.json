@@ -1,0 +1,398 @@
+{
+  "schema_version": 1,
+  "units": [
+    {
+      "id": "militia_spearman",
+      "name": "Milicia de lanza",
+      "era": [
+        1,
+        3
+      ],
+      "type": "infantry",
+      "strength": 4,
+      "move": 2,
+      "cost": {
+        "gold": 20,
+        "recruits": 200
+      },
+      "multipliers": {},
+      "requires": [],
+      "faction_tags": []
+    },
+    {
+      "id": "scottish_schiltron",
+      "name": "Piquero escocés (schiltron)",
+      "era": [
+        1,
+        2
+      ],
+      "type": "infantry",
+      "strength": 7,
+      "move": 1,
+      "cost": {
+        "gold": 30,
+        "recruits": 250
+      },
+      "multipliers": {
+        "vs_cavalry": 1.5
+      },
+      "requires": [],
+      "faction_tags": [
+        "scotland"
+      ]
+    },
+    {
+      "id": "crossbowmen",
+      "name": "Ballesteros",
+      "era": [
+        1,
+        3
+      ],
+      "type": "ranged",
+      "strength": 8,
+      "move": 2,
+      "cost": {
+        "gold": 45,
+        "recruits": 150
+      },
+      "multipliers": {
+        "vs_cavalry": 1.1
+      },
+      "requires": [],
+      "faction_tags": [
+        "france",
+        "hre",
+        "aragon"
+      ]
+    },
+    {
+      "id": "longbowman",
+      "name": "Arquero largo",
+      "era": [
+        1,
+        3
+      ],
+      "type": "ranged",
+      "strength": 9,
+      "move": 2,
+      "cost": {
+        "gold": 60,
+        "recruits": 200
+      },
+      "multipliers": {
+        "vs_cavalry": 1.2
+      },
+      "requires": [],
+      "faction_tags": [
+        "england"
+      ]
+    },
+    {
+      "id": "mounted_sergeants",
+      "name": "Sargentos a caballo",
+      "era": [
+        1,
+        2
+      ],
+      "type": "cavalry",
+      "strength": 9,
+      "move": 4,
+      "cost": {
+        "gold": 70,
+        "recruits": 120
+      },
+      "multipliers": {
+        "vs_infantry": 1.2
+      },
+      "requires": [],
+      "faction_tags": []
+    },
+    {
+      "id": "men_at_arms",
+      "name": "Hombres de armas",
+      "era": [
+        1,
+        3
+      ],
+      "type": "cavalry",
+      "strength": 12,
+      "move": 3,
+      "cost": {
+        "gold": 110,
+        "recruits": 80
+      },
+      "multipliers": {
+        "vs_infantry": 1.4
+      },
+      "requires": [],
+      "faction_tags": [
+        "france",
+        "england",
+        "hre",
+        "bohemia",
+        "hungary",
+        "castile",
+        "aragon",
+        "poland"
+      ]
+    },
+    {
+      "id": "light_horseman",
+      "name": "Jinete (caballería ligera)",
+      "era": [
+        1,
+        3
+      ],
+      "type": "light_cavalry",
+      "strength": 7,
+      "move": 5,
+      "cost": {
+        "gold": 40,
+        "recruits": 100
+      },
+      "multipliers": {
+        "vs_ranged": 1.2
+      },
+      "requires": [],
+      "faction_tags": [
+        "castile",
+        "hungary",
+        "poland"
+      ]
+    },
+    {
+      "id": "steppe_cavalry",
+      "name": "Caballería de estepa",
+      "era": [
+        1,
+        2
+      ],
+      "type": "light_cavalry",
+      "strength": 8,
+      "move": 6,
+      "cost": {
+        "gold": 55,
+        "recruits": 120
+      },
+      "multipliers": {
+        "vs_ranged": 1.3
+      },
+      "requires": [],
+      "faction_tags": [
+        "golden_horde"
+      ]
+    },
+    {
+      "id": "almogavar",
+      "name": "Almogávar",
+      "era": [
+        1,
+        1
+      ],
+      "type": "infantry",
+      "strength": 8,
+      "move": 3,
+      "cost": {
+        "gold": 55,
+        "recruits": 150
+      },
+      "multipliers": {
+        "in_mountain": 1.3,
+        "in_forest": 1.2
+      },
+      "requires": [],
+      "faction_tags": [
+        "aragon"
+      ]
+    },
+    {
+      "id": "mamluk",
+      "name": "Mameluco",
+      "era": [
+        1,
+        3
+      ],
+      "type": "cavalry",
+      "strength": 12,
+      "move": 4,
+      "cost": {
+        "gold": 120,
+        "recruits": 90
+      },
+      "multipliers": {
+        "vs_infantry": 1.3,
+        "vs_cavalry": 1.1
+      },
+      "requires": [],
+      "faction_tags": [
+        "mamluks"
+      ]
+    },
+    {
+      "id": "swiss_pikeman",
+      "name": "Piquero suizo/alemán",
+      "era": [
+        2,
+        3
+      ],
+      "type": "infantry",
+      "strength": 11,
+      "move": 2,
+      "cost": {
+        "gold": 60,
+        "recruits": 250
+      },
+      "multipliers": {
+        "vs_cavalry": 1.5
+      },
+      "requires": [],
+      "faction_tags": [
+        "hre"
+      ],
+      "available_from": 1386
+    },
+    {
+      "id": "dismounted_men_at_arms",
+      "name": "Hombre de armas a pie",
+      "era": [
+        2,
+        3
+      ],
+      "type": "infantry",
+      "strength": 11,
+      "move": 2,
+      "cost": {
+        "gold": 90,
+        "recruits": 100
+      },
+      "multipliers": {
+        "vs_cavalry": 1.2
+      },
+      "requires": [],
+      "faction_tags": [
+        "england",
+        "france"
+      ],
+      "available_from": 1346
+    },
+    {
+      "id": "bombarda",
+      "name": "Bombarda",
+      "era": [
+        2,
+        3
+      ],
+      "type": "artillery",
+      "strength": 16,
+      "move": 1,
+      "cost": {
+        "gold": 200,
+        "recruits": 40
+      },
+      "multipliers": {
+        "siege": 1.5
+      },
+      "requires": [
+        "workshops"
+      ],
+      "faction_tags": [
+        "france",
+        "hre",
+        "england"
+      ],
+      "available_from": 1350
+    },
+    {
+      "id": "arquebusier",
+      "name": "Arcabucero",
+      "era": [
+        3,
+        3
+      ],
+      "type": "ranged",
+      "strength": 12,
+      "move": 2,
+      "cost": {
+        "gold": 90,
+        "recruits": 120
+      },
+      "multipliers": {
+        "vs_cavalry": 1.3
+      },
+      "requires": [],
+      "faction_tags": [
+        "france",
+        "hre",
+        "castile"
+      ],
+      "available_from": 1440
+    },
+    {
+      "id": "hussite_war_wagon",
+      "name": "Carro bélico húsita",
+      "era": [
+        3,
+        3
+      ],
+      "type": "special",
+      "strength": 9,
+      "move": 2,
+      "cost": {
+        "gold": 80,
+        "recruits": 60
+      },
+      "multipliers": {
+        "defense": 1.3
+      },
+      "requires": [
+        "workshops"
+      ],
+      "faction_tags": [
+        "bohemia"
+      ],
+      "available_from": 1419
+    },
+    {
+      "id": "janissary",
+      "name": "Jenízaro",
+      "era": [
+        3,
+        3
+      ],
+      "type": "infantry",
+      "strength": 13,
+      "move": 3,
+      "cost": {
+        "gold": 120,
+        "recruits": 80
+      },
+      "multipliers": {
+        "vs_cavalry": 1.2
+      },
+      "requires": [],
+      "faction_tags": [],
+      "available_from": 1365
+    },
+    {
+      "id": "teutonic_knights",
+      "name": "Caballeros teutónicos",
+      "era": [
+        1,
+        2
+      ],
+      "type": "cavalry",
+      "strength": 13,
+      "move": 3,
+      "cost": {
+        "gold": 130,
+        "recruits": 70
+      },
+      "multipliers": {
+        "vs_infantry": 1.3
+      },
+      "requires": [],
+      "faction_tags": [],
+      "available_from": 1226
+    }
+  ]
+}

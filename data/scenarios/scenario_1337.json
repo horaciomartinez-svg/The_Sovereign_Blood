@@ -1,0 +1,269 @@
+{
+  "id": "scenario_1337",
+  "title": "Dos Coronas",
+  "description": "1337: Eduardo III de Inglaterra reivindica la corona francesa; los Valois resisten. Europa se prepara para la Guerra de los Cien Años.",
+  "start_year": 1337,
+  "end_year": 1399,
+  "factions": [
+    "england",
+    "france",
+    "hre",
+    "bohemia",
+    "hungary",
+    "castile",
+    "aragon",
+    "poland",
+    "scotland",
+    "papacy",
+    "granada",
+    "mamluks",
+    "golden_horde",
+    "byzantium"
+  ],
+  "initial_state": {
+    "characters": "characters.json",
+    "regions": "1337",
+    "treasuries": {
+      "england": 8000,
+      "france": 12000,
+      "hre": 6000,
+      "bohemia": 9000,
+      "hungary": 7000,
+      "castile": 6500,
+      "aragon": 7000,
+      "poland": 5000,
+      "scotland": 1500,
+      "papacy": 15000,
+      "granada": 4000,
+      "mamluks": 20000,
+      "golden_horde": 12000,
+      "byzantium": 2000
+    },
+    "armies": {
+      "england": [
+        {
+          "unit": "longbowman",
+          "count": 800,
+          "region": "region_londres"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 400,
+          "region": "region_aquitania"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 1200,
+          "region": "region_inglaterra_sur"
+        }
+      ],
+      "france": [
+        {
+          "unit": "men_at_arms",
+          "count": 900,
+          "region": "region_ile_de_france"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 600,
+          "region": "region_normandia"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 1500,
+          "region": "region_flandes"
+        }
+      ],
+      "hre": [
+        {
+          "unit": "men_at_arms",
+          "count": 500,
+          "region": "region_baviera"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 700,
+          "region": "region_franconia"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 400,
+          "region": "region_renania"
+        }
+      ],
+      "bohemia": [
+        {
+          "unit": "men_at_arms",
+          "count": 500,
+          "region": "region_praga"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 600,
+          "region": "region_moravia"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 300,
+          "region": "region_praga"
+        }
+      ],
+      "hungary": [
+        {
+          "unit": "light_horseman",
+          "count": 700,
+          "region": "region_buda"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 400,
+          "region": "region_transilvania"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 600,
+          "region": "region_croacia"
+        }
+      ],
+      "castile": [
+        {
+          "unit": "light_horseman",
+          "count": 800,
+          "region": "region_toledo"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 400,
+          "region": "region_sevilla"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 900,
+          "region": "region_burgos"
+        }
+      ],
+      "aragon": [
+        {
+          "unit": "almogavar",
+          "count": 600,
+          "region": "region_barcelona"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 400,
+          "region": "region_valencia"
+        },
+        {
+          "unit": "men_at_arms",
+          "count": 300,
+          "region": "region_barcelona"
+        }
+      ],
+      "poland": [
+        {
+          "unit": "men_at_arms",
+          "count": 400,
+          "region": "region_cracovia"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 500,
+          "region": "region_gran_polonia"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 700,
+          "region": "region_cracovia"
+        }
+      ],
+      "scotland": [
+        {
+          "unit": "scottish_schiltron",
+          "count": 700,
+          "region": "region_edimburgo"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 600,
+          "region": "region_escocia_occidental"
+        }
+      ],
+      "papacy": [
+        {
+          "unit": "men_at_arms",
+          "count": 200,
+          "region": "region_avignon"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 300,
+          "region": "region_roma"
+        }
+      ],
+      "granada": [
+        {
+          "unit": "light_horseman",
+          "count": 500,
+          "region": "region_granada"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 800,
+          "region": "region_malaga"
+        }
+      ],
+      "mamluks": [
+        {
+          "unit": "mamluk",
+          "count": 900,
+          "region": "region_el_cairo"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 500,
+          "region": "region_damasco"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 700,
+          "region": "region_alejandria"
+        }
+      ],
+      "golden_horde": [
+        {
+          "unit": "steppe_cavalry",
+          "count": 1000,
+          "region": "region_sarai"
+        },
+        {
+          "unit": "light_horseman",
+          "count": 600,
+          "region": "region_crimea"
+        }
+      ],
+      "byzantium": [
+        {
+          "unit": "men_at_arms",
+          "count": 300,
+          "region": "region_constantinopla"
+        },
+        {
+          "unit": "militia_spearman",
+          "count": 700,
+          "region": "region_tesalonica"
+        },
+        {
+          "unit": "crossbowmen",
+          "count": 200,
+          "region": "region_anatolia_occidental"
+        }
+      ]
+    }
+  },
+  "victory": {
+    "crowns": 2,
+    "prestige": 500,
+    "years_held": 10
+  },
+  "events_script": "events_1337.json"
+}

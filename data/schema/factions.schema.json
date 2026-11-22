@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "factions.schema.json",
+  "title": "factions.json — The Sovereign's Blood (Escenario 1, 1337)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "factions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "factions": {
+      "type": "array",
+      "minItems": 14,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "capital",
+          "government",
+          "color",
+          "playable",
+          "profile",
+          "start_year"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "england",
+              "france",
+              "hre",
+              "bohemia",
+              "hungary",
+              "castile",
+              "aragon",
+              "poland",
+              "scotland",
+              "papacy",
+              "granada",
+              "mamluks",
+              "golden_horde",
+              "byzantium"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "capital": {
+            "type": "string",
+            "pattern": "^region_[a-z][a-z0-9_]*$"
+          },
+          "government": {
+            "type": "string",
+            "enum": [
+              "monarchy",
+              "elective_monarchy",
+              "theocracy",
+              "sultanate",
+              "khanate",
+              "empire"
+            ]
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-f]{6}$"
+          },
+          "playable": {
+            "type": "boolean"
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "aggressor",
+              "merchant",
+              "dynastic",
+              "survivor",
+              "balanced"
+            ]
+          },
+          "start_year": {
+            "const": 1337
+          }
+        }
+      }
+    }
+  }
+}

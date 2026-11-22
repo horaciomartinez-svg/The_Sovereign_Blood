@@ -1,0 +1,438 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "id": "guerra_cien_anos_1337",
+      "year": 1337,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "casus_belli",
+          "faction": "england",
+          "target": "france",
+          "value": 1
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": -60,
+          "duration": 24
+        }
+      ],
+      "news": "Eduardo III reclama la corona de Francia por línea materna. Comienza la Guerra de los Cien Años.",
+      "source": "https://en.wikipedia.org/wiki/Hundred_Years%27_War"
+    },
+    {
+      "id": "batalla_sluys_1340",
+      "year": 1340,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 15
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": -10
+        }
+      ],
+      "news": "La flota inglesa derrota a la francesa en la batalla naval de Sluys y asegura el canal.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Sluys"
+    },
+    {
+      "id": "batalla_crecy_1346",
+      "year": 1346,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "france",
+          "value": 0.15
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 25
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": -20
+        }
+      ],
+      "news": "Los arqueros largos ingleses destrozan la caballería francesa en Crécy.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Cr%C3%A9cy"
+    },
+    {
+      "id": "sitio_calais_1347",
+      "year": 1347,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 20
+        },
+        {
+          "type": "gold_modifier",
+          "faction": "france",
+          "value": -30
+        }
+      ],
+      "news": "Tras un largo asedio, Calais capitula ante Eduardo III y se convierte en puerto inglés.",
+      "source": "https://en.wikipedia.org/wiki/Siege_of_Calais_(1346%E2%80%931347)"
+    },
+    {
+      "id": "peste_negra_1348",
+      "year": 1348,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "population_modifier",
+          "scope": "europe_west",
+          "value": -0.35
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "europe",
+          "value": -10
+        }
+      ],
+      "news": "La Peste Negra recorre Europa occidental: despoblación, hambre y pánico en las cortes.",
+      "source": "https://en.wikipedia.org/wiki/Black_Death"
+    },
+    {
+      "id": "peste_negra_rebrote_1350",
+      "year": 1350,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "population_modifier",
+          "scope": "europe_west",
+          "value": -0.1
+        }
+      ],
+      "news": "Nuevos brotes de peste golpean las ciudades europeas y retrasan la recuperación demográfica.",
+      "source": "https://en.wikipedia.org/wiki/Black_Death"
+    },
+    {
+      "id": "batalla_poitiers_1356",
+      "year": 1356,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "france",
+          "value": 0.2
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 25
+        },
+        {
+          "type": "gold_modifier",
+          "faction": "france",
+          "value": -40
+        }
+      ],
+      "news": "El Príncipe Negro captura al rey Juan II en Poitiers; Francia queda sin gobierno efectivo.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Poitiers"
+    },
+    {
+      "id": "jacquerie_1358",
+      "year": 1358,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "france",
+          "value": -20
+        },
+        {
+          "type": "population_modifier",
+          "faction": "france",
+          "value": -0.05
+        },
+        {
+          "type": "gold_modifier",
+          "faction": "france",
+          "value": -20
+        }
+      ],
+      "news": "La Jacquerie: revuelta campesina en el norte de Francia contra los señores y la guerra.",
+      "source": "https://en.wikipedia.org/wiki/Jacquerie"
+    },
+    {
+      "id": "paz_bretigny_1360",
+      "year": 1360,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "england",
+          "france"
+        ]
+      },
+      "effects": [
+        {
+          "type": "peace",
+          "faction": "england",
+          "target": "france",
+          "value": 1,
+          "duration": 9
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 20
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": 20
+        }
+      ],
+      "news": "La Paz de Brétigny concede amplios territorios a Inglaterra y alivia temporalmente la guerra.",
+      "source": "https://en.wikipedia.org/wiki/Treaty_of_Br%C3%A9tigny"
+    },
+    {
+      "id": "guerra_civil_castellana_1366",
+      "year": 1366,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "castile",
+          "value": -15
+        },
+        {
+          "type": "army_loss",
+          "faction": "castile",
+          "value": 0.05
+        }
+      ],
+      "news": "Enrique de Trastámara desafía a Pedro I; Castilla se hunde en la guerra civil dinástica.",
+      "source": "https://en.wikipedia.org/wiki/Castilian_Civil_War"
+    },
+    {
+      "id": "batalla_najera_1367",
+      "year": 1367,
+      "trigger": {
+        "type": "war",
+        "factions": [
+          "castile",
+          "england"
+        ]
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "castile",
+          "value": 0.1
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "england",
+          "value": 10
+        }
+      ],
+      "news": "Las compañías inglesas intervienen en Nájera; la victoria no resuelve la guerra castellana.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_N%C3%A1jera"
+    },
+    {
+      "id": "guerra_cien_anos_reanuda_1369",
+      "year": 1369,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "casus_belli",
+          "faction": "england",
+          "target": "france",
+          "value": 1
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "england",
+          "target": "france",
+          "value": -30
+        }
+      ],
+      "news": "Carlos V reanuda la guerra tras Brétigny y recupera plazas con la ayuda de Du Guesclin.",
+      "source": "https://en.wikipedia.org/wiki/Hundred_Years%27_War"
+    },
+    {
+      "id": "batalla_maritsa_1371",
+      "year": 1371,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "scope": "balkans",
+          "value": -15
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "byzantium",
+          "value": -10
+        }
+      ],
+      "news": "La derrota cristiana del río Maritsa abre los Balcanes a los turcos otomanos.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Maritsa"
+    },
+    {
+      "id": "cisma_occidente_1378",
+      "year": 1378,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "prestige_modifier",
+          "faction": "papacy",
+          "value": -100
+        },
+        {
+          "type": "relation_modifier",
+          "faction": "papacy",
+          "target": "france",
+          "value": -40
+        },
+        {
+          "type": "stability_modifier",
+          "scope": "europe_west",
+          "value": -10
+        }
+      ],
+      "news": "El Cisma de Occidente divide a la cristiandad entre papas rivales en Roma y Aviñón.",
+      "source": "https://en.wikipedia.org/wiki/Western_Schism"
+    },
+    {
+      "id": "revuelta_ciompi_1378",
+      "year": 1378,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "region": "region_toscana",
+          "value": -20
+        },
+        {
+          "type": "gold_modifier",
+          "region": "region_toscana",
+          "value": -20
+        }
+      ],
+      "news": "Los trabajadores de la lana (ciompi) se levantan en Florencia y desafían al gobierno de la ciudad.",
+      "source": "https://en.wikipedia.org/wiki/Ciompi_Revolt"
+    },
+    {
+      "id": "revuelta_campesina_1381",
+      "year": 1381,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "faction": "england",
+          "value": -20
+        },
+        {
+          "type": "gold_modifier",
+          "faction": "england",
+          "value": -15
+        }
+      ],
+      "news": "La revuelta campesina inglesa de 1381 sacude el reino y pone en peligro el trono.",
+      "source": "https://en.wikipedia.org/wiki/Peasants%27_Revolt"
+    },
+    {
+      "id": "batalla_kosovo_1389",
+      "year": 1389,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "stability_modifier",
+          "scope": "balkans",
+          "value": -20
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "hungary",
+          "value": -10
+        }
+      ],
+      "news": "La llanura de Kosovo presencia el choque entre ejércitos balcánicos y otomanos.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Kosovo"
+    },
+    {
+      "id": "cruzada_nicopolis_1396",
+      "year": 1396,
+      "trigger": {
+        "type": "year_reached"
+      },
+      "effects": [
+        {
+          "type": "army_loss",
+          "faction": "hungary",
+          "value": 0.2
+        },
+        {
+          "type": "prestige_modifier",
+          "faction": "hungary",
+          "value": -20
+        }
+      ],
+      "news": "La cruzada de Nicópolis termina en desastre para los ejércitos cristianos.",
+      "source": "https://en.wikipedia.org/wiki/Battle_of_Nicopolis"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "factions": [
+    {
+      "id": "england",
+      "name": "Reino de Inglaterra",
+      "capital": "region_londres",
+      "government": "monarchy",
+      "color": "#8f2a2a",
+      "playable": true,
+      "profile": "aggressor",
+      "start_year": 1337
+    },
+    {
+      "id": "france",
+      "name": "Reino de Francia",
+      "capital": "region_ile_de_france",
+      "government": "monarchy",
+      "color": "#2a4d8f",
+      "playable": true,
+      "profile": "balanced",
+      "start_year": 1337
+    },
+    {
+      "id": "hre",
+      "name": "Sacro Imperio Romano Germánico",
+      "capital": "region_praga",
+      "government": "elective_monarchy",
+      "color": "#b08d2f",
+      "playable": true,
+      "profile": "balanced",
+      "start_year": 1337
+    },
+    {
+      "id": "bohemia",
+      "name": "Reino de Bohemia",
+      "capital": "region_praga",
+      "government": "monarchy",
+      "color": "#6a2c70",
+      "playable": true,
+      "profile": "dynastic",
+      "start_year": 1337
+    },
+    {
+      "id": "hungary",
+      "name": "Reino de Hungría",
+      "capital": "region_buda",
+      "government": "monarchy",
+      "color": "#4a7a3a",
+      "playable": true,
+      "profile": "survivor",
+      "start_year": 1337
+    },
+    {
+      "id": "castile",
+      "name": "Reino de Castilla",
+      "capital": "region_burgos",
+      "government": "monarchy",
+      "color": "#8c1f28",
+      "playable": true,
+      "profile": "aggressor",
+      "start_year": 1337
+    },
+    {
+      "id": "aragon",
+      "name": "Corona de Aragón",
+      "capital": "region_barcelona",
+      "government": "monarchy",
+      "color": "#b8862b",
+      "playable": true,
+      "profile": "merchant",
+      "start_year": 1337
+    },
+    {
+      "id": "poland",
+      "name": "Reino de Polonia",
+      "capital": "region_cracovia",
+      "government": "monarchy",
+      "color": "#b03a48",
+      "playable": true,
+      "profile": "dynastic",
+      "start_year": 1337
+    },
+    {
+      "id": "scotland",
+      "name": "Reino de Escocia",
+      "capital": "region_edimburgo",
+      "government": "monarchy",
+      "color": "#3a5f8f",
+      "playable": false,
+      "profile": "survivor",
+      "start_year": 1337
+    },
+    {
+      "id": "papacy",
+      "name": "Papado de Aviñón",
+      "capital": "region_avignon",
+      "government": "theocracy",
+      "color": "#b8a04a",
+      "playable": false,
+      "profile": "merchant",
+      "start_year": 1337
+    },
+    {
+      "id": "granada",
+      "name": "Sultanato Nazarí de Granada",
+      "capital": "region_granada",
+      "government": "sultanate",
+      "color": "#2f6b4f",
+      "playable": false,
+      "profile": "survivor",
+      "start_year": 1337
+    },
+    {
+      "id": "mamluks",
+      "name": "Sultanato Mameluco",
+      "capital": "region_el_cairo",
+      "government": "sultanate",
+      "color": "#8a7a2a",
+      "playable": false,
+      "profile": "merchant",
+      "start_year": 1337
+    },
+    {
+      "id": "golden_horde",
+      "name": "Horda de Oro",
+      "capital": "region_sarai",
+      "government": "khanate",
+      "color": "#4a6a8a",
+      "playable": false,
+      "profile": "aggressor",
+      "start_year": 1337
+    },
+    {
+      "id": "byzantium",
+      "name": "Imperio Bizantino",
+      "capital": "region_constantinopla",
+      "government": "empire",
+      "color": "#8a2f5a",
+      "playable": false,
+      "profile": "survivor",
+      "start_year": 1337
+    }
+  ]
+}
