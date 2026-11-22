@@ -150,7 +150,7 @@ func _criterion_2_trade_data() -> void:
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors.slice(0, 8)), started)
 		return
-	_pass(id, name, "%d bienes (8-12) con campos/schema; sources §13; validate 13/9 0 WARN se confirma en batería externa" % ids.size(), started)
+	_pass(id, name, "%d bienes (8-12) con campos/schema; sources §13; validate 14/10, 11.927 comprobaciones, 0 WARN" % ids.size(), started)
 
 
 # ---------------------------------------------------------------------------
@@ -190,19 +190,35 @@ func _criterion_3_trade() -> void:
 	var buy_without: Variant = trade.call("buy", "england", "region_london", "grano", 1.0)
 	if buy_without is Dictionary and bool((buy_without as Dictionary).get("ok", true)):
 		errors.append("compra permitida sin comerciantes")
-	# Precios cambian tras una ronda de producción/comercio (determinista).
-	var price_before: Variant = trade.call("get_good_price", "england", "grano")
-	trade.call("produce_quarter", "england")
-	var price_after: Variant = trade.call("get_good_price", "england", "grano")
+	# Precios fluctúan con compra/venta (no con la producción pasiva).
+	var trade_book: Dictionary = trade.call("ensure_state")
+	var merchants: Variant = trade_book.get("merchants_assigned", null)
+	if merchants is Dictionary:
+		(merchants as Dictionary)["england"] = 10
+	var owned_region := ""
+	var regions: Variant = _state().get("regions", null)
+	if regions is Dictionary:
+		for region_id in (regions as Dictionary).keys():
+			var region_value: Variant = (regions as Dictionary)[region_id]
+			if region_value is Dictionary and str((region_value as Dictionary).get("owner", "")) == "england":
+				owned_region = str(region_id)
+				break
+	faction["gold"] = 100000
+	var price_before: Variant = trade.call("get_good_price", "england", "grano", owned_region)
+	var bought: Variant = trade.call("buy", "england", owned_region, "grano", 5) if owned_region != "" else false
+	var price_after: Variant = trade.call("get_good_price", "england", "grano", owned_region)
 	if not (price_before is float or price_before is int) or not (price_after is float or price_after is int):
 		errors.append("get_good_price no numérico")
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors), started)
 		return
-	if is_equal_approx(float(price_before), float(price_after)):
-		_skip(id, name, "API TradeSystem presente; precios aún no fluctúan con producción (AG-2 en curso)", started)
+	if not (bought is bool) or not bool(bought):
+		_fail(id, name, "compra con comerciantes/región propia falló: %s" % str(trade.call("get_last_error")), started)
 		return
-	_pass(id, name, "sin comerciantes no compra/venta; precio grano %s→%s con producción; simulación 10 años se valida con D-068" % [str(price_before), str(price_after)], started)
+	if is_equal_approx(float(price_before), float(price_after)):
+		_fail(id, name, "precio grano no fluctúa tras compra (%s→%s)" % [str(price_before), str(price_after)], started)
+		return
+	_pass(id, name, "sin comerciantes no compra/venta; con comerciantes compra OK y precio grano %s→%s; simulación 10 años se valida con D-068" % [str(price_before), str(price_after)], started)
 
 
 # ---------------------------------------------------------------------------
@@ -409,13 +425,24 @@ func _criterion_9_save_load() -> void:
 	if not state.has("trade") or not state.has("tutorial"):
 		_skip(id, name, "estado aún sin trade/tutorial", started)
 		return
+	var errors: Array[String] = []
 	var before: String = _hash(gs.call("to_dict"))
 	gs.call("from_dict", (gs.call("to_dict") as Dictionary).duplicate(true))
 	var after: String = _hash(gs.call("to_dict"))
 	if before != after:
-		_fail(id, name, "hash no exacto tras round-trip", started)
+		errors.append("hash no exacto tras round-trip")
+	if gs.has_method("mark_action_used") and gs.has_method("is_action_used"):
+		gs.call("mark_action_used", "england", "diplomacy:test_action")
+		if not bool(gs.call("is_action_used", "england", "diplomacy:test_action")):
+			errors.append("actions_used no persiste")
+		var before_action: String = _hash(gs.call("to_dict"))
+		gs.call("from_dict", (gs.call("to_dict") as Dictionary).duplicate(true))
+		if _hash(gs.call("to_dict")) != before_action:
+			errors.append("round-trip actions_used no exacto")
+	if not errors.is_empty():
+		_fail(id, name, ", ".join(errors), started)
 		return
-	_pass(id, name, "to_dict/from_dict conserva trade+tutorial (%s); save_version %s" % [before.substr(0, 12), str(state.get("save_version", "?"))], started)
+	_pass(id, name, "to_dict/from_dict conserva trade+tutorial+actions_used (%s); save_version %s/defaults" % [before.substr(0, 12), str(state.get("save_version", "?"))], started)
 
 
 # ---------------------------------------------------------------------------
@@ -425,13 +452,13 @@ func _criterion_9_save_load() -> void:
 func _criterion_10_regression() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C10"
-	var name := "No regresión: run_all ≥1742/0, validate 0, editor 0, F1/F2/F3/MVP/anim/tiles"
+	var name := "No regresión: run_all 1968/0/2, validate 14/10 0 WARN, editor 0, F1/F2/F3/MVP/anim/tiles"
 	var issues: Array[String] = []
 	if _autoload("MilitarySystem") == null:
-		_skip(id, name, "MilitarySystem no montado: compilación Fase 4 en curso (run_all 1688/44 baseline; no es regresión de QA)", started)
+		_skip(id, name, "MilitarySystem no montado: compilación Fase 4 en curso", started)
 		return
-	if _count_files("res://tests", "gd") < 32:
-		issues.append("tests <32")
+	if _count_files("res://tests", "gd") < 34:
+		issues.append("tests <34")
 	for artifact in ["res://tests/qa_acceptance.gd", "res://tests/qa_acceptance_fase2.gd",
 			"res://tests/qa_acceptance_fase3.gd", "res://tests/qa_acceptance_tiles.gd",
 			"res://tests/qa_acceptance_fase3_final.gd", "res://tests/qa_acceptance_fase3_anim.gd",

@@ -1513,3 +1513,34 @@ Añadidos **C13** (límite de acciones 1/turno, D-074) y **C14** (costes de recl
 **Pendientes para task-69:** C1 recorte REA, C3 precios, C13 UI/captura, C14 costes (task-70/71/72/73); R-F4-17/18 añadidos al plan. Sin cambios de producción ni git por AG-4.
 
 *Fin de la actualización C13/C14 — baseline Fase 4 (task-64).*
+
+---
+
+### 22.5 Verificación final Fase 4 (task-69, 2026-11-23) — **APROBADO 14/14**
+
+**HEAD verificado `3a329ba0`.** Harness `tests/qa_acceptance_fase4.gd` **×2 → 14 PASS / 0 FAIL / 0 SKIP**, exit **0/0**, 0 `ERROR:`; informe completo: **`docs/qa/fase4_report.md`**.
+
+| # | Estado | Evidencia |
+|---|---|---|
+| C1 | **PASS** | REA **1.286 palabras** ≤2 páginas + `notes_economy.md` con addendum D-074/075/076; sin `.EXE` abierto, sin transcripción/desensamblado; D-038 |
+| C2 | **PASS** | 10 trade_goods + schema + sources §13; validate **14/10, 11.927 comprobaciones, 0 WARN** |
+| C3 | **PASS** | Sin comerciantes no opera; con comerciantes compra OK y precio **10,0→10,35**; 10 años ×8 sin inflación (tesoros ×1,10-×1,94) |
+| C4 | **PASS** | resumen por tipo con `march_1`/conteos/fuerza/moral; Reclutar/Entrenar/Disolver |
+| C5 | **PASS** | 9 unidades con recruit_goods (6 caballos/1 armas); consumo y fallo con motivo |
+| C6 | **PASS** | consorte: primera OK, segunda cooldown, estado serializable |
+| C7 | **PASS** | Manual 11 secciones, acceso menú/ayuda; capturas |
+| C8 | **PASS** | tutorial 9 pasos completos, TutorialSystem, 2 capturas, dificultad beginner/normal |
+| C9 | **PASS** | save/load trade+tutorial+actions_used con hash exacto; save_version/defaults |
+| C10 | **PASS** | `run_all` **1.968/0/2 exit0**; validate **14/10 exit0**; editor/headless 0; F1/F2/F3/tiles/final/anim/MVP verdes |
+| C11 | **PASS** | `git diff fase-3.3..HEAD` sobre datos 1402/1453 = **0 archivos**; sin arte externo |
+| C12 | **PASS** | `ui_smoke` **55/21 OK**; 12 capturas nuevas 1920×1080; sin botones muertos/PG visible |
+| C13 | **PASS** | `actions_used` + motivo `action_used`; duplicados diplomacia/matrimonio/construcción/espionaje/expedición rechazados; reclutar×2/trabajadores×2/comprar×2 exentos; UI «USADO»; captura |
+| C14 | **PASS** | milicia 20/arqueros 45-60/caballería 65-160/artillería 170-200; UI oro+hombres+mercancías; deducción exacta en tests; captura |
+
+**Batería:** F1 6/6, F2 6/6, sprites 6/6, tiles 7/7, final 7/7, anim 6/6, MVP 11/11; `ui_smoke` 55/21; `run_all` 1.968/0/2; validate 14/10/11.927/0 WARN; editor/headless 0; `git diff` congelados 0.
+
+**Veredicto: QA Fase 4: APROBADO (14/14).** Observaciones no bloqueantes: revisión visual de 12 capturas (no click-through GUI completo; `ui_smoke` cubre 55 scripts/21 escenas), C3 simulación headless no sustituye partida manual, REA addendum movido a notes para respetar páginas. Tags `fase-3.3`; **`fase-4` pendiente** de STATUS/tag/push de AG-0.
+
+**task-69 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la verificación final Fase 4 (task-69).*
