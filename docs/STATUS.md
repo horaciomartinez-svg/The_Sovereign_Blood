@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; PRIORIDAD 1: integración de sprites de Kimi (§10.3) |
+| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 en curso |
 | **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
 | **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3`) |
-| **GDD** | **v1.6** — `GDD_The_Sovereign's_Blood.md` (§10.3 contrato de sprites de Kimi; hereda v1.5) |
+| **GDD** | **v1.7** — `GDD_The_Sovereign's_Blood.md` (§10.3 sprites 17/17, §10.4 tiles N3) |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites: assets, `sprite_sheet`, lógica N2/N3, render, QA) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
@@ -14,6 +14,8 @@
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
+| **QA Sprites Fase 3** | **APROBADO 6/6 (17/17 unidades)** — `docs/qa/fase3_sprites_report.md` |
+| **QA Tiles Fase 3** | ⏳ en curso — `docs/qa/fase3_tiles_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -369,27 +371,42 @@ queda planificada en §11 y pendiente de luz verde del usuario.
 
 ---
 
-## 15. Fase 3 — Contenido y remaster (EN CURSO; PRIORIDAD 1: sprites)
+## 15. Fase 3 — Contenido y remaster (EN CURSO)
 
-**Luz verde:** 2026-11-22. **GDD:** v1.6. **Contrato de la prioridad 1:** `docs/architecture_contracts_fase3.md`.
-**Paquete recibido:** `Sprites_Unidades_TSB.zip` (Kimi): 6 unidades núcleo × 3 cuadros de marcha + 3 proyectiles + README.
+**Luz verde:** 2026-11-22. **GDD:** v1.7. **Contratos:** `docs/architecture_contracts_fase3.md` (sprites)
+y `docs/architecture_contracts_fase3_tiles.md` (tiles §10.4).
 
 | Línea | Owner | Entregable | Estado |
 |---|---|---|---|
-| Assets de sprites núcleo | AG-5 | `assets/art/sprites/units/` (18 PNG 64×64/64×80), fuentes `src/`, proyectiles | ⏳ |
-| Datos + lógica de batalla | AG-2 | `sprite_sheet` en `units.json` + schema; animación/mirroring/proyectiles en N2/N3 | ⏳ |
-| Render N2/N3 | AG-3 | sprites, marcha 6 fps, espejo oeste, capa de proyectiles balísticos; capturas 64 px | ⏳ |
-| QA de sprites | AG-4 | harness fase 3, carga headless, Crécy N1/N2/N3, capturas y legibilidad | ⏳ |
-| Escenarios 1402/1453 | AG-1 | datos + eventos (Ankara, locura de Carlos VI, Constantinopla, Dos Rosas) + evolución tecnológica | ⏸ tras prioridad 1 |
-| Retratos nuevos / animaciones completas / 11 unidades | AG-5 | hoja de estilo Kimi; petición de generación a Kimi si el equipo no tiene arte IA | ⏸ tras prioridad 1 |
-| Tiles tácticos, relieve, música CC | AG-5/AG-3 | assets e integración | ⏸ fin de fase |
-| QA final Fase 3 | AG-4 | 3 escenarios completos, victoria/derrota §4.5, partida automatizada 10 años, sprites/retratos | ⏸ |
+| **Sprites §10.3 (17/17)** | AG-5/AG-2/AG-3 | 51 PNG 64×64/64×80/64×43 + fuentes `src/`; `sprite_sheet` en 17/17; render N2/N3, marcha/mirroring/proyectiles; QA | ✅ **CERRADO — QA APROBADO 6/6** |
+| **Tiles §10.4** | AG-3/AG-2 | 12 tiles 512 (raw en `src/`), campo N3 128 px con rotación, generador desde región; `battle_tiles` + reglas (río/montaña impassable, colina/bosque/camino/villa); QA | ⏳ en curso |
+| Escenarios 1402/1453 | AG-1 | datos + eventos (Ankara, locura de Carlos VI, Constantinopla, Dos Rosas) + evolución tecnológica | ⏸ tras tiles |
+| Retratos herederos/1402/1453 + cuadros idle/ataque/impacto/muerte | AG-5 | hoja de estilo Kimi; petición de generación a Kimi (D-049) | ⏸ tras tiles |
+| Tiles tácticos (hecho), relieve del mapa, música CC, efectos, balance | AG-5/AG-3 | assets e integración | ⏸ fin de fase |
+| QA final Fase 3 | AG-4 | 3 escenarios completos, victoria/derrota §4.5, partida automatizada 10 años, sprites/retratos/tiles | ⏸ |
 
-**Criterio de aceptación de la PRIORIDAD 1 (GDD §10.3 v1.6):** 6 unidades núcleo con `sprite_sheet`
-válido y carga en CI headless; silueta reconocible del arma a 64 px (milicia, ballesteros, arqueros);
-marcha 6 fps con espejo al oeste; proyectiles virote/flecha/piedra en capa separada con trayectoria
-balística; fallback heráldico en las 11 restantes; capturas en `docs/screenshots/`; no regresión.
+**Sprites §10.3 — aceptación superada (v1.6, 17/17):**
+- 17/17 unidades con `sprite_sheet` válido y frames cargando headless (64×64 infantería/ranged, 64×80
+  caballería, 64×43 bombarda/carro); 51 PNG de producción + 51 fuentes `_raw_1024` en `src/` (`.gdignore`).
+- Render N2/N3: marcha 6 fps ciclo 3, espejo al oeste, proyectiles en capa separada (virote→ballesteros;
+  flecha→arqueros/jenízaros/estepa; piedra→bombarda) con trayectoria balística.
+- Fallback heráldico para unidades sin sprite (probado con unidad sintética).
+- Capturas 64 px reales de milicia, ballesteros, arqueros, almogávar y jenízaro + N2/N3 con proyectiles.
+- QA independiente: `docs/qa/fase3_sprites_report.md` — **APROBADO 6/6**; `run_all` **1074/0/1**;
+  `validate_data` 5.570 comprobaciones, 0 errores; sin regresión F1/F2.
+- Decisiones: D-039…D-050.
 
-**Decisiones:** D-039 (GDD v1.6), D-040 (reparto AG-5/AG-2/AG-3/AG-4), D-041 (fuentes `src/` +
-`.gdignore`), D-042 (orientación/ciclo/proyectiles), D-043 (pipeline de las 11 restantes y cuadros de
-combate vía Kimi).
+**Tiles §10.4 — en curso (GDD v1.7):** 12 mosaicos 512×512 (raw 1024 en `src/`); `battle_tiles` validado
+por `validate_data.gd`; campo N3 a 128 px con rotación 90° de río/puente/puente_villa/camino; generador
+derivado de `region.terrain` con río de orilla a orilla + 1-2 puentes, villa y caminos; reglas tácticas
+(río/montaña intransitables, colina/bosque defensa y coste, bosque penaliza caballería, camino/villa_calle
+bonus de movimiento, villa/puente_villa defensa). Criterio: QA `docs/qa/fase3_tiles_report.md` con 12/12
+tiles, tests de impassable/bonus y capturas de campo con río+puente+villa y llanura.
+
+**Decisiones:** D-039 (GDD v1.6), D-040…D-043 (reparto/fuentes/orientación/pipeline), D-044…D-050
+(17 unidades, id bombarda, fuentes raw, formatos, proyectiles, capturas), D-051…D-056 (GDD v1.7, reparto
+tiles, `battle_tiles`, render/rotación, generador N3, capturas de tiles).
+
+**Próximo cierre:** al aprobar tiles → módulo §10.4 cerrado; después escenarios 1402/1453 (AG-1) y
+retratos/animaciones restantes (AG-5); QA final de Fase 3, tag `fase-3`, reporte y verificación externa
+de Kimi contra GDD v1.7.
