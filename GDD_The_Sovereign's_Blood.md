@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vía DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.6 |
-| **Estado** | Aprobado — v1.6: sprites de unidades núcleo entregados por Kimi (§10.3) e integración en Fase 3; hereda v1.5 (REA ampliado §3.2, retratos finales §10.2) |
+| **Versión del documento** | 1.7 |
+| **Estado** | Aprobado — v1.7: tiles del campo de batalla Nivel 3 entregados por Kimi (§10.4, ríos con puentes como obstáculos); hereda v1.6 (sprites de las 17 unidades §10.3), v1.5 (REA §3.2, retratos §10.2) |
 
 ---
 
@@ -549,19 +549,32 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 - **Tamaño:** sprites base 64×64 px (unidad a pie) y 64×80 (caballería); escalables ×2/×3 en pantalla. Estilo "miniatura pintada" coherente con los retratos §10.2 (trazo de ilustración, no pixel art digital genérico), fondo transparente PNG.
 - **Hojas de animación por unidad:** idle (2 cuadros), marcha (4), ataque (4-6), impacto/herida (2), muerte (2), con versión por dirección (S, SE, E como mínimo — espejo para el resto). Proyectiles separados: virote (ballesta), flecha (arco), piedra (bombarda), con trayectoria balística visible.
 - **Armas por época (§6.4):** las siluetas deben distinguir pica/lanza de alabarda (aparece hacia 1380) y de arcabuz (post-1440); la ballesta con gafa y cinturín de recarga; el arco largo inglés; escudo heater vs. pavés; caballería con lanza en ristre vs. cab. ligera con jabalina.
-- **Asignación:** `units.json` añade campo opcional `"sprite_sheet"` con el formato del bloque «Sprites completos ENTREGADOS»; fallback = marcador heráldico por facción (ya existente) si falta el sprite.
-- **Producción:** AG-5 (Fase 3) con guía de estilo; el set completo de las 17 unidades de `units.json` ya está entregado por Kimi (marcha de 3 cuadros); restan cuadros idle/ataque/impacto/muerte bajo el mismo pipeline.
+- **Asignación:** `units.json` añade campo opcional `"sprite_sheet": "res://assets/art/units/<unit_id>.png"`; fallback = marcador heráldico por facción (ya existente) si falta el sprite.
+- **Producción:** AG-5 (Fase 3) con guía de estilo; la lista de hojas requeridas se deriva de `units.json` (17 tipos × variantes por época según aplique). Prioridad: las 6-8 unidades más comunes del Escenario 1.
 
-**Sprites completos ENTREGADOS (v1.6 — Kimi, 2026-11-22; paquete v2).** Paquete `Sprites_Unidades_TSB.zip` (106 MB): **17 unidades × 3 cuadros de marcha (51 PNG)** + 3 proyectiles + `_raw_1024/` con los originales. IDs cubiertos: `militia_spearman`, `scottish_schiltron`, `almogavar`, `swiss_pikeman`, `dismounted_men_at_arms`, `janissary`, `arquebusier`, `mounted_sergeants`, `men_at_arms`, `light_horseman`, `steppe_cavalry`, `mamluk`, `teutonic_knights`, `crossbowmen`, `longbowman`, `bombard`, `hussite_war_wagon`. Contrato del asset:
-- **Archivos:** `<unit_id>_march_{1,2,3}.png`; infantería 512×512, caballería 512×640 (proporción 64×80), artillería/vagón 512×341 (proporción 64×43, panorámico), RGBA transparente, figura aislada sin sombra de suelo. Ancla: pies en borde inferior, centro horizontal. Los `_raw_1024/` se conservan como fuente en `assets/art/sprites/units/src/` (con `.gdignore`, sin importar).
-- **Animación de marcha (ciclo 3):** `march_1` extremidad izquierda adelante → `march_2` reunión/paso → `march_3` derecha adelante (caballería: paso del caballo; artillería: giro de ruedas). Todos miran a E; base para E/SE/S y **espejo horizontal** para N/NW/O (convención GK2).
-- **Reescalado:** LANCZOS a **64×64** (infantería), **64×80** (caballería) y **64×43** (bombarda y carro húsita) en importación; validar legibilidad del arma a 64 px (QA visual).
-- **Normalización de ID:** el dataset usa `bombarda`; los archivos del paquete `bombard_march_*` se renombran a `bombarda_march_*` para casar con `units.json` (D-045).
-- **Proyectiles:** capa separada con trayectoria balística; `virote`→`crossbowmen`; `flecha`→`longbowman`/`janissary`/`steppe_cavalry`; `piedra`→`bombarda` (D-048).
-- **Campo `units.json` (D-037):** `"sprite_sheet": {"frames": ["res://assets/art/sprites/units/<unit_id>_march_1.png", "..._2", "..._3"], "anim": {"march": [0,1,2], "fps": 6, "loop": true}, "size": [64,64], "anchor": "bottom_center", "facing": "E"}` (`size` 64×80 caballería, 64×43 artillería). Fallback heráldico si falta.
-- Pendiente bajo el mismo pipeline: cuadros idle(2)/ataque(4-6)/impacto(2)/muerte(2) §10.3, a solicitar a Kimi con este set como referencia (D-049).
+**Sprites de TODAS las unidades ENTREGADOS (v1.6 — Kimi, 2026-11-22).** Paquete `Sprites_Unidades_TSB.zip`: las **17 unidades** de `units.json` × 3 cuadros de marcha (51 sprites) + 3 proyectiles (`proyectil_virote.png`, `proyectil_flecha.png`, `proyectil_piedra.png`). Contrato del asset:
+- **Archivos:** `<unit_id>_march_{1,2,3}.png`; infantería 512×512, caballería 512×640 (proporción 64×80), artillería/especiales (`bombard`, `hussite_war_wagon`) 512×341 panorámico. RGBA transparente, figura aislada sin sombra de suelo. Originales 1024/1536 incluidos. Ancla: borde inferior, centro horizontal.
+- **Animación de marcha (ciclo 3):** `march_1` extremidad izquierda adelante → `march_2` reunión/paso → `march_3` derecha adelante (equivalente en el paso del caballo / giro de ruedas). Todos miran a E; para N/NW/O espejar en el motor (convención GK2); S/SE usan la versión actual.
+- **Reescalado:** LANCZOS a 64×64 / 64×80 (64×43 artillería) en importación; validar legibilidad del arma a 64 px (QA visual).
+- **Proyectiles:** capa separada con trayectoria balística; virote→`crossbowmen`, flecha→`longbowman`/`janissary`/`steppe_cavalry`, piedra→`bombard`.
+- **Campo `units.json` (D-037):** `"sprite_sheet": {"frames": ["res://assets/art/sprites/units/<unit_id>_march_1.png", "..._2", "..._3"], "anim": {"march": [0,1,2], "fps": 6, "loop": true}, "size": [64,64], "anchor": "bottom_center", "facing": "E"}` (64×80 caballería, 64×43 artillería). Fallback heráldico si falta.
+- Pendiente bajo el mismo pipeline (hoja de estilo fijada por este set): cuadros idle(2)/ataque(4-6)/impacto(2)/muerte(2) §10.3, bajo petición.
 
-**Criterios de aceptación:** cada tipo de unidad del Escenario 1 identificable en silueta a 64 px; animación de ataque con proyectil visible para ballesteros/arqueros/jenízaros y piedra para bombarda; las 17 hojas referenciadas en `units.json` cargan sin error en CI; capturas a 64 px de al menos milicia, ballesteros, arqueros, almogávar y jenízaro en `docs/screenshots/`.
+**Criterios de aceptación:** cada tipo de unidad del Escenario 1 identificable en silueta a 64 px; animación de ataque con proyectil visible para ballesteros/arqueros/bombardas; todas las hojas referenciadas en `units.json` cargan sin error en CI; capturas de las 3 unidades de ejemplo (milicia, ballesteros, arqueros) en `docs/screenshots/`.
+
+### 10.4 Tiles del campo de batalla táctica (v1.7 — solicitud del usuario)
+
+**Objetivo.** En el **Nivel 3 de batalla** (vista cercana), el terreno se dibuja con mosaicos texturizados realistas estilo "miniatura pintada" (coherente §10.2/§10.3), vista cenital a 45°. El terreno es **tácticamente relevante**: el río es obstáculo natural intransitable que obliga a rodearlo o a forzar el cruce por **puente** (como en GK2); colinas y bosques dan defensa y penalizan caballería; villa/aldea es posición defendible; camino da bonus de movimiento.
+
+**Set ENTREGADO (v1.7 — Kimi, 2026-11-22).** Paquete `Tiles_Batalla_TSB.zip`: 12 tiles 512×512 (originales 1024 en `src/`), hoja de contacto `_hoja_contacto_tiles.png` (nombre único, no colisiona con la de unidades §10.3):
+- **Terreno base:** `tile_pastizal`, `tile_pastizal_arbustos`, `tile_pradera` (libres, sin bonus).
+- **Río y cruces:** `tile_rio` (intransitable; banda horizontal, el motor rota 90° para el sentido vertical), `tile_puente` (cruce), `tile_puente_villa` (cruce + villa murada defensiva). Los tres comparten la misma geometría de agua/orillas (generados por referencia): el generador de campos sustituye casillas de río por puentes en los puntos de cruce.
+- **Elevación y cobertura:** `tile_colina` (coste 2, defensa +1), `tile_bosque` (coste 2, defensa +1, penaliza caballería §6.4), `tile_montana` (intransitable).
+- **Asentamiento:** `tile_villa` (defensa +1), `tile_villa_calle`, `tile_camino` (bonus movimiento).
+- **Contrato de datos:** tabla `battle_tiles` (JSON) con `tile`, `move_cost`, `defense`, `passable`, flags `cavalry_penalty`/`move_bonus` — valores exactos según balance §6.4 (AG-2), formato en el README del paquete.
+- **Composición de campos:** el terreno se deriva de la región del mapa estratégico §10.1 (llanura/bosque/colinas/montaña/costa); el río corta el campo de orilla a orilla con 1-2 puentes; la villa se coloca en el asentamiento sitiado.
+
+**Criterios de aceptación:** campo de batalla N3 renderizado con los 12 tiles sin errores de carga; unidad no puede entrar a río/montaña (test); bonus de colina/camino aplicados en las fórmulas §6.4; capturas de un campo con río+puente+villa y uno de llanura en `docs/screenshots/`; generador de campos deriva el terreno de la región estratégica.
 
 ---
 
@@ -680,8 +693,8 @@ C:\Proyectos\TSB\sovereigns-blood --script tests/run_all.gd
 - **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente; módulos Mapa y Retratos cumplen §10.1/§10.2; informe REA ampliado entregado.
 
 ### Fase 3 — Contenido y remaster (objetivo: 2-3 semanas)
-- **Integración de sprites Kimi (primero):** AG-5 copia el paquete `Sprites_Unidades_TSB.zip` a `assets/art/sprites/units/`, reescala a 64×64 / 64×80 (LANCZOS), añade `sprite_sheet` a las 6 unidades núcleo en `units.json` (formato §10.3) y valida carga en CI headless. Niveles 2/3 de batalla usan estos sprites con el ciclo de marcha; proyectiles en capa separada con trayectoria balística.
-- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2 de herederos y nuevos escenarios siguiendo la hoja de estilo Kimi, tiles, música CC); balance general.
+- **Integración de sprites Kimi (primero):** AG-5 copia el paquete `Sprites_Unidades_TSB.zip` a `assets/art/sprites/units/` (51 PNG, 17 unidades), reescala a 64×64 / 64×80 / 64×43 (LANCZOS), añade `sprite_sheet` a las 17 unidades en `units.json` (formato §10.3) y valida carga en CI headless. Niveles 2/3 de batalla usan estos sprites con el ciclo de marcha; proyectiles en capa separada con trayectoria balística.
+- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2 de herederos y nuevos escenarios siguiendo la hoja de estilo Kimi, **tiles de batalla §10.4 ya entregados por Kimi — solo integrar**, música CC); balance general.
 - **Aceptación:** los 3 escenarios empiezan y llegan a su año final; victoria/derrota según Sección 4.5; partida completa de test automatizada de 10 años sin errores; set de retratos completo y slot de retrato funcional en las 5 ubicaciones §10.2.
 
 **Total estimado: 7-10 semanas de trabajo del equipo de agentes, revisado por ti en sesiones cortas.**
@@ -730,4 +743,4 @@ PG: Puntos de Gobernanza · Casus Belli: justificación de guerra · Devshirme: 
 
 ---
 
-*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3. v1.5: REA ampliado a mecármicas de batalla Nivel 2/3 y estructura de sprites (Sección 3.2, autorización del usuario); retratos finales de los 14 soberanos diseñados por Kimi con heráldica real (Sección 10.2); sprites de unidades con armas de época y proyectiles visibles (Sección 10.3). v1.6: sprites de las 6 unidades núcleo entregados por Kimi (contrato de asset, ciclo de marcha de 3 cuadros, proyectiles) con integración AG-5 como primera tarea de Fase 3 (Sección 10.3 y plan de fases).*
+*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3. v1.5: REA ampliado a mecármicas de batalla Nivel 2/3 y estructura de sprites (Sección 3.2, autorización del usuario); retratos finales de los 14 soberanos diseñados por Kimi con heráldica real (Sección 10.2); sprites de unidades con armas de época y proyectiles visibles (Sección 10.3). v1.6: sprites de las 17 unidades del dataset entregados por Kimi (contrato de asset, ciclo de marcha de 3 cuadros, proyectiles) con integración AG-5 como primera tarea de Fase 3 (Sección 10.3 y plan de fases). v1.7: tiles del campo de batalla del Nivel 3 entregados por Kimi (Sección 10.4) — 12 mosaicos con río/puente/villa, obstáculos naturales al estilo GK2, contrato battle_tiles y guía de composición de campos.*
