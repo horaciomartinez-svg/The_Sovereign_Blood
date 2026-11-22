@@ -1544,3 +1544,60 @@ Añadidos **C13** (límite de acciones 1/turno, D-074) y **C14** (costes de recl
 **task-69 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la verificación final Fase 4 (task-69).*
+
+---
+
+## 23. Fase 5A — «El juego te explica»: plan y baseline QA (task-79, 2026-11-23)
+
+**Directiva:** GDD v1.9.2, D-079…D-083, `docs/architecture_contracts_fase5a.md`, prompt `prompt_DSH_fase5a_legibilidad_v1.md`. HEAD **`ee6cf52a`**. Plan: **`docs/qa/fase5a_plan.md`** (matriz C1-C10 + riesgos R-F5A-01..12). Harness: **`tests/qa_acceptance_fase5a.gd`** (compila siempre; SKIP justificado; exit 0 solo con 10/10).
+
+### 23.1 Baseline C1-C10 — **3 PASS / 0 FAIL / 7 SKIP** (exit 1 «PENDIENTE», no rechazo)
+
+| # | Estado | Evidencia / motivo |
+|---|---|---|
+| C1 | **SKIP** | APIs de estación OK (`get_season_name/index/label`); faltan capturas `season_spring/summer/autumn/winter.png` y cierre de HUD/tinte AG-3 |
+| C2 | **SKIP** | `legibility_texts.json` con categorías OK; falta UI del boletín y captura |
+| C3 | **SKIP** | `append/get_chronicle` y hash OK; falta pestaña Crónica/captura AG-3 |
+| C4 | **SKIP** | `record/get_turn_actions` OK; falta modal de confirmación/capturas AG-3 |
+| C5 | **SKIP** | falta `TradeSystem.get_trade_advice` (AG-2) y captura |
+| C6 | **SKIP** | `context_help.json` aún 0/18 pantallas; faltan botones «?»/capturas (AG-1/AG-3) |
+| C7 | **SKIP** | UI batalla sin arms/supply/training; faltan capturas N2/N3 (AG-3) |
+| C8 | **PASS** | `chronicle` + round-trip 3/3 hash exacto; defaults pendientes de test de migración en task-80 |
+| C9 | **PASS** | 37 tests; `run_all` **1.968/0/2**, validate **16/12, 12.223 comprobaciones, 0 WARN**, editor 0; IA/mapa a confirmar en task-80 |
+| C10 | **PASS** | 1402/1453 hashes intactos; `git diff fase-4..HEAD` = **0**; arte congelado; GDD v1.9.2 + D-079…083 + STATUS §21 |
+
+### 23.2 Batería de baseline
+
+| Comando | Resultado |
+|---|---|
+| `--script tests/qa_acceptance_fase5a.gd` | 3 PASS / 0 FAIL / 7 SKIP (exit 1 «PENDIENTE») |
+| `--script tests/run_all.gd` | **1.968 pasados, 0 fallidos, 2 omitidos**; `CI: OK` |
+| `--script tools/validate_data.gd` | **16 datasets / 12 schemas, 12.223 comprobaciones, 0 errores/WARN** |
+| `--editor --quit` | 0 ERROR/WARNING |
+| `git diff fase-4..HEAD` 1402/1453 | **0 archivos** |
+
+### 23.3 Observaciones y riesgos
+
+- **C8/C9/C10 adelantados:** chronicle y estado base ya disponibles; no regresión verde; congelación y gobernanza correctas.
+- **Pendientes:** AG-2 (C5 `get_trade_advice`, defaults/migración y registro en sistemas), AG-1 (C2/C6 textos y 18 pantallas), AG-3 (C1-C4/C6/C7 UI/capturas).
+- **Capturas de temporada:** los nombres esperados por el harness son `season_{spring,summer,autumn,winter}.png`; si AG-3 usa otros, se ajustará el harness en task-80 sin relajar el criterio.
+- **C8:** el baseline prueba hash; falta probar defaults de partidas antiguas y 3 puntos con crónica real.
+- **Riesgos:** R-F5A-01..12 en `docs/qa/fase5a_plan.md`; sin cambios de producción ni git por AG-4.
+
+**task-79 COMPLETADA** (plan/baseline; verificación final = task-80, bloqueada por AG-1/AG-2/AG-3). Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 5A — plan y baseline QA (task-79).*
+
+---
+
+### 23.4 C11 y baseline ampliado — **3 PASS / 0 FAIL / 8 SKIP** (2026-11-23)
+
+El prompt actualizado añade **C11 Manual del Jugador actualizado** (task-81) y task-80 pasa a **C1-C11**. Harness/plan actualizados:
+
+- **C11** verifica que el Manual incorpora las **5 mejoras** (estaciones/HUD, boletín/Crónica/histórico, confirmar órdenes/exenciones, Consejero comercial/«?», panel N2/N3 con hombres/armas/apoyo/moral/entrenamiento/comandante), coherencia con `context_help.json` 18/18 y claves de `legibility_texts.json`, y contraste con ≥2 capturas; no basta con que exista el archivo.
+- **Baseline actual: 3 PASS / 0 FAIL / 8 SKIP** — C8/C9/C10 PASS; C1-C7 SKIP (UI/capturas AG-3; C5 `get_trade_advice` existe pero devuelve `ok=false` sin comerciantes) y **C11 SKIP** (Manual aún sin las 5 mejoras; task-81 pendiente). Sin FAIL.
+- `run_all` 1.968/0/2, validate 16/12/12.223/0 WARN, editor 0 (C9); C10 congelados 0/arte/GDD v1.9.2+D-079…083+STATUS.
+
+**C11 y task-80** esperan cierre de task-81 (Manual) y AG-3 (UI/capturas). R-F5A-13 añadido al plan. Sin producción ni git por AG-4.
+
+*Fin de la actualización C11 — baseline Fase 5A (task-79).*
