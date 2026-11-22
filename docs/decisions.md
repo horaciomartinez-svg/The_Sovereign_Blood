@@ -44,3 +44,33 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** el GDD exige 14 facciones y 8 jugables para 1337; definir el volumen de regiones/personajes sin inventar detalle excesivo.
 **Decisión:** el Escenario 1 incluye las 14 facciones listadas en §4.2 (8 marcadas `playable: true` según §2.1), un mapa de ~40 regiones que cubre Europa Occidental/Central, Iberia, Italia, Balcanes, Anatolia, Levante y Norte de África costero, y personajes clave con genealogía suficiente para matrimonios/sucesión. Todo dato histórico lleva `source` (URL) o `"estimate": true`.
 **Consecuencia:** volumen manejable y validable; ampliable en Fase 3.
+
+## D-009 · Formato envelope de los datasets (2026-11-21)
+**Contexto:** AG-1 propone envolver los arrays en un objeto con `schema_version`, y AG-2 debe construir `validate_data.gd`/`data_loader.gd` en paralelo.
+**Decisión:** se adopta el envelope `{"schema_version": 1, "factions|characters|regions|units|events": [...]}` para `factions.json`, `characters.json`, `regions.json`, `units.json` y `events_1337.json`; `scenarios/scenario_1337.json` queda como objeto único §7.5 sin envelope. Los `data/schema/*.schema.json` validan el fichero completo, envelope incluido. `validate_data.gd` mapea por nombre de archivo y no asume arrays en la raíz.
+**Consecuencia:** versionado de datos explícito y validación genérica; AG-2 debe respetarlo (prevalece sobre propuestas previas).
+
+## D-010 · Capital dual Praga (HRE y Bohemia) (2026-11-21)
+**Contexto:** GDD §4.2 asigna Praga como capital tanto al Sacro Imperio como a Bohemia; en 1337 el emperador Luis IV residía habitualmente en Múnich y el dueño de Praga es Bohemia.
+**Decisión:** se respeta el GDD: ambas facciones usan `region_praga` como capital. La regla del validador es solo "la capital existe como región", no "la facción posee su capital". Se documenta en `data/sources.md`. Cualquier futura corrección se hará en el validador/datos con entrada en este registro.
+**Consecuencia:** fidelidad al GDD sin inventar regiones; caso raro (capital no propia) que la Fase 1 debe tolerar en UI.
+
+## D-011 · Nomenclatura de casas en `characters.json` (OBS-02) (2026-11-21)
+**Contexto:** QA (OBS-02) detecta que Benedicto XII usa `house: "fournier"` (GDD §4.2: «—») y An-Nasir Muhammad `house: "qalawun"` (GDD: «Bahri»).
+**Decisión:** se mantienen ambos valores: `fournier` es la familia papal documentada (el campo `house` identifica familia/casa, no solo dinastía gobernante) y `qalawun` es la dinastía qalawuní que encabeza la línea Bahri mameluca; el GDD §4.2 usa «Bahri» como etiqueta de dinastía amplia. Se documenta la equivalencia en `data/sources.md` §2 y no se altera el JSON (la validación y la jugabilidad no se ven afectadas; el patrón de `house` es `^[a-z][a-z0-9_]*$`).
+**Consecuencia:** coherencia histórica sin forzar valores vacíos; si en Fase 1 el sistema dinástico exige distinguir «casa papal» de «dinastía», se añadirá un campo `dynasty`/`house_type` en vez de reutilizar `house`.
+
+## D-012 · Anexo técnico REA `docs/rea/notes.md` (OBS-04) (2026-11-21)
+**Contexto:** GDD §3 dice del entregable REA «tabla de equivalencias… Nada más»; AG-REA añadió un anexo de método (180 líneas) separado del informe de 2 páginas.
+**Decisión:** el entregable de Fase 0 sigue siendo `docs/rea/gk2_data_lessons.md` (1.721 palabras ≈ 2 páginas). `docs/rea/notes.md` se acepta como apéndice interno de reproducibilidad/método, no como entregable adicional ni como especificación de reimplementación; no lo consume el equipo de desarrollo y cumple las prohibiciones de §3 (sin análisis de `.EXE`, sin texto transcrito, sin código derivado).
+**Consecuencia:** se conserva la trazabilidad del método sin ampliar el alcance del informe.
+
+## D-013 · CI de Fase 0 y GitHub Actions (2026-11-21)
+**Contexto:** AG-2 implementó `tools/ci_headless.ps1` (importación + validador + suite) en lugar de un workflow `.github/workflows/ci.yml`.
+**Decisión:** para Fase 0, «CI headless corriendo» se cumple con `tools/ci_headless.ps1` y los comandos de `§3.1` (verificado por AG-4, exit 0). El workflow de GitHub Actions se difiere a Fase 1 (no es requisito de §12; añade dependencia de red/runner Windows y mantenimiento).
+**Consecuencia:** Fase 0 no depende de infraestructura remota; el workflow se añadirá con los tests de sistemas de Fase 1.
+
+## D-014 · Registro de QA por fase (2026-11-21)
+**Contexto:** AG-4 entregó `docs/issues.md` con el informe completo de QA (538 líneas) y veredicto.
+**Decisión:** `docs/issues.md` es el registro de QA acumulativo: cada fase añade su sección o archivo `docs/qa/fase-N.md` si el volumen crece; el veredicto y la evidencia se enlazan desde `docs/STATUS.md`. El informe incluye salidas íntegras y códigos de salida para la verificación de Kimi.
+**Consecuencia:** trazabilidad de QA por fase sin mezclar con `docs/decisions.md`.

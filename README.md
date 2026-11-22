@@ -8,12 +8,17 @@ Gran estrategia por turnos ambientada en la Guerra de los Cien Años y el ascens
 
 ## Estructura
 
+Este repositorio **es** la raíz del proyecto Godot. Estructura según GDD §8.1:
+
 | Ruta | Contenido |
 |---|---|
 | `GDD_The_Sovereign's_Blood.md` | Game Design Document maestro (v1.2) — especificación vinculante para el equipo de agentes |
-| `sovereigns-blood/` | Proyecto Godot (código, escenas, datos JSON, tests) — creado en Fase 0 |
-| `agents/` | Definiciones (prompts) de los agentes DSH |
-| `docs/` | STATUS, decisions, issues, informe REA |
+| `project.godot` | Proyecto Godot 4.7.2 (escenas, scripts, datos JSON, tests) |
+| `docs/` | `STATUS.md`, `decisions.md`, `issues.md`, informe REA (`docs/rea/`) |
+| `data/` | Datos JSON, schemas y `sources.md` (Sección 7 del GDD) |
+| `scenes/`, `scripts/`, `assets/`, `tests/`, `tools/` | Código y recursos del juego (Sección 8.1) |
+
+Las definiciones (prompts) de los agentes DSH viven fuera del repo, en el workspace `C:\Proyectos\TSB\agents\` (GDD §3.1), y no se versionan aquí.
 
 ## Flujo de trabajo
 
