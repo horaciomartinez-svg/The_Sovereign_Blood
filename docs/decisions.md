@@ -195,3 +195,28 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** GDD v1.5 §3.2 autoriza observar batallas N2/N3 en DOSBox; el entorno no tiene DOSBox instalado (verificado en PATH, `C:\Tools`, Program Files ×2, scoop/choco, Downloads y workspace) y la observación interactiva no es viable en una sesión de agente sin emulador.
 **Decisión:** el entregable `docs/rea/gk2_battle_mechanics.md` declara aspecto por aspecto (**no inventa**) qué mecánicas no se pudieron observar, documenta el método estructural usado (`SUNIT.DAT` 96×512 B, `KPAT.DAT` máscaras/patrones, `GRPDATA.DAT` raster/tiles, sin paleta embebida) y entrega las lecciones de diseño §10.3; incluye un protocolo de 6 bloques de capturas para que el usuario complete §2 en una reactivación. QA de Fase 2 lo verifica como PASS con la limitación aceptada como no bloqueante.
 **Consecuencia:** el requisito de informe REA ampliado se cumple con rigor y trazabilidad; la observación real queda como aportación opcional del usuario.
+
+## D-039 · Sincronización y normalización del GDD v1.6 (2026-11-22)
+**Contexto:** el usuario indica que el GDD v1.6 ya está en el repo; el workspace tenía el contenido v1.6 (bloque §10.3 «Sprites núcleo ENTREGADOS» y plan Fase 3) pero el campo «Versión del documento» seguía en 1.5 y el repo tenía v1.5.
+**Decisión:** se copia el GDD actualizado al repo y se normaliza el campo de versión a **1.6** (coherente con el campo «Estado», que ya describía v1.6); commit `[GDD]`. El contenido nuevo (§10.3 + plan Fase 3) se adopta como vinculante y se abre Fase 3.
+**Consecuencia:** repo y workspace coinciden en v1.6; la verificación externa de Kimi se hará contra esta versión.
+
+## D-040 · Reparto de la integración de sprites (PRIORIDAD 1 Fase 3) (2026-11-22)
+**Contexto:** el usuario asigna la integración de sprites a AG-2 (datos + batalla) y AG-5 (assets); el render de N2/N3 vive en `scenes/**`/`scripts/ui/**`, cuya propiedad es de AG-3.
+**Decisión:** reparto por capas: **AG-5** extrae/reescala/copia los assets y fuentes; **AG-2** añade `sprite_sheet` a `units.json` + schema y expone estado de animación/orientación/proyectiles desde `TacticalBattle`/`CloseCombat` (lógica, sin nodos de UI); **AG-3** renderiza sprites, mirroring y capa de proyectiles en `tactical_map.tscn`/`close_combat.tscn`; **AG-4** valida carga, simulaciones y capturas. Los datos de `units.json` se editan por AG-2 con excepción explícita a la propiedad habitual de AG-1 (D-005 se mantiene para git).
+**Consecuencia:** sin pisar archivos ajenos y sin mezclar lógica de batalla con UI; los tests de AG-2 cubren datos/estado y los de AG-4 el conjunto.
+
+## D-041 · Almacenamiento de fuentes y proyectiles de sprites (2026-11-22)
+**Contexto:** GDD v1.6 §10.3 pide producción 64×64/64×80 y conservar los PNG 512 como fuente; Godot importa cualquier PNG dentro de `res://`.
+**Decisión:** fuentes 512 en `assets/art/sprites/units/src/` con un archivo `.gdignore` que impide su importación; los originales 1024 del paquete no se versionan (quedan en el ZIP del usuario). Los proyectiles se guardan con el tamaño entregado en `assets/art/sprites/projectiles/` y se escalan en render; las hojas de contacto se copian a `docs/screenshots/` (AG-0).
+**Consecuencia:** repo ligero y sin riesgos de importar duplicados; las fuentes quedan trazables para futuros reescalados.
+
+## D-042 · Convención de orientación, ciclo de marcha y proyectiles (2026-11-22)
+**Contexto:** el paquete de Kimi mira a E y el README indica espejar N/NW/O; el usuario pide base E + espejo al oeste y S/SE base.
+**Decisión:** base para **E/SE/S**; espejo horizontal para **W/SW/NW/N** (convención GK2). Ciclo de marcha de 3 cuadros a **6 fps**, loop, cuadro 0 en reposo. Proyectiles en capa separada con trayectoria balística paramétrica: `virote→crossbowmen` (350 ms, arco 24 px), `flecha→longbowman` (500 ms, arco 40 px), `piedra→bombarda` (700 ms, arco 56 px); la animación no consume RNG de combate (determinismo intacto).
+**Consecuencia:** criterio visual y comportamiento únicos para AG-2/AG-3/AG-4.
+
+## D-043 · Pipeline para las 11 unidades restantes y cuadros de combate (2026-11-22)
+**Contexto:** §10.3 contempla idle/ataque/impacto/muerte y las 11 unidades restantes; el equipo DSH no tiene generador de arte IA propio.
+**Decisión:** se completa primero la integración de las 6 unidades núcleo; para el resto y para los cuadros de ataque se solicitará a Kimi la generación con el mismo pipeline (mediante el usuario/AG-0), registrando la petición en `docs/STATUS.md`/`docs/issues.md`. Mientras tanto, las unidades sin sprite mantienen el fallback heráldico.
+**Consecuencia:** sin bloquear Fase 3 por capacidad de arte; la petición queda trazada y priorizada por escenario 1.
