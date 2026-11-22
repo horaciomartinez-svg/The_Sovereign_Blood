@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "steps": [
+    {
+      "id": "mapa_y_region",
+      "title": "Mira tu reino",
+      "text": "Tu dinastía gobierna varias regiones. Abre una región en el mapa para ver su población, riqueza, terreno y edificios.\nCada región produce alimentos, bienes y oro: es la base de tu poder.",
+      "objective": "Abre una región del mapa y revisa su ficha.",
+      "highlight": "map_region",
+      "condition": "open_region",
+      "order": 1
+    },
+    {
+      "id": "trabajadores",
+      "title": "Organiza a tu pueblo",
+      "text": "Reparte la mano de obra entre granjeros, artesanos, comerciantes y reclutas.\nMás granjeros alimentan a la población; artesanos y comerciantes generan oro; los reclutas forman tu pool militar.",
+      "objective": "Ajusta los trabajadores de una región.",
+      "highlight": "workers_panel",
+      "condition": "assign_workers",
+      "order": 2
+    },
+    {
+      "id": "familia_y_consorte",
+      "title": "La dinastía eres tú",
+      "text": "En el árbol familiar revisa a tu gobernante, su consorte y sus hijos; educa a los herederos para mejorar sus stats.\nSi tienes consorte válida, puedes pasar tiempo con ella una vez por trimestre para aumentar la fertilidad y asegurar la sucesión.",
+      "objective": "Abre el árbol familiar y revisa la educación o la acción con la consorte.",
+      "highlight": "family_button",
+      "condition": "open_family",
+      "order": 3
+    },
+    {
+      "id": "diplomacia",
+      "title": "Los vecinos importan",
+      "text": "La diplomacia evita guerras o prepara alianzas. Revisa relaciones, casus belli y pactos.\nRecuerda: sin casus belli, declarar la guerra cuesta prestigio.",
+      "objective": "Abre la pantalla de diplomacia y revisa tus relaciones.",
+      "highlight": "diplomacy_button",
+      "condition": "open_diplomacy",
+      "order": 4
+    },
+    {
+      "id": "mercado_y_mercancia",
+      "title": "Compra, vende y abastece",
+      "text": "El mercado muestra tus mercancías (grano, sal, lana, vino, armas, caballos…), su precio y tus comerciantes.\nSin comerciantes asignados no puedes comprar ni vender; las expediciones comerciales tardan dos trimestres en volver.",
+      "objective": "Abre el mercado y revisa el inventario o asigna comerciantes.",
+      "highlight": "market_button",
+      "condition": "open_market",
+      "order": 5
+    },
+    {
+      "id": "ejercito",
+      "title": "Forma y entrena tu ejército",
+      "text": "Reclutar consume oro, población reclutable y mercancías (caballos para caballería, armas para infantería pesada).\nEntrenar gasta oro y 1 PG para subir la experiencia del ejército.",
+      "objective": "Abre la gestión militar y prepara un reclutamiento o entrenamiento.",
+      "highlight": "military_button",
+      "condition": "open_military",
+      "order": 6
+    },
+    {
+      "id": "terminar_turno",
+      "title": "Pasa el turno",
+      "text": "Cada año tiene cuatro trimestres. Cuando termines tus órdenes, pulsa Terminar turno.\nLa economía, la IA y los eventos se resolverán en orden; al acabar el año habrá cosecha, dinastía y eventos históricos.",
+      "objective": "Termina un turno.",
+      "highlight": "end_turn_button",
+      "condition": "end_turn",
+      "order": 7
+    },
+    {
+      "id": "primera_batalla",
+      "title": "La batalla",
+      "text": "Si declaras una guerra y ordenas atacar, puedes resolver la batalla en Nivel 1 (delegada) y leer el informe.\nEn niveles superiores podrás desplegar ejércitos y luchar unidad a unidad con más control.",
+      "objective": "Juega una batalla en Nivel 1 y abre su informe.",
+      "highlight": "battle_report",
+      "condition": "battle_played",
+      "order": 8
+    },
+    {
+      "id": "guardar_partida",
+      "title": "No pierdas el trono",
+      "text": "Guarda la partida para conservar tesoro, regiones, ejército, familia, mercancías y el estado del tutorial.\nPuedes cargarla más tarde desde el menú principal.",
+      "objective": "Guarda la partida.",
+      "highlight": "save_button",
+      "condition": "saved",
+      "order": 9
+    }
+  ]
+}

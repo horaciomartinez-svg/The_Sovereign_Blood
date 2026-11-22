@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tutorial_script.schema.json",
+  "title": "tutorial_script.json — Guion del Consejero (Fase 4, D-073)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "steps"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "text",
+          "objective",
+          "highlight",
+          "condition",
+          "order"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "objective": {
+            "type": "string"
+          },
+          "highlight": {
+            "type": "string",
+            "enum": [
+              "map_region",
+              "workers_panel",
+              "family_button",
+              "diplomacy_button",
+              "market_button",
+              "military_button",
+              "end_turn_button",
+              "battle_report",
+              "save_button"
+            ]
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "open_region",
+              "assign_workers",
+              "open_family",
+              "open_diplomacy",
+              "open_market",
+              "open_military",
+              "end_turn",
+              "battle_played",
+              "saved"
+            ]
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      }
+    }
+  }
+}
