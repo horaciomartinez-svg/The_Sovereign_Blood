@@ -1313,3 +1313,47 @@ R-F3F-01 escenarios ausentes/no arrancan · R-F3F-02 fast-forward 58/27 años co
 **task-47 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la sección Fase 3.1 — verificación final animación (task-47).*
+
+---
+
+## 20. Fase 3.2 — Verificación final delta animación v1.8.1 (task-51, 2026-11-22)
+
+**Contexto:** delta de animación ranged/artillería v1.8.1 (D-065): 13/15 frames, estado `impact`, attack_4, render N3 y capturas. HEAD verificado **`9e97a06`**. Informe completo: **`docs/qa/fase3_anim_report.md`**.
+
+> **Veredicto: QA Animación Fase 3.2 (v1.8.1): APROBADO** — **6/6 criterios PASS**, 0 FAIL/SKIP.
+
+### 20.1 Comandos y salidas
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3_anim.gd` (×2) | **0 / 0** | **6/6 PASS** |
+| 2 | `--script tests/qa_acceptance_fase3.gd` (C1 v1.8.1) | **0** | **6/6 PASS**; C1 235 frames |
+| 3 | `--script tests/qa_acceptance_tiles.gd` | **0** | **7/7 PASS** |
+| 4 | `--script tests/qa_acceptance_fase3_final.gd` | **0** | **7/7 PASS** |
+| 5 | F1 / F2 | **0 / 0** | **6/6** / **6/6** (save/load OK) |
+| 6 | `--script tests/run_all.gd` | **0** | **1469 / 0 / 1**; `CI: OK` |
+| 7 | `--script tools/validate_data.gd` | **0** | **11 datasets / 7 schemas, 11.641 comprobaciones, 0 errores/WARN** |
+| 8 | `--editor --quit` / `--headless --quit` | **0 / 0** | 0 ERROR/WARNING |
+
+### 20.2 Evidencia
+
+- **Pillow 12.3.0 sobre `Anim_Combate_Rango_Artilleria_TSB.zip`:** 119 PNG = **76 producción** (42 `attack_1..6` + 34 `impact_1/2`) + **42 raw** + 1 hoja; 76/76 **RGBA** con alfa real (`alpha_min=0`); 512-wide: **42×512×512, 18×512×640, 16×512×341**; hoja 1218×1222 RGB.
+- **A1:** 17/17 unidades (10×13 + 7×15 = **235 frames**), **235 producción + 235 raw**, 235 `Texture2D`; `impact` presente, **sin `hit`**; `fps_attack=9`, `fps_impact=8`, `fps_death=6`, `death_hold`.
+- **A2:** `attack_4` índice **8** a **333,3 ms**; reacción **impact 444,4 ms**; ataque shock 444,4 ms, ranged **666,7 ms (6 cuadros)**; `impact` frame; dead persistente; mirror.
+- **A3 N3 real:** idle→attack(6 cuadros)→attack_4(333,3)→**impact(444,4)** o **dead(444,4)+death_hold**; proyectil **virote** con `launch_ms=333,3`; mirroring E/W.
+- **A4:** 2 secuencias idénticas (sin RNG).
+- **A5:** 4/4 capturas 1920×1080 (`anim_idle`, `anim_n3_attack_sequence` con 6 cuadros+proyectil, `anim_n3_impact_death`, `anim_n3_death_hold`).
+- **A6:** sprites 6/6, tiles 7/7, final Fase 3 7/7, F1/F2 6/6, 18 escenas, 0 scripts sin compilar.
+
+**Hashes:** `units.json 3EE18D31286ABD32`; `units.schema 64DDB41E43A6EC96`; `close_combat.tscn 7D77DC29E98B6234`; `tactical_map.tscn 3719D3966F7ABB0D`; `anim_idle 57D3AE78CF1E04D6`; `anim_n3_attack_sequence E038950146D32EF3`; `anim_n3_impact_death 3E9799BFA1B213AC`; `anim_n3_death_hold E4E2C80A675CA155`.
+
+### 20.3 Observaciones
+
+- v1.8.1 elimina `hit` y usa `impact`; el harness verifica que no queden `hit`/`_hit_`.
+- `attack_4` (índice 8) es el disparo; ventana [333,3;444,4] ms; ranged 6 cuadros/666,7 ms; shock 4 cuadros/444,4 ms.
+- 333,3/444,4 caen en borde de frame por `floor`; se valida con 334 ms + `impact_ms` exacto. No es defecto.
+- Tags existentes `fase-0/1/2/3/3.1`; **`fase-3.2` pendiente** de AG-0.
+
+**task-51 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3.2 — verificación final animación v1.8.1 (task-51).*

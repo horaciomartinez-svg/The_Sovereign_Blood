@@ -22,9 +22,11 @@ const PROJECTILE_FILES: Array[String] = [
 	"proyectil_virote.png", "proyectil_flecha.png", "proyectil_piedra.png",
 ]
 const EXPECTED_UNIT_COUNT := 17
-const EXPECTED_UNIT_PNG := 221
-const EXPECTED_UNIT_RAW := 221
-const EXPECTED_FRAMES_PER_UNIT := 13
+const EXPECTED_UNIT_PNG := 235
+const EXPECTED_UNIT_RAW := 235
+const RANGED_15_UNITS: Array[String] = [
+	"crossbowmen", "longbowman", "janissary", "steppe_cavalry", "arquebusier", "bombarda", "hussite_war_wagon",
+]
 const EXPECTED_PROJECTILE_COUNT := 3
 const EXPECTED_UNIT_SHEETS := 17
 const FACING_VALUES: Array[String] = ["E", "SE", "S", "SW", "W", "NW", "N"]
@@ -75,7 +77,7 @@ func _print_environment() -> void:
 func _criterion_1_sprites() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "F3-C1"
-	var name := "Sprites 17/17: 13 frames por unidad (221 PNG) + 3 proyectiles cargan en headless"
+	var name := "Sprites 17/17: 10×13 + 7×15 frames (235 PNG) + 3 proyectiles cargan en headless"
 	var data: Variant = _read_json("res://data/units.json")
 	if not (data is Dictionary):
 		_fail(id, name, "data/units.json no legible", started)
@@ -114,8 +116,10 @@ func _criterion_1_sprites() -> void:
 			continue
 		var sheet := sheet_value as Dictionary
 		var frames_value: Variant = sheet.get("frames", [])
-		if not (frames_value is Array) or (frames_value as Array).size() != EXPECTED_FRAMES_PER_UNIT:
-			issues.append("%s frames != %d" % [unit_id, EXPECTED_FRAMES_PER_UNIT])
+		var is_ranged := RANGED_15_UNITS.has(unit_id)
+		var expected_frames := 15 if is_ranged else 13
+		if not (frames_value is Array) or (frames_value as Array).size() != expected_frames:
+			issues.append("%s frames != %d" % [unit_id, expected_frames])
 		else:
 			for frame_index in range((frames_value as Array).size()):
 				var frame_path := str((frames_value as Array)[frame_index])
@@ -143,18 +147,23 @@ func _criterion_1_sprites() -> void:
 				issues.append("%s anim.march != [0,1,2]" % unit_id)
 			if not _int_array_equals(anim.get("idle", []), [3, 4]):
 				issues.append("%s anim.idle != [3,4]" % unit_id)
-			if not _int_array_equals(anim.get("attack", []), [5, 6, 7, 8]):
-				issues.append("%s anim.attack != [5,6,7,8]" % unit_id)
-			if not _int_array_equals(anim.get("hit", []), [9, 10]):
-				issues.append("%s anim.hit != [9,10]" % unit_id)
-			if not _int_array_equals(anim.get("death", []), [11, 12]):
-				issues.append("%s anim.death != [11,12]" % unit_id)
+			var expected_attack: Array = [5, 6, 7, 8, 9, 10] if is_ranged else [5, 6, 7, 8]
+			if not _int_array_equals(anim.get("attack", []), expected_attack):
+				issues.append("%s anim.attack != %s" % [unit_id, str(expected_attack)])
+			var expected_impact: Array = [11, 12] if is_ranged else [9, 10]
+			if not _int_array_equals(anim.get("impact", []), expected_impact):
+				issues.append("%s anim.impact != %s" % [unit_id, str(expected_impact)])
+			if anim.has("hit"):
+				issues.append("%s conserva anim.hit (v1.8.1 usa impact)" % unit_id)
+			var expected_death: Array = [13, 14] if is_ranged else [11, 12]
+			if not _int_array_equals(anim.get("death", []), expected_death):
+				issues.append("%s anim.death != %s" % [unit_id, str(expected_death)])
 			if not is_equal_approx(float(anim.get("fps", 0.0)), 6.0):
 				issues.append("%s fps != 6" % unit_id)
 			if not is_equal_approx(float(anim.get("fps_attack", 0.0)), 9.0):
 				issues.append("%s fps_attack != 9" % unit_id)
-			if not is_equal_approx(float(anim.get("fps_hit", 0.0)), 8.0):
-				issues.append("%s fps_hit != 8" % unit_id)
+			if not is_equal_approx(float(anim.get("fps_impact", 0.0)), 8.0):
+				issues.append("%s fps_impact != 8" % unit_id)
 			if not is_equal_approx(float(anim.get("fps_death", 0.0)), 6.0):
 				issues.append("%s fps_death != 6" % unit_id)
 			if not bool(anim.get("loop", false)):
@@ -179,7 +188,7 @@ func _criterion_1_sprites() -> void:
 			issues.append("falta %s" % projectile_name)
 		elif not ResourceLoader.exists(projectile_path) or not (load(projectile_path) is Texture2D):
 			issues.append("%s no carga" % projectile_name)
-	var detail := "17/17 sprite_sheet con 13 frames; 221 PNG producción + 221 raw; 3 proyectiles; 221 texturas reales (64x64 infantería/ranged, 64x80 caballería, 64x43 bombarda/hussite_war_wagon); anim march/idle/attack/hit/death + fps_attack=9/fps_hit=8/fps_death=6/death_hold"
+	var detail := "17/17 sprite_sheet: 10×13 + 7×15 = 235 frames; 235 PNG producción + 235 raw; 3 proyectiles; texturas reales (64x64/64x80/64x43); anim march/idle/attack/impact/death + fps_attack=9/fps_impact=8/fps_death=6/death_hold"
 	if not issues.is_empty():
 		_fail(id, name, "errores: %s" % ", ".join(issues.slice(0, 8)), started)
 		return

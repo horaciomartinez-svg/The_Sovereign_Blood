@@ -9,9 +9,11 @@ extends SceneTree
 
 const UNIT_PNG_DIR := "res://assets/art/sprites/units"
 const CAPTURE_FILES: Array[String] = [
-	"anim_idle.png", "anim_n3_attack_sequence.png", "anim_n3_hit_death.png",
+	"anim_idle.png", "anim_n3_attack_sequence.png", "anim_n3_impact_death.png", "anim_n3_death_hold.png",
 ]
-const ANIM_KEYS: Array[String] = ["march", "idle", "attack", "hit", "death"]
+const RANGED_15_UNITS: Array[String] = [
+	"crossbowmen", "longbowman", "janissary", "steppe_cavalry", "arquebusier", "bombarda", "hussite_war_wagon",
+]
 
 var _results: Array[Dictionary] = []
 
@@ -48,7 +50,7 @@ func _print_environment() -> void:
 func _criterion_1_frames() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "A1"
-	var name := "17 unidades × 13 frames (221 PNG/221 raw) cargan como Texture2D con metadata completa"
+	var name := "17 unidades (10×13 + 7×15 = 235 frames) cargan como Texture2D con metadata v1.8.1"
 	var data: Variant = _read_json("res://data/units.json")
 	if not (data is Dictionary):
 		_fail(id, name, "units.json no legible", started)
@@ -64,14 +66,16 @@ func _criterion_1_frames() -> void:
 			continue
 		var unit := unit_value as Dictionary
 		var unit_id := str(unit.get("id", ""))
+		var is_ranged := RANGED_15_UNITS.has(unit_id)
+		var expected_frames := 15 if is_ranged else 13
 		var sheet_value: Variant = unit.get("sprite_sheet", null)
 		if not (sheet_value is Dictionary):
 			errors.append("%s sin sprite_sheet" % unit_id)
 			continue
 		var sheet := sheet_value as Dictionary
 		var frames_value: Variant = sheet.get("frames", null)
-		if not (frames_value is Array) or (frames_value as Array).size() != 13:
-			errors.append("%s frames != 13" % unit_id)
+		if not (frames_value is Array) or (frames_value as Array).size() != expected_frames:
+			errors.append("%s frames != %d" % [unit_id, expected_frames])
 			continue
 		for frame_value in (frames_value as Array):
 			var frame_path := str(frame_value)
@@ -91,65 +95,74 @@ func _criterion_1_frames() -> void:
 			errors.append("%s march != [0,1,2]" % unit_id)
 		if not _int_array(anim.get("idle", []), [3, 4]):
 			errors.append("%s idle != [3,4]" % unit_id)
-		if not _int_array(anim.get("attack", []), [5, 6, 7, 8]):
-			errors.append("%s attack != [5,6,7,8]" % unit_id)
-		if not _int_array(anim.get("hit", []), [9, 10]):
-			errors.append("%s hit != [9,10]" % unit_id)
-		if not _int_array(anim.get("death", []), [11, 12]):
-			errors.append("%s death != [11,12]" % unit_id)
+		var expected_attack: Array = [5, 6, 7, 8, 9, 10] if is_ranged else [5, 6, 7, 8]
+		if not _int_array(anim.get("attack", []), expected_attack):
+			errors.append("%s attack != %s" % [unit_id, str(expected_attack)])
+		var expected_impact: Array = [11, 12] if is_ranged else [9, 10]
+		if not _int_array(anim.get("impact", []), expected_impact):
+			errors.append("%s impact != %s" % [unit_id, str(expected_impact)])
+		if anim.has("hit"):
+			errors.append("%s conserva hit (v1.8.1 usa impact)" % unit_id)
+		var expected_death: Array = [13, 14] if is_ranged else [11, 12]
+		if not _int_array(anim.get("death", []), expected_death):
+			errors.append("%s death != %s" % [unit_id, str(expected_death)])
 		if not is_equal_approx(float(anim.get("fps_attack", 0.0)), 9.0):
 			errors.append("%s fps_attack != 9" % unit_id)
-		if not is_equal_approx(float(anim.get("fps_hit", 0.0)), 8.0):
-			errors.append("%s fps_hit != 8" % unit_id)
+		if not is_equal_approx(float(anim.get("fps_impact", 0.0)), 8.0):
+			errors.append("%s fps_impact != 8" % unit_id)
 		if not is_equal_approx(float(anim.get("fps_death", 0.0)), 6.0):
 			errors.append("%s fps_death != 6" % unit_id)
 		if not bool(anim.get("death_hold", false)):
 			errors.append("%s death_hold false" % unit_id)
 	var png := _count_png(UNIT_PNG_DIR)
 	var raw := _count_png("%s/src" % UNIT_PNG_DIR)
-	if png != 221:
-		errors.append("PNG producción=%d/221" % png)
-	if raw != 221:
-		errors.append("raw src=%d/221" % raw)
+	if png != 235:
+		errors.append("PNG producción=%d/235" % png)
+	if raw != 235:
+		errors.append("raw src=%d/235" % raw)
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors.slice(0, 8)), started)
 		return
-	_pass(id, name, "17/17 unidades × 13 frames = 221 texturas; 221 producción + 221 raw; anim march/idle/attack/hit/death + fps_attack=9/hit=8/death=6/death_hold", started)
+	_pass(id, name, "10×13 + 7×15 = 235 texturas; 235 producción + 235 raw; anim march/idle/attack/impact/death (sin hit) + fps_attack=9/impact=8/death=6/death_hold", started)
 
-
-# ---------------------------------------------------------------------------
-# A2 — Helpers de tiempo/estado de animación
-# ---------------------------------------------------------------------------
 
 func _criterion_2_timing() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "A2"
-	var name := "Timing: attack_2 a 111,1 ms; reacción hit/dead a 222,2 ms; death_hold e idle"
+	var name := "Timing v1.8.1: attack_4 (índice 8) a 333,3 ms; reacción impact a 444,4 ms; ranged 6 cuadros"
 	var script_value: Variant = load("res://scripts/battle/battle_sprites.gd")
 	if not (script_value is GDScript):
 		_fail(id, name, "battle_sprites.gd no compila", started)
 		return
 	var script := script_value as GDScript
 	var sheet := _first_sheet()
+	var ranged_sheet := _sheet_for("crossbowmen")
 	var errors: Array[String] = []
 	var impact_index: Variant = script.call("attack_impact_index", sheet)
 	var impact_ms: Variant = script.call("attack_impact_ms", sheet)
 	var frame_ms: Variant = script.call("attack_frame_ms", sheet)
 	var reaction_ms: Variant = script.call("reaction_delay_ms", sheet)
-	if int(impact_index) != 6:
-		errors.append("attack_impact_index=%d (esperado 6)" % int(impact_index))
-	if not is_equal_approx(float(impact_ms), 111.1):
-		errors.append("attack_impact_ms=%s (esperado 111.1)" % str(impact_ms))
+	if int(impact_index) != 8:
+		errors.append("attack_impact_index=%d (esperado 8)" % int(impact_index))
+	if not is_equal_approx(float(impact_ms), 333.3):
+		errors.append("attack_impact_ms=%s (esperado 333.3)" % str(impact_ms))
 	if not is_equal_approx(float(frame_ms), 111.1):
 		errors.append("attack_frame_ms=%s (esperado 111.1)" % str(frame_ms))
-	if not is_equal_approx(float(reaction_ms), 222.2):
-		errors.append("reaction_delay_ms=%s (esperado 222.2)" % str(reaction_ms))
+	if not is_equal_approx(float(reaction_ms), 444.4):
+		errors.append("reaction_delay_ms=%s (esperado 444.4)" % str(reaction_ms))
+	if not is_equal_approx(float(script.call("state_duration_ms", ranged_sheet, "attack")), 666.7):
+		errors.append("ranged attack duration != 666.7")
+	if not is_equal_approx(float(script.call("state_duration_ms", sheet, "attack")), 444.4):
+		errors.append("shock attack duration != 444.4")
 	var attack_path: Variant = script.call("state_frame_path", sheet, "attack", 0.0)
 	if not str(attack_path).get_file().contains("_attack_1"):
 		errors.append("attack frame 0 != attack_1")
-	var attack2_path: Variant = script.call("state_frame_path", sheet, "attack", 112.0)
-	if not str(attack2_path).get_file().contains("_attack_2"):
-		errors.append("attack frame en 112 ms != attack_2 (%s)" % str(attack2_path))
+	var attack4_path: Variant = script.call("state_frame_path", sheet, "attack", 334.0)
+	if not str(attack4_path).get_file().contains("_attack_4"):
+		errors.append("attack frame en 334 ms != attack_4 (%s)" % str(attack4_path))
+	var impact_path: Variant = script.call("state_frame_path", ranged_sheet, "impact", 0.0)
+	if not str(impact_path).get_file().contains("_impact_1"):
+		errors.append("impact frame 0 != impact_1")
 	var dead_after: Variant = script.call("state_after_elapsed", sheet, "dead", 5000.0)
 	if str(dead_after) != "dead":
 		errors.append("dead no persiste (death_hold roto)")
@@ -163,7 +176,7 @@ func _criterion_2_timing() -> void:
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors), started)
 		return
-	_pass(id, name, "attack_2 index=6 a 111,1 ms; ataque=111,1 ms; reacción=222,2 ms; dead persiste/death_hold; attack→idle; mirror W=true/E=false", started)
+	_pass(id, name, "attack_4 index=8 a 333,3 ms; ataque=111,1 ms/cuadro; reacción=444,4 ms; ranged 6 cuadros=666,7 ms; impact/death_hold; mirror W/E", started)
 
 
 # ---------------------------------------------------------------------------
@@ -173,15 +186,15 @@ func _criterion_2_timing() -> void:
 func _criterion_3_n3_sequence() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "A3"
-	var name := "N3 real: idle→attack(attack_2 111,1)→hit/dead(222,2) con proyectil y mirroring"
-	var hit := _run_n3_probe(1000, "qa_anim_hit")
+	var name := "N3 real: idle→attack(6 cuadros)→attack_4(333,3)→impact/dead(444,4) con proyectil y mirroring"
+	var impact := _run_n3_probe(1000, "qa_anim_impact")
 	var dead := _run_n3_probe(1, "qa_anim_dead")
-	if not bool(hit.get("ok", false)) or not bool(dead.get("ok", false)):
-		_fail(id, name, "hit: %s; dead: %s" % [
-			str(hit.get("detail", "")), str(dead.get("detail", "")),
+	if not bool(impact.get("ok", false)) or not bool(dead.get("ok", false)):
+		_fail(id, name, "impact: %s; dead: %s" % [
+			str(impact.get("detail", "")), str(dead.get("detail", "")),
 		], started)
 		return
-	_pass(id, name, "hit: %s; dead: %s" % [str(hit.get("detail", "")), str(dead.get("detail", ""))], started)
+	_pass(id, name, "impact: %s; dead: %s" % [str(impact.get("detail", "")), str(dead.get("detail", ""))], started)
 
 
 func _run_n3_probe(defender_size: int, suffix: String) -> Dictionary:
@@ -213,8 +226,8 @@ func _run_n3_probe(defender_size: int, suffix: String) -> Dictionary:
 	if not str(initial_frame.get("frame_path", "")).get_file().contains("_idle_"):
 		errors.append("frame inicial no idle (%s)" % str(initial_frame.get("frame_path", "")))
 	var impact_ms := float(node.call("get_attack_impact_ms", attacker_id))
-	if not is_equal_approx(impact_ms, 111.1):
-		errors.append("impact_ms=%s" % str(impact_ms))
+	if not is_equal_approx(impact_ms, 333.3):
+		errors.append("impact_ms=%s (esperado 333.3)" % str(impact_ms))
 	var state: Variant = node.call("get_state")
 	var hand: Variant = []
 	if state is Dictionary:
@@ -252,28 +265,29 @@ func _run_n3_probe(defender_size: int, suffix: String) -> Dictionary:
 			var projectile: Dictionary = (projectiles as Array)[0]
 			if projectile.has("launch_ms"):
 				var launch_ms := float(projectile.get("launch_ms", -1.0))
-				if launch_ms < 0.0 or launch_ms > float(node.call("get_state").get("animation_ms", 0.0)) + 1.0:
-					errors.append("launch_ms inválido (%s)" % str(launch_ms))
+				if not is_equal_approx(launch_ms, 333.3):
+					errors.append("launch_ms=%s (esperado 333.3)" % str(launch_ms))
+				if launch_ms > float(node.call("get_state").get("animation_ms", 0.0)) + 1.0:
+					errors.append("launch_ms futuro (%s)" % str(launch_ms))
 			elif projectile.has("started_ms") and projectile.has("impact_ms"):
-				# N3 (CloseCombat) expone started_ms + impact_ms (D-064); equivale a launch_ms.
 				var started := float(projectile.get("started_ms", -1.0))
 				if started < 0.0:
 					errors.append("proyectil sin started_ms")
-				if not is_equal_approx(float(projectile.get("impact_ms", 0.0)), 111.1):
-					errors.append("proyectil impact_ms != 111.1")
+				if not is_equal_approx(float(projectile.get("impact_ms", 0.0)), 333.3):
+					errors.append("proyectil impact_ms != 333.3")
 			else:
 				errors.append("proyectil sin timing (launch_ms/started_ms+impact_ms)")
 			if str(projectile.get("sprite", "")).get_file() != "proyectil_virote.png":
 				errors.append("proyectil inesperado %s" % str(projectile.get("sprite", "")))
-		node.call("tick_animation", 222.2 - impact_ms + 1.0)
+		node.call("tick_animation", 444.4 - impact_ms + 1.0)
 		var reaction: Dictionary = node.call("get_animation_state", defender_id)
 		var reaction_state := str(reaction.get("state", ""))
-		var expected_hit := defender_size > 100
-		if expected_hit and reaction_state != "hit":
-			errors.append("defensor superviviente estado=%s (esperado hit)" % reaction_state)
-		if not expected_hit and reaction_state != "dead":
+		var expected_impact := defender_size > 100
+		if expected_impact and reaction_state != "impact":
+			errors.append("defensor superviviente estado=%s (esperado impact)" % reaction_state)
+		if not expected_impact and reaction_state != "dead":
 			errors.append("defensor muerto estado=%s (esperado dead)" % reaction_state)
-		if not expected_hit:
+		if not expected_impact:
 			node.call("tick_animation", 5000.0)
 			var hold: Dictionary = node.call("get_animation_state", defender_id)
 			var hold_frame: Dictionary = _view_frame_info(hold)
@@ -292,8 +306,8 @@ func _run_n3_probe(defender_size: int, suffix: String) -> Dictionary:
 		return {"ok": false, "detail": ", ".join(errors)}
 	return {
 		"ok": true,
-		"detail": "idle→attack→attack_2(111,1)→%s(222,2)%s; proyectil virote con timing N3 started_ms/impact_ms; mirroring OK" % [
-			"dead" if not (defender_size > 100) else "hit",
+		"detail": "idle→attack(6 cuadros)→attack_4(333,3)→%s(444,4)%s; proyectil virote launch_ms=333,3; mirroring OK" % [
+			"dead" if not (defender_size > 100) else "impact",
 			"; death_hold" if defender_size <= 100 else "",
 		],
 	}
@@ -326,7 +340,7 @@ func _criterion_4_determinism() -> void:
 func _criterion_5_captures() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "A5"
-	var name := "Capturas 1920×1080: idle, secuencia de ataque N3 y hit/death"
+	var name := "Capturas 1920×1080: idle, ataque 6 cuadros, impact/death y death_hold"
 	var missing: Array[String] = []
 	for capture_name in CAPTURE_FILES:
 		if not FileAccess.file_exists("res://docs/screenshots/%s" % capture_name):
@@ -342,7 +356,7 @@ func _criterion_5_captures() -> void:
 	if not wrong_sizes.is_empty():
 		_fail(id, name, "tamaño distinto de 1920x1080: " + ", ".join(wrong_sizes), started)
 		return
-	_pass(id, name, "3/3 capturas 1920x1080: " + ", ".join(CAPTURE_FILES), started)
+	_pass(id, name, "4/4 capturas 1920x1080: " + ", ".join(CAPTURE_FILES), started)
 
 
 # ---------------------------------------------------------------------------
@@ -382,6 +396,19 @@ func _view_frame_info(view: Dictionary) -> Dictionary:
 	var frame_info: Variant = view.get("frame_info", null)
 	if frame_info is Dictionary:
 		return frame_info as Dictionary
+	return {}
+
+
+func _sheet_for(unit_id: String) -> Dictionary:
+	var data: Variant = _read_json("res://data/units.json")
+	if data is Dictionary:
+		var units_value: Variant = (data as Dictionary).get("units", null)
+		if units_value is Array:
+			for unit_value in (units_value as Array):
+				if unit_value is Dictionary and str((unit_value as Dictionary).get("id", "")) == unit_id:
+					var sheet: Variant = (unit_value as Dictionary).get("sprite_sheet", null)
+					if sheet is Dictionary:
+						return sheet as Dictionary
 	return {}
 
 
