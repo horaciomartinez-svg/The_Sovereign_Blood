@@ -673,3 +673,91 @@ Todos **cerrados o cerrados con limitación documentada** (detalle en `docs/qa/f
 **Limitaciones:** el criterio de UI se valida por instanciación headless + capturas estáticas (sin interacción real), y la medición de IA corresponde a esta máquina y semilla 1337.
 
 *Fin de la sección Fase 1 — verificación final (task-9).*
+
+---
+
+## 9. Fase 2 — Baseline (task-14, 2026-11-21)
+
+**Contexto:** arranque de Fase 2 (GDD v1.4 §10.1/§10.2/§12; contrato `docs/architecture_contracts_fase2.md`). Snapshot **2026-11-21 22:53–22:55**, HEAD `059ae82`. AG-1 (map_borders/portrait), AG-2 (N2/N3, espionaje, extinción) y AG-3 (mapa/retratos/escenas) trabajando en paralelo: durante la ventana de baseline aparecieron y cambiaron archivos de producción, por lo que este baseline es un **snapshot puntual**, no un veredicto.
+
+**Archivos creados por QA (task-14):**
+
+| Archivo | Tamaño | Propósito |
+|---|---:|---|
+| `tests/qa_acceptance_fase2.gd` | 66.049 B / 1.596 líneas | Harness de aceptación Fase 2 (6 criterios, `extends SceneTree`, sin GUT); compila contra módulos ausentes y los reporta SKIP |
+| `docs/qa/fase2_plan.md` | — | Plan QA Fase 2: puerta, matriz criterio→check→comando→evidencia→owner, baseline, riesgos R-F2-01…08 y checklist task-15 |
+
+### 9.1 Comandos y códigos de salida (baseline canónico)
+
+| # | Comando | Exit | Resultado baseline |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase2.gd` | **1** | **2 PASS / 0 FAIL / 4 SKIP** → PENDIENTE (módulos F2 en curso); compila y ejecuta sin cuelgues |
+| 1-bis | repetición del harness | **1** | Mismos estados y detalles (sin tiempos): baseline determinista |
+| 2 | `--script tests/run_all.gd` | **0** | **557 pasados / 0 fallidos / 1 omitido**; `CI: OK` (durante la ventana se observó transitoriamente 545/3/1 mientras AG-2 editaba tests; el valor canónico del snapshot es 557/0/1) |
+| 3 | `--script tools/validate_data.gd` | **0** | 6 datasets ↔ 6 schemas, **5.239 comprobaciones**, **0 errores** (no-regresión de datos) |
+| 4 | `--script tests/qa_acceptance.gd` (Fase 1) | **0** | **6/6 PASS** (no regresión de aceptación F1) |
+| 5 | `--editor --quit` | **0** | Importación completa (6 `[DONE]`), sin ERROR/WARNING en la salida capturada |
+| 6 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, sin ERROR/WARNING |
+
+### 9.2 Salida íntegra del harness (snapshot 22:53:37)
+
+```text
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+==============================================================
+ The Sovereign's Blood — QA Aceptación Fase 2 (GDD §10.1/§10.2/§12)
+ Godot 4.7.2-stable (official) · headless · 2026-11-21T22:53:37
+==============================================================
+[INFO] Fase 2 — presencia de artefactos:
+  data/map_borders.json: false
+  scripts/battle/tactical_battle.gd: true
+  scripts/battle/close_combat.gd: true
+  scripts/ui/widgets/portrait_frame.gd: true
+  scenes/battle/tactical_map.tscn: false
+  scenes/battle/close_combat.tscn: false
+  assets/art/map/terrain_base.png: true
+  data/map_layout.json (debe retirarse al cerrar D-024): true
+  10/10 autoloads montados
+  [PASS] F2-C1 — Crécy Inglaterra vs Francia resuelto en Niveles 1, 2 y 3 (coherente, sin crash) :: N1=PASS (winner=england; bajas=703/724; asaltos=3; determinista=true); N2=PRESENTE (auto=true rondas=5 acciones=0 winner=france bajas=0/509; determinista=true); N3=PRESENTE (rondas=5 órdenes=0 winner=england bajas=773/641; determinista=true)
+  [SKIP] F2-C2 — Extinción dinástica: gobernante + casa sin vivos → game_over derrota sin turnos fantasma :: extinción inmediata F2 aún no integrada (AG-2 task-12 en curso): muertos=4 (casa=plantagenet); resolve.extinct=false; señal dynasty_extinct=false; game_over=false; señales game_over=0; resultado={ "ok": true, "heir_id": "robert_morley", "regency": false, "crisis": false, "extinct": false } (pendiente: módulo Fase 2 aún no integrado)
+  [SKIP] F2-C3 — §10.1 Mapa: 47/47 polígonos × 3 años, hit-test, ≤150 KB, CPU <8 ms/frame, terreno y captura :: data/map_borders.json ausente (AG-1 task-11); terreno=true; tactical=false; comparativa=false (pendiente: módulo Fase 2 aún no integrado)
+  [SKIP] F2-C4 — §10.2 Retratos: fallback nunca vacío, 5 slots, sucesión en el mapa y capturas :: AG-1/AG-3 aún integrando §10.2 (schema sin 'portrait'; widget no instanciable): datos=false (schema sin propiedad 'portrait'); widget=false (no evaluado: AG-1 aún no añade 'portrait' al schema); slots=4/5 (world_map.gd=false, family_tree.gd=true, diplomacy_screen.gd=true, battle_report.gd=true, court_overview.gd=true); sucesión=false (pendiente); capturas retrato=false comparativa=false (pendiente: módulo Fase 2 aún no integrado)
+  [SKIP] F2-C5 — Smoke UI: todas las escenas (tactical_map/close_combat + 16 previas) instanciables headless :: escenas instancian pero scripts en edición (AG-2/AG-3): portrait_frame.gd (no compila); 16/16 escenas instanciadas; total=16 (mín. F1=16); scripts que no compilan=1; faltan F2: tactical_map.tscn, close_combat.tscn (pendiente: módulo Fase 2 aún no integrado)
+  [PASS] F2-C6 — No regresión Fase 1: save/load, Peste Negra 1348, determinismo, UI sin mutaciones y escenas :: save/load=hash=db35e62a84e60599; save=96786 B; restaurado=true; peste=año=1348; event_log=true; fired=true; determinismo=true (hash db35e62a84e60599 vs db35e62a84e60599); UI sin mutaciones=true (0 hallazgos); escenas=16 (mín 16)
+--------------------------------------------------------------
+RESULTADO QA ACEPTACIÓN FASE 2: 2 PASS, 0 FAIL, 4 SKIP (de 6 criterios)
+  F2-C1: [PASS] Crécy Inglaterra vs Francia resuelto en Niveles 1, 2 y 3 (coherente, sin crash) (52 ms)
+  F2-C2: [SKIP] Extinción dinástica: gobernante + casa sin vivos → game_over derrota sin turnos fantasmas (15 ms)
+  F2-C3: [SKIP] §10.1 Mapa: 47/47 polígonos × 3 años, hit-test, ≤150 KB, CPU <8 ms/frame, terreno y captura (1 ms)
+  F2-C4: [SKIP] §10.2 Retratos: fallback nunca vacío, 5 slots, sucesión en el mapa y capturas (15 ms)
+  F2-C5: [SKIP] Smoke UI: todas las escenas (tactical_map/close_combat + 16 previas) instanciables headless (665 ms)
+  F2-C6: [PASS] No regresión Fase 1: save/load, Peste Negra 1348, determinismo, UI sin mutaciones y escenas (450 ms)
+--------------------------------------------------------------
+ACEPTACIÓN FASE 2: PENDIENTE — 4 criterio(s) SKIP por módulos Fase 2 en curso (baseline; exit 1)
+```
+
+*(La salida contiene además los `SCRIPT ERROR: Parse Error … portrait_frame.gd:216` de la línea 216 mientras AG-3 edita el widget; el harness los trata como «script en edición» y no como rechazo. Se omiten aquí por brevedad; el detalle está en `docs/qa/fase2_plan.md` §5/R-F2-06.)*
+
+### 9.3 Baseline por criterio y qué falta
+
+| Criterio | Baseline | Motivo / evidencia | Requisito task-15 (owner) |
+|---|---|---|---|
+| F2-C1 Crécy N1/N2/N3 | `PASS` | N1 winner=england 703/724 (3 asaltos); N2 `TacticalBattle` auto-resolve winner=france 0/509 (5 rondas); N3 `CloseCombat` winner=england 773/641 (5 rondas); los 3 deterministas y sin crash | AG-2: validar coherencia fina de N2 (un ganador con 0 bajas propias se revisará en la verificación final) |
+| F2-C2 Extinción inmediata | `SKIP` | F1 deja interregno; `resolve_succession` devuelve `extinct=false`, sin `dynasty_extinct` ni `game_over`; héroe elegido de otra casa (`robert_morley`) | AG-2: extinción inmediata sin miembros vivos de la casa → `dynasty_extinct` + `game_over(false)` |
+| F2-C3 §10.1 Mapa | `SKIP` | `data/map_borders.json` ausente (AG-1); 16 escenas sin tácticas; `terrain_base.png` ya presente (4,1 MB); `map_comparison.png` y capturas de vistas ausentes; `map_layout.json` aún presente | AG-1: `map_borders.json` 3×47 `≤150 KB`; AG-3: integrar 4 capas, hover/click 3 vistas, benchmark `<8 ms`, `map_comparison.png`, retirar `map_layout` (D-024) |
+| F2-C4 §10.2 Retratos | `SKIP` | `portrait_frame.gd` presente pero no compila aún; schema sin `portrait`; slots 4/5 (falta `world_map.gd`); capturas ausentes | AG-1: `portrait` en schema; AG-3: widget + 5 slots + sincronía de sucesión + capturas; AG-2: sucesión (ya F1) |
+| F2-C5 Smoke escenas | `SKIP` | 16/16 escenas F1 OK; faltan `tactical_map.tscn` y `close_combat.tscn`; 1 script en edición | AG-3: crear las 2 escenas y que sus scripts compilen |
+| F2-C6 No regresión F1 | `PASS` | Save/load 96.786 B hash `db35e62a…` restaurado; Peste Negra 1348; determinismo; 0 mutaciones de UI; 16 escenas | — (mantener) |
+
+**No regresión de la batería externa:** `run_all.gd` 557/0/1 exit 0, `validate_data.gd` 0 errores exit 0, `qa_acceptance.gd` (F1) 6/6 exit 0, `--editor --quit` y `--headless --quit` exit 0.
+
+### 9.4 Notas y riesgos registrados
+
+- **Concurrencia:** AG-1/AG-2/AG-3 estaban escribiendo durante el baseline (aparecieron `scripts/battle/*.gd`, `terrain_base.png`, `portrait_frame.gd`; se observó transitoriamente `run_all` 545/3/1 y el parse error de `portrait_frame.gd:216`). El snapshot no se trata como rechazo; la verificación final se hará sobre commits estables.
+- **C1/N2:** el `auto_resolve` de N2 devuelve ganador `france` con 0 bajas del atacante y 509 del defensor; el harness lo acepta por coherencia básica (ganador válido, bajas totales >0, rondas, determinismo), pero **se revisará la coherencia de balance en task-15** antes de dar por bueno el criterio.
+- **Harness:** durante la construcción se adaptaron las comprobaciones a la API real (`auto_resolve`, `play_order -> bool`, `commit()`/`get_outcome()`), se añadió verificación de compilación de scripts de escena y de `scripts/battle/**`, y se evitó cargar el widget si el schema aún no tiene `portrait` (evita ruido por escritura concurrente).
+- **Riesgos R-F2-01…08** (geometría/hit-test, benchmark headless sin GPU, nombres de API de retratos, simulación N2/N3, extinción inmediata, concurrencia, D-024, capturas staging): detalle y mitigación en `docs/qa/fase2_plan.md` §5.
+- **task-15 no reclamada:** bloqueada hasta que AG-1/AG-2/AG-3 terminen task-11/12/13; checklist preparada en `docs/qa/fase2_plan.md` §6.
+- **Post-snapshot (22:54–22:56, informativo):** AG-1 entregó `data/map_borders.json` — **118.898 B (116,1 KB ≤150 KB)**, schema_version 1, canvas 4096×3072, **47/47/47** regiones, rings 7–186 puntos (media 46,3/región) — aún **sin integrar** en `world_map.gd` (el snapshot 22:53:37 lo vio ausente). AG-3 añadió `scripts/ui/map/map_borders_layer.gd` y `map_entities_layer.gd`; `data/map_layout.json` sigue presente (D-024 pendiente). AG-1 mantiene **auxiliares temporales dentro de `data/`** (`_ag1_boundary.py`, `_ag1_mapgen.py`, `_ag1_pipeline.py`, `__pycache__/`, `_ne_*.geojson`, `_map_debug_*.png`): no son entregables y deben retirarse antes de task-15 (observación provisional MENOR, owner AG-1).
+
+*Fin de la sección Fase 2 — baseline (task-14).*
