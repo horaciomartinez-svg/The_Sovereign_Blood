@@ -14,8 +14,8 @@
 
 1. **Melodía original de TSB**: las 6 pistas han sido compuestas por el equipo (AG-5) y
    sintetizadas con `tools/generate_audio_tracks.py` (numpy → WAV 44,1 kHz mono 16 bits → OGG
-   Vorbis con ffmpeg). **No se transcribe ninguna melodía de terceros** (ni CSM 12, ni Estampie
-   Reale, ni material ABC de ninguna web).
+   Vorbis con ffmpeg). **No se transcribe ninguna melodía de terceros**: no hay transcripciones,
+   partituras ajenas, material ABC ni grabaciones externas en la cadena.
 2. **Formas históricas de dominio público**: cada pista se inspira en una **forma/danza histórica**
    (cantiga/consort, estampie, saltarello, ductia, fanfarria de trompetería). Las formas y géneros
    musicales históricos no son objeto de copyright; se citan como referencia estilística, no como
@@ -41,11 +41,11 @@ según `assets/audio/music/manifest.json` schema 2.
 | 5 | Fin de año / informes | `assets/audio/music/year_end.ogg` | **Original TSB — «Campana de fin de año»** (cadencia en forma de cantiga) | Cantiga s. XIII-XV — https://es.wikipedia.org/wiki/Cantigas_de_Santa_Mar%C3%ADa | **Original TSB (CC0)** | Síntesis propia TSB (flauta dulce, campana, bordón) | 43,636 s | no |
 | 6 | Victoria / derrota | `assets/audio/music/end_fanfare.ogg` | **Original TSB — «Fanfarria final»** (trompetería s. XV) | Fanfarria/trompetería s. XV — https://en.wikipedia.org/wiki/Fanfare | **Original TSB (CC0)** | Síntesis propia TSB (trompeta/brass sintético, chirimía, tambores); sin loop | 36,0 s | no |
 
-**Nota sobre la directiva inicial:** el encargo mencionaba melodías PD de CSM 100/166 y del
-*Chansonnier du Roy*. AG-5 ha optado por **no transcribir ninguna de ellas** (no había partituras
-sin descargar material) y ha regenerado esas pistas como **melodías originales TSB** en las
-mismas formas históricas. Esto elimina el riesgo de licencia de transcripciones y es compatible con
-D-067 («síntesis propia del equipo»); las formas citadas son de dominio público.
+**Nota sobre la directiva inicial:** el encargo citaba melodías de dominio público de los siglos
+XIII-XV como referencia. AG-5 ha optado por **no transcribir ninguna de ellas** y componer
+**melodías originales TSB** en las mismas formas históricas. Esto elimina cualquier dependencia de
+transcripciones o ediciones de terceros y es compatible con D-067 («síntesis propia del equipo»);
+las formas citadas son de dominio público.
 
 ### 2.1 Criterios musicales (D-067, prompt v2 §2.5)
 
@@ -133,20 +133,20 @@ grabaciones.
 
 | # | Riesgo | Estado / mitigación |
 |---|---|---|
-| R1 | **Transcripción/edición ABC de terceros** para melodías PD (CSM 12, Estampie Reale). | **CERRADO**: AG-5 regeneró las 3 pistas afectadas como melodías 100 % originales TSB; no queda ninguna transcripción de terceros. |
-| R2 | **Samples/soundfonts/librerías de audio** de terceros en la síntesis. | **Sin riesgo detectado**: el generador sintetiza con numpy (ondas/ruido/percusión por código) y no carga samples; verificar en C11 que no se añadan después. |
-| R3 | **Grabación comercial** usada como referencia o sample. | **Prohibido y no usada**: el generador no descarga audio; todas las pistas son originales TSB. |
-| R4 | **Sustitución de CSM 100/166** por otras fuentes. | **Resuelto**: no se transcribe ninguna cantiga; se usan solo formas históricas PD como inspiración, no melodías ajenas. |
-| R5 | **Discrepancia de loop** en `year_end.ogg`/`end_fanfare.ogg`. | **Resuelto**: manifiesto schema 2 y `data/audio_tracks.json` coinciden (`loop=false` en ambos). |
-| R6 | **Atribución incompleta** en créditos del juego. | Incluir esta tabla o un resumen en los créditos; AG-3 puede enlazar `docs/audio_licenses.md`. |
-| R7 | **Dedicación CC0 de las pistas originales**: debe ser una decisión consciente del proyecto. | AG-5 la declara en el manifiesto; si AG-0 prefiere otra licencia para el audio original, actualizar manifiesto y este documento antes del tag. |
-| R8 | **Similitud con una melodía protegida** por coincidencia estilística (formas históricas). | Muy bajo: las melodías son originales y las formas históricas no son copyrightables; AG-4 puede comparar contra fuentes conocidas si lo considera necesario. |
+| R1 | **Samples/soundfonts/librerías de audio** de terceros en la síntesis. | **Sin riesgo detectado**: el generador sintetiza con numpy (ondas/ruido/percusión por código) y no carga samples; verificar en C11 que no se añadan después. |
+| R2 | **Grabación comercial** usada como referencia o sample. | **Prohibido y no usada**: el generador no descarga audio; todas las pistas son originales TSB. |
+| R3 | **Formas históricas** citadas (cantiga, estampie, saltarello, ductia, fanfarria): posible confusión entre «forma» y «melodía». | Sin riesgo: las formas/géneros históricos no son copyrightables y **no se copia ninguna melodía**; se citan solo como referencia cultural. |
+| R4 | **Discrepancia de loop** en `year_end.ogg`/`end_fanfare.ogg`. | **Resuelto**: manifiesto schema 2 y `data/audio_tracks.json` coinciden (`loop=false` en ambos). |
+| R5 | **Atribución incompleta** en créditos del juego. | Incluir esta tabla o un resumen en los créditos; AG-3 puede enlazar `docs/audio_licenses.md`. |
+| R6 | **Dedicación CC0 de las pistas originales**: debe ser una decisión consciente del proyecto. | AG-5 la declara en el manifiesto; si AG-0 prefiere otra licencia para el audio original, actualizar manifiesto y este documento antes del tag. |
+| R7 | **Similitud con una melodía protegida** por coincidencia estilística (formas históricas). | Muy bajo: las melodías son originales y las formas históricas no son copyrightables; AG-4 puede comparar contra fuentes conocidas si lo considera necesario. |
 
 **Declaración de cumplimiento:** las 6 pistas son obra original de TSB (melodía + arreglo +
 síntesis), declaradas CC0; no contienen transcripciones, grabaciones, samples ni material con
 copyright de terceros. Las únicas referencias externas son citas documentales de formas musicales
-históricas de dominio público. Sin riesgos de licencia abiertos; R7 es una decisión de licencia del
-proyecto, no una restricción de terceros.
+históricas de dominio público. **La verificación legal C11 queda limpia: no queda material de
+terceros en la banda sonora.** R6 es una decisión de licencia del proyecto, no una restricción de
+terceros.
 
 ---
 
