@@ -62,6 +62,18 @@ const DISBAND_REFUND_RATIO: float = 0.5
 ## Stock inicial de mercancías por facción (permite el primer reclutamiento
 ## antes de la primera producción trimestral; se documenta en el informe D-069).
 const TRADE_INITIAL_STOCK: int = 20
+## task-71: costes de construcción (oro, PG) para la acción gateada.
+const BUILDING_COSTS: Dictionary = {
+	"granary": {"gold": 300, "pg": 2},
+	"market": {"gold": 450, "pg": 2},
+	"workshops": {"gold": 500, "pg": 3},
+	"walls": {"gold": 600, "pg": 3},
+	"castle": {"gold": 800, "pg": 4},
+	"shipyard": {"gold": 400, "pg": 2},
+	"cathedral": {"gold": 900, "pg": 4},
+	"university": {"gold": 1000, "pg": 4},
+	"mine": {"gold": 500, "pg": 3},
+}
 
 # --- Fase 4: familia/dificultad/tutorial (D-071/D-073) ---
 const CONSORT_PG_COST: int = 3

@@ -135,6 +135,7 @@ func advance_quarter() -> void:
 		return
 	st["quarter"] = quarter + 1
 	st["turn"] = SafeDict.as_int(st.get("turn"), 1) + 1
+	GameState.reset_turn_actions()
 	GameState.sync_clock_from_state()
 	current_quarter = quarter + 1
 	_reset_movement()
@@ -155,6 +156,7 @@ func advance_year() -> void:
 	st["year"] = new_year
 	st["quarter"] = 1
 	st["turn"] = SafeDict.as_int(st.get("turn"), 1) + 1
+	GameState.reset_turn_actions()
 	GameState.sync_clock_from_state()
 	current_year = new_year
 	current_quarter = 1

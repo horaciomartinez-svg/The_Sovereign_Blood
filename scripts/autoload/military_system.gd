@@ -184,6 +184,24 @@ func _recruit_goods_requirements(unit_definition: Dictionary, amount: int) -> Di
 	return requirements
 
 
+## task-71/D-075: coste de reclutar `amount` hombres (oro + mercancías).
+func get_unit_recruit_cost(unit_id: String, amount: int) -> Dictionary:
+	var definition: Dictionary = DataLoader.get_unit(unit_id)
+	if definition.is_empty() or amount <= 0:
+		return {}
+	var blocks: int = int(ceilf(float(amount) / float(maxi(1, Constants.UNIT_MEN_PER_BLOCK))))
+	var cost: Dictionary = SafeDict.as_dict(definition.get("cost", null))
+	return {
+		"unit_id": unit_id,
+		"amount": amount,
+		"blocks": blocks,
+		"gold": blocks * SafeDict.as_int(cost.get("gold"), 0),
+		"gold_per_block": SafeDict.as_int(cost.get("gold"), 0),
+		"goods": _recruit_goods_requirements(definition, amount),
+		"goods_per_block": SafeDict.as_dict(definition.get("recruit_goods", null)).duplicate(true),
+	}
+
+
 ## Resumen global por tipo de unidad (D-070) para la pantalla de ejércitos.
 func get_faction_army_summary(faction_id: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -211,6 +229,9 @@ func get_faction_army_summary(faction_id: String) -> Array[Dictionary]:
 					"avg_morale": 0.0,
 					"avg_experience": 0.0,
 					"sprite_path": _unit_march_sprite(unit_id),
+					"recruit_gold_per_block": SafeDict.as_int(
+						SafeDict.as_dict(definition.get("cost", null)).get("gold"), 0),
+					"recruit_goods_per_block": SafeDict.as_dict(definition.get("recruit_goods", null)).duplicate(true),
 					"_morale_sum": 0.0,
 					"_exp_sum": 0.0,
 				}

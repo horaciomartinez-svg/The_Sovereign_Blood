@@ -59,6 +59,14 @@ func propose(actor: String, target: String, action: Dictionary) -> Dictionary:
 	if SafeDict.as_bool(faction_actor.get("eliminated"), false) or SafeDict.as_bool(faction_target.get("eliminated"), false):
 		result["reason"] = "eliminated"
 		return result
+	# task-71: acciones singulares una vez por turno/facción (sin gastar PG).
+	var gate_key: String = "diplomacy:%s:%s" % [action_type, target]
+	if action_type == "espia":
+		gate_key = "espionage:%s" % target
+	if not GameState.can_use_action(actor, gate_key):
+		result["reason"] = "action_used"
+		return result
+	GameState.mark_action_used(actor, gate_key)
 	# El matrimonio cobra su PG dentro de DynastySystem.marry (evita doble cobro).
 	if cost_pg > 0 and action_type != "marriage" and not TurnManager.spend_pg_for(actor, cost_pg):
 		result["reason"] = "pg"

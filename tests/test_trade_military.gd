@@ -89,15 +89,28 @@ func _check_buy_sell_expedition(runner: TestRunnerScript, h: HarnessScript) -> v
 	runner.begin_suite("trade_buy_sell")
 	h.new_game(PLAYER)
 	var region: String = _first_owned_region(h, PLAYER)
-	h.set_merchants(PLAYER, 5)
+	h.set_merchants(PLAYER, 10)
 	var gold_before: int = h.treasury(PLAYER)
 	var inv_before: float = SafeDict.as_float(h.trade_inventory(PLAYER).get("grano"), 0.0)
-	runner.check("comprar grano", h.buy_good(PLAYER, region, "grano", 5), h.trade_error())
-	runner.check("la compra sube inventario", SafeDict.as_float(h.trade_inventory(PLAYER).get("grano"), 0.0) >= inv_before + 5.0)
+	var price_before: float = h.good_price(PLAYER, "grano", region)
+	runner.check("comprar grano", h.buy_good(PLAYER, region, "grano", 20), h.trade_error())
+	runner.check("la compra sube inventario", SafeDict.as_float(h.trade_inventory(PLAYER).get("grano"), 0.0) >= inv_before + 20.0)
 	runner.check("la compra baja oro", h.treasury(PLAYER) < gold_before)
+	var price_after_buy: float = h.good_price(PLAYER, "grano", region)
+	runner.check("comprar modifica el precio (oferta/demanda)",
+		not is_equal_approx(price_before, price_after_buy),
+		"%.2f → %.2f" % [price_before, price_after_buy])
+	runner.check("el precio respeta el clamp superior",
+		price_after_buy <= float(h.trade.call("get_base_price", "grano")) * 1.8 + 0.01)
 	var gold_after_buy: int = h.treasury(PLAYER)
-	runner.check("vender grano", h.sell_good(PLAYER, region, "grano", 2), h.trade_error())
+	runner.check("vender grano", h.sell_good(PLAYER, region, "grano", 20), h.trade_error())
 	runner.check("la venta sube oro", h.treasury(PLAYER) > gold_after_buy)
+	var price_after_sell: float = h.good_price(PLAYER, "grano", region)
+	runner.check("vender modifica el precio (oferta/demanda)",
+		not is_equal_approx(price_after_buy, price_after_sell),
+		"%.2f → %.2f" % [price_after_buy, price_after_sell])
+	runner.check("el precio respeta el clamp inferior",
+		price_after_sell >= float(h.trade.call("get_base_price", "grano")) * 0.6 - 0.01)
 	runner.check("volumen limitado por comerciantes", not h.buy_good(PLAYER, region, "grano", 999))
 	# Expedición: 2 PG y retorno a 2 trimestres.
 	h.set_merchants(PLAYER, 5)

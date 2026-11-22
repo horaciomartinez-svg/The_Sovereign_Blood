@@ -43,6 +43,7 @@ func _check_success_and_intel(runner: TestRunnerScript, h: HarnessScript) -> voi
 	while success.is_empty() and attempts < 10:
 		attempts += 1
 		h.faction("england")["pg"] = 60
+		h.reset_turn_actions()
 		var result: Dictionary = h.propose("england", "france", {"action": "espia"})
 		if bool(result.get("accepted")):
 			success = result
@@ -76,6 +77,7 @@ func _check_failure(runner: TestRunnerScript, h: HarnessScript) -> void:
 	while failed.is_empty() and attempts < 25:
 		attempts += 1
 		h.faction("england")["pg"] = 60
+		h.reset_turn_actions()
 		var intel_previous: Dictionary = h.intel("england", "france").duplicate(true)
 		var result: Dictionary = h.propose("england", "france", {"action": "espia"})
 		if not bool(result.get("accepted")):

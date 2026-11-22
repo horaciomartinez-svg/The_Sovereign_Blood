@@ -71,6 +71,12 @@ func marry(character_id: String, target_character_id: String) -> Dictionary:
 	if faction_state_a.is_empty() or SafeDict.as_bool(faction_state_a.get("eliminated"), false):
 		result["reason"] = "faction_unavailable"
 		return result
+	# task-71: matrimonio singular por turno/facción.
+	var gate_key: String = "family:marry:%s" % target_character_id
+	if not GameState.can_use_action(faction_a, gate_key):
+		result["reason"] = "action_used"
+		return result
+	GameState.mark_action_used(faction_a, gate_key)
 	var cost_pg: int = SafeDict.as_int(result.get("cost_pg"), 10)
 	if not TurnManager.spend_pg_for(faction_a, cost_pg):
 		result["reason"] = "pg"
@@ -203,11 +209,15 @@ func can_spend_time_with_consort(faction_id: String) -> Dictionary:
 
 ## D-071: acción familiar de consorte (2-3 PG, una vez por trimestre).
 func spend_time_with_consort(faction_id: String) -> Dictionary:
+	# task-71: acción familiar singular del turno (falla antes de cooldown).
+	if not GameState.can_use_action(faction_id, "family:consort"):
+		return {"ok": false, "reason": "action_used"}
 	var validation: Dictionary = can_spend_time_with_consort(faction_id)
 	if not SafeDict.as_bool(validation.get("ok"), false):
 		return {"ok": false, "reason": SafeDict.as_string(validation.get("reason"), "no válido")}
 	var st: Dictionary = GameState.state
 	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	GameState.mark_action_used(faction_id, "family:consort")
 	if not TurnManager.spend_pg_for(faction_id, Constants.CONSORT_PG_COST):
 		return {"ok": false, "reason": "PG insuficiente"}
 	var current_turn: int = SafeDict.as_int(st.get("turn"), 1)

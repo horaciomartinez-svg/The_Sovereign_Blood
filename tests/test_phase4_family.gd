@@ -36,8 +36,8 @@ func _check_consort(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check("pequeño prestigio", SafeDict.as_int(faction.get("prestige"), 0) > prestige_before)
 	var again: Dictionary = h.spend_time_with_consort(PLAYER)
 	runner.check("no se repite en el mismo trimestre", not bool(again.get("ok")))
-	runner.check("motivo claro de cooldown",
-		SafeDict.as_string(again.get("reason"), "").to_lower().contains("trimestre"),
+	runner.check("motivo action_used al repetir",
+		SafeDict.as_string(again.get("reason"), "") == "action_used",
 		SafeDict.as_string(again.get("reason"), ""))
 	# Siguiente trimestre: cooldown liberado.
 	h.advance_quarter()

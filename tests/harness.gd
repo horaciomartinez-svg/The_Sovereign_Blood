@@ -443,6 +443,32 @@ func trade_error() -> String:
 	return SafeDict.as_string(trade.call("get_last_error"), "")
 
 
+# --- task-71: acciones singulares, costes y construcciones ---------------
+
+func is_action_used(faction_id: String, action_key: String) -> bool:
+	return SafeDict.as_bool(gs.call("is_action_used", faction_id, action_key), false)
+
+
+func can_use_action(faction_id: String, action_key: String) -> bool:
+	return SafeDict.as_bool(gs.call("can_use_action", faction_id, action_key), false)
+
+
+func mark_action_used(faction_id: String, action_key: String) -> bool:
+	return SafeDict.as_bool(gs.call("mark_action_used", faction_id, action_key), false)
+
+
+func reset_turn_actions(faction_id: String = "") -> void:
+	gs.call("reset_turn_actions", faction_id)
+
+
+func build_building(faction_id: String, region_id: String, building_id: String) -> Dictionary:
+	return SafeDict.as_dict(eco.call("build_building", faction_id, region_id, building_id))
+
+
+func unit_recruit_cost(unit_id: String, amount: int) -> Dictionary:
+	return SafeDict.as_dict(mil.call("get_unit_recruit_cost", unit_id, amount))
+
+
 # --- Fase 4: consorte/dificultad/tutorial (D-071/D-073) -------------------
 
 func difficulty() -> String:

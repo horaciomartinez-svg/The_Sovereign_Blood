@@ -289,3 +289,62 @@ func _workers_total(workers: Dictionary) -> int:
 	for worker_class in WORKER_CLASSES:
 		total += SafeDict.as_int(workers.get(worker_class), 0)
 	return total
+
+
+## task-71: construcción gateada (una por región+edificio/turno). Devuelve
+## {ok, reason, cost_gold, cost_pg, building}. No gasta nada si falla.
+func build_building(faction_id: String, region_id: String, building_id: String) -> Dictionary:
+	var result: Dictionary = {"ok": false, "reason": "", "cost_gold": 0, "cost_pg": 0}
+	var st: Dictionary = GameState.state
+	if st.is_empty() or faction_id == "" or region_id == "" or building_id == "":
+		result["reason"] = "parámetros inválidos"
+		return result
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	var region: Dictionary = GameState.get_region_state(region_id)
+	if faction.is_empty() or region.is_empty() or SafeDict.as_bool(faction.get("eliminated"), false):
+		result["reason"] = "facción/región inválida"
+		return result
+	if SafeDict.as_string(region.get("owner"), "") != faction_id:
+		result["reason"] = "región no propia"
+		return result
+	var buildings: Array = SafeDict.as_array(region.get("buildings", null))
+	var gate_key: String = "build:%s:%s" % [region_id, building_id]
+	if buildings.has(building_id):
+		if GameState.is_action_used(faction_id, gate_key):
+			result["reason"] = "action_used"
+		else:
+			result["reason"] = "ya construido"
+		return result
+	var cost_value: Variant = Constants.BUILDING_COSTS.get(building_id, null)
+	var cost: Dictionary = SafeDict.as_dict(cost_value)
+	if cost.is_empty():
+		result["reason"] = "edificio desconocido"
+		return result
+	var cost_gold: int = SafeDict.as_int(cost.get("gold"), 0)
+	var cost_pg: int = SafeDict.as_int(cost.get("pg"), 0)
+	result["cost_gold"] = cost_gold
+	result["cost_pg"] = cost_pg
+	if SafeDict.as_int(faction.get("gold"), 0) < cost_gold:
+		result["reason"] = "oro insuficiente"
+		return result
+	if SafeDict.as_int(faction.get("pg"), 0) < cost_pg:
+		result["reason"] = "PG insuficiente"
+		return result
+	if not GameState.can_use_action(faction_id, gate_key):
+		result["reason"] = "action_used"
+		return result
+	GameState.mark_action_used(faction_id, gate_key)
+	if not TurnManager.spend_pg_for(faction_id, cost_pg):
+		result["reason"] = "PG insuficiente"
+		return result
+	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) - cost_gold
+	buildings.append(building_id)
+	region["buildings"] = buildings
+	result["ok"] = true
+	result["reason"] = "ok"
+	EventBus.emit_signal("building_completed", region_id, building_id)
+	return result
+
+
+func get_building_cost(building_id: String) -> Dictionary:
+	return SafeDict.as_dict(Constants.BUILDING_COSTS.get(building_id, null)).duplicate(true)

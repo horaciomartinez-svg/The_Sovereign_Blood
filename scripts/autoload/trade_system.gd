@@ -403,7 +403,7 @@ func buy(faction_id: String, region_id: String, good_id: String, qty: int) -> bo
 	inventory[good_id] = SafeDict.as_float(inventory.get(good_id), 0.0) + float(qty)
 	trade["inventory"][faction_id] = inventory
 	# El precio sube al aumentar la demanda (determinista, sin RNG).
-	_update_price_after_trade(trade, region_id, good_id, price * 1.02)
+	_update_price_after_trade(trade, region_id, good_id, price, qty, _trade_volume(faction_id), true)
 	EventBus.emit_signal("trade_completed", faction_id, good_id, qty, cost, "buy")
 	return true
 
@@ -437,15 +437,22 @@ func sell(faction_id: String, region_id: String, good_id: String, qty: int) -> b
 	trade["inventory"][faction_id] = inventory
 	var faction: Dictionary = GameState.get_faction_state(faction_id)
 	faction["gold"] = SafeDict.as_int(faction.get("gold"), 0) + income
-	_update_price_after_trade(trade, region_id, good_id, price * 0.98)
+	_update_price_after_trade(trade, region_id, good_id, price, qty, _trade_volume(faction_id), false)
 	EventBus.emit_signal("trade_completed", faction_id, good_id, qty, income, "sell")
 	return true
 
 
-func _update_price_after_trade(trade: Dictionary, region_id: String, good_id: String, price: float) -> void:
+## Factor de oferta/demanda: comprar sube el precio, vender lo baja. Se aplica
+## sobre el precio regional y se acota a [base×0.6, base×1.8] (determinista).
+func _update_price_after_trade(trade: Dictionary, region_id: String, good_id: String,
+		price: float, qty: int, volume: int, buying: bool) -> void:
+	var base: float = get_base_price(good_id)
+	var ratio: float = clampf(float(qty) / float(maxi(1, volume)), 0.0, 1.0)
+	var factor: float = 1.0 + ratio * 0.35 if buying else 1.0 - ratio * 0.35
+	var new_price: float = clampf(price * factor, base * 0.6, base * 1.8)
 	var prices: Dictionary = SafeDict.as_dict(trade.get("prices", null))
 	var region_prices: Dictionary = SafeDict.as_dict(prices.get(region_id, null))
-	region_prices[good_id] = maxf(0.1, roundf(price * 100.0) / 100.0)
+	region_prices[good_id] = maxf(0.1, roundf(new_price * 100.0) / 100.0)
 	prices[region_id] = region_prices
 
 
@@ -466,6 +473,12 @@ func send_expedition(faction_id: String, good_id: String, qty: int) -> bool:
 	if SafeDict.as_float(inventory.get(good_id), 0.0) < float(qty):
 		last_error = "inventario insuficiente"
 		return false
+	# task-71: expedición singular por turno y mercancía.
+	var gate_key: String = "expedition:%s" % good_id
+	if not GameState.can_use_action(faction_id, gate_key):
+		last_error = "action_used"
+		return false
+	GameState.mark_action_used(faction_id, gate_key)
 	if not TurnManager.spend_pg_for(faction_id, Constants.EXPEDITION_PG_COST):
 		last_error = "PG insuficiente"
 		return false

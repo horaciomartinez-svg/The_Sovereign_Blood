@@ -97,6 +97,8 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 		# D-073: dificultad y estado del Consejero/tutorial.
 		"difficulty": difficulty,
 		"tutorial": {"active": false, "step_index": 0, "completed_steps": [], "skipped": false},
+		# D-074/task-71: acciones singulares usadas en el turno actual.
+		"actions_used": {},
 	}
 	_build_characters(start_year)
 	_build_factions(scenario, start_year)
@@ -108,6 +110,7 @@ func new_game(p_scenario_id: String, p_faction_id: String, p_seed_value: int = D
 	_ensure_initial_wars(p_scenario_id, start_year)
 	TradeSystem.ensure_state()
 	TutorialSystem.start_for_new_game(difficulty)
+	reset_turn_actions()
 	rng_seed = rng.get_seed()
 	# Eventos del año de inicio (1337: casus belli y tensión anglo-francesa).
 	EventResolverScript.new().resolve_year(start_year)
@@ -299,6 +302,13 @@ func _ensure_phase4_defaults() -> void:
 			faction["last_consort_turn"] = 0
 		if not faction.has("fertility_bonus_until_turn"):
 			faction["fertility_bonus_until_turn"] = 0
+	if not state.has("actions_used"):
+		state["actions_used"] = {}
+	var used: Dictionary = SafeDict.as_dict(state.get("actions_used", null))
+	for fid in SafeDict.sorted_keys(SafeDict.as_dict(state.get("factions", null))):
+		if not used.has(str(fid)):
+			used[str(fid)] = []
+	state["actions_used"] = used
 
 
 func get_difficulty() -> String:
@@ -309,6 +319,51 @@ func set_difficulty(value: String) -> bool:
 	if state.is_empty() or not ["beginner", "normal"].has(value):
 		return false
 	state["difficulty"] = value
+	return true
+
+
+## task-71: acciones singulares por facción/turno. Reset al iniciar trimestre.
+func reset_turn_actions(faction_id: String = "") -> void:
+	if state.is_empty():
+		return
+	var used: Dictionary = SafeDict.as_dict(state.get("actions_used", null))
+	if used.is_empty():
+		used = {}
+	if faction_id != "":
+		used[faction_id] = []
+	else:
+		for fid in SafeDict.sorted_keys(SafeDict.as_dict(state.get("factions", null))):
+			used[str(fid)] = []
+	state["actions_used"] = used
+
+
+func is_action_used(faction_id: String, action_key: String) -> bool:
+	if state.is_empty() or faction_id == "" or action_key == "":
+		return false
+	var used: Dictionary = SafeDict.as_dict(state.get("actions_used", null))
+	var entries: Array = SafeDict.as_array(used.get(faction_id, null))
+	return entries.has(action_key)
+
+
+func can_use_action(faction_id: String, action_key: String) -> bool:
+	if state.is_empty() or faction_id == "" or action_key == "":
+		return false
+	var faction: Dictionary = get_faction_state(faction_id)
+	if faction.is_empty() or SafeDict.as_bool(faction.get("eliminated"), false):
+		return false
+	return not is_action_used(faction_id, action_key)
+
+
+func mark_action_used(faction_id: String, action_key: String) -> bool:
+	if state.is_empty() or faction_id == "" or action_key == "":
+		return false
+	if not can_use_action(faction_id, action_key):
+		return false
+	var used: Dictionary = SafeDict.as_dict(state.get("actions_used", null))
+	var entries: Array = SafeDict.as_array(used.get(faction_id, null))
+	entries.append(action_key)
+	used[faction_id] = entries
+	state["actions_used"] = used
 	return true
 
 

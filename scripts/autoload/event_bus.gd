@@ -47,6 +47,7 @@ signal recruitment_completed(faction_id: String, region_id: String, unit_id: Str
 signal army_trained(faction_id: String, unit_id: String, amount: int)
 signal army_disbanded(faction_id: String, unit_id: String, amount: int)
 signal trade_completed(faction_id: String, good_id: String, qty: int, gold: int, operation: String)
+signal building_completed(region_id: String, building_id: String)
 signal expedition_sent(faction_id: String, good_id: String, qty: int, return_turn: int)
 signal expedition_returned(faction_id: String, good_id: String, qty: int, gold: int)
 signal tutorial_started(step: Dictionary)

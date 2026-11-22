@@ -43,7 +43,8 @@ func _check_war_and_peace(runner: TestRunnerScript, h: HarnessScript) -> void:
 	runner.check("guerra sin casus belli cuesta prestigio", int(h.faction("england")["prestige"]) < prestige_before,
 		"%d → %d" % [prestige_before, int(h.faction("england")["prestige"])])
 	var again: Dictionary = h.propose("england", "scotland", {"type": "declare_war"})
-	runner.check("no se declara dos veces", not bool(again.get("ok")) and str(again.get("reason")) == "already_at_war", str(again))
+	runner.check("no se declara dos veces", not bool(again.get("ok"))
+		and str(again.get("reason")) in ["already_at_war", "action_used"], str(again))
 	# Paz: Escocia es "survivor" (+30) y la relación no es extrema → acepta.
 	h.faction("england")["pg"] = 60
 	var relation_before_peace: int = h.relation("england", "scotland")
