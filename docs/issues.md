@@ -865,3 +865,69 @@ R-F2-01 cerrado (141/141 hit-test; autointersecciones/adyacencias geométricas s
 - **Resultado: REA PASS.** **task-21 COMPLETADA**; Fase 2 cerrada y apta para tag `fase-2`.
 
 *Fin de la sección Fase 2 — verificación final v1.5 (task-21 cerrada).*
+
+---
+
+## 12. Fase 3 — Baseline (task-27, 2026-11-22)
+
+**Contexto:** arranque de Fase 3 (GDD v1.6 §10.3/§12; `docs/architecture_contracts_fase3.md`; D-039..D-043) sobre HEAD **`72b3aee`** (tras `9857bd5`). Estado del árbol al ejecutar el baseline: los sprites de Kimi están en staging (`C:\Proyectos\TSB\.sprites_staging\sprites_unidades\`: 18 PNG + 3 proyectiles + README) y **AG-5 ya copió los assets al repo** (`assets/art/sprites/units/`: **18 PNG** + `src/` no importado; `assets/art/sprites/projectiles/`: **3 PNG**). Sin embargo, `data/units.json` sigue con **0/6** `sprite_sheet` (AG-2 pendiente) y el código de batalla **no expone** aún animación/facing/mirroring/proyectiles (AG-2/AG-3 pendientes). AG-5/AG-2/AG-3 siguen trabajando en paralelo. Plan y matriz: **`docs/qa/fase3_plan.md`**. Harness: **`tests/qa_acceptance_fase3.gd`** (extends SceneTree, sin GUT; compila siempre).
+
+> **Estado baseline: PENDIENTE (no es rechazo).** `F3-C2`, `F3-C4`, `F3-C6` PASS; `F3-C1`, `F3-C3`, `F3-C5` SKIP justificados por módulos en curso. El harness sale **1** porque solo sale 0 con 6/6 PASS; imprime «BASELINE FASE 3: PENDIENTE». La verificación final es **task-28**.
+
+### 12.1 Comandos y salidas del baseline
+
+| # | Comando | Exit | Resultado |
+|---|---|---:|---|
+| 1 | `--script tests/qa_acceptance_fase3.gd` | **1** | **3 PASS / 0 FAIL / 3 SKIP**; `BASELINE FASE 3: PENDIENTE` (no rechazo) |
+| 2 | `--script tests/qa_acceptance.gd` (F1) | **0** | **6/6 PASS** |
+| 3 | `--script tests/qa_acceptance_fase2.gd` (F2) | **0** | **6/6 PASS** (incluye B-F2-01/REA) |
+| 4 | `--script tests/run_all.gd` | **0** | **716 pasados / 0 fallidos / 1 omitido**; `CI: OK` |
+| 5 | `--script tools/validate_data.gd` | **0** | **5.281 comprobaciones**, 0 errores/WARN |
+| 6 | `--editor --quit` | **0** | 5 `[DONE]`, 0 ERROR/WARNING |
+| 7 | `--headless --path <repo> --quit` | **0** | `main_scene` arranca, 0 ERROR/WARNING |
+
+Salida resumida del harness F3 baseline:
+```text
+[INFO] Fase 3 — presencia de artefactos:
+  res://assets/art/sprites/units: true (18 PNG)
+  res://assets/art/sprites/projectiles: true (3 PNG)
+  staging Kimi: true
+  [SKIP] F3-C1 — Sprites núcleo: ... AG-2 aún no añade sprite_sheet (0/6); assets de AG-5: PNG unidades=18/18; proyectiles=3/3
+  [PASS] F3-C2 — Fallback: 17 unidades: 6 núcleo (sprite 0/6) + 11 sin sprite_sheet → fallback heráldico de Fase 2
+  [SKIP] F3-C3 — Crécy N1/N2/N3 con sprites: sin datos de sprites (sprite_sheet 0/6)
+  [PASS] F3-C4 — Determinismo: N1 hash=08cc7cee592e343b; winner=england bajas=703/724 (2 ejecuciones)
+  [SKIP] F3-C5 — Capturas: faltan 3 de unidades 64px + N2 + N3; PNG en docs/screenshots=38
+  [PASS] F3-C6 — No regresión: 17 unidades; 18 escenas; 23 tests; scripts fallos=0
+RESULTADO QA ACEPTACIÓN FASE 3: 3 PASS, 0 FAIL, 3 SKIP (de 6 criterios)
+BASELINE FASE 3: PENDIENTE — 3 criterio(s) a la espera de módulos en curso (no es rechazo)
+```
+
+### 12.2 Detalle del estado y criterios
+
+| Criterio | Baseline | Motivo / evidencia |
+|---|---|---|
+| F3-C1 Sprites núcleo | **SKIP** | `data/units.json`: 17 unidades, 6 núcleo, **0/6** con `sprite_sheet`; **assets de AG-5 ya presentes**: `assets/art/sprites/units/` 18/18 PNG (+`src/` no importado) y `projectiles/` 3/3; falta que AG-2 añada los datos y ejecutar import. |
+| F3-C2 Fallback 11 | **PASS** | 11 unidades no núcleo sin `sprite_sheet`; fallback heráldico existente de Fase 2; sin violaciones. |
+| F3-C3 Crécy + anim/proyectiles | **SKIP** | Sin datos de sprites ni APIs nuevas (`sprite_sheet`/`facing`/`mirror`/`march_frame`/`get_projectiles`); AG-2/AG-3 pendientes. |
+| F3-C4 Determinismo | **PASS** | N1 `resolve_delegated` dos veces con misma semilla → hash idéntico `08cc7cee592e343b` (england, 703/724). |
+| F3-C5 Capturas | **SKIP** | 0 capturas F3 (38 PNG actuales son de F2); se esperan 3 de unidades a 64 px + N2 + N3 desde `.ui_check_f3/`. |
+| F3-C6 No regresión | **PASS** | 17 unidades; 18 escenas; 23 tests; F1/F2/run_all presentes; `map_borders`/retratos F2; 0 scripts sin compilar. |
+
+### 12.3 Riesgos registrados (detalle en `docs/qa/fase3_plan.md` §4)
+
+- **R-F3-01** Ruta ambigua GDD (`assets/art/units/` heredado) vs contrato (`assets/art/sprites/units/`): el harness exige la ruta del contrato/D-039.
+- **R-F3-02** Sprites en staging sin importar → `ResourceLoader.exists=false`; ejecutar `--editor --quit` antes del harness final.
+- **R-F3-03** Regresión de fallback en las 11 unidades.
+- **R-F3-04** Animación/proyectiles alteran el determinismo (deben ser solo tiempo).
+- **R-F3-05** `get_units()` extendido rompe tests F2 (campos aditivos).
+- **R-F3-06** Capturas no copiadas a `docs/screenshots` o sin 1920×1080.
+- **R-F3-07** Concurrencia AG-5/AG-2/AG-3; baseline sobre HEAD estable.
+- **R-F3-08** Nombres/anim: P1 solo `anim.march [0,1,2]` fps 6 loop; idle/attack/impact/death quedan como ampliación posterior.
+
+### 12.4 Siguiente paso
+
+**Snapshot concurrente:** durante el baseline AG-5 hizo commit de los assets (`assets/art/sprites/**`, 18 unidades + 3 proyectiles) mientras AG-2/AG-3 seguían con datos/código; este baseline se tomó con esos assets presentes y `units.json`/batalla aún sin integrar. El harness detectará automáticamente el avance (C1 pasará a validar las 6 hojas; C3 cuando existan APIs; C5 cuando AG-0 copie capturas).
+
+Cuando AG-5/AG-2/AG-3 cierren sus módulos, **task-28** re-ejecutará el harness F3 (debe pasar a 6/6 PASS exit 0), la batería completa, revisará capturas/legibilidad de armas (REA §6) y emitirá el veredicto final «QA Fase 3: APROBADO/RECHAZADO». Sin cambios de producción ni git por AG-4.
+
+*Fin de la sección Fase 3 — baseline (task-27).*
