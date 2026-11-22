@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 en curso |
+| **Fase actual** | **Fase 3 — Contenido y remaster (EN CURSO)**; sprites §10.3 ✅ 17/17 QA APROBADO; tiles §10.4 ✅ QA APROBADO 7/7; restan escenarios 1402/1453, retratos/animaciones y QA final de fase |
 | **Fase anterior** | **Fase 2 — CERRADA** (`fase-2`); QA APROBADO 6/6 (2026-11-22) |
 | **Siguiente fase** | Fase 4 — no definida (tras tag `fase-3`) |
 | **GDD** | **v1.7** — `GDD_The_Sovereign's_Blood.md` (§10.3 sprites 17/17, §10.4 tiles N3) |
@@ -15,7 +15,7 @@
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
 | **QA Sprites Fase 3** | **APROBADO 6/6 (17/17 unidades)** — `docs/qa/fase3_sprites_report.md` |
-| **QA Tiles Fase 3** | ⏳ en curso — `docs/qa/fase3_tiles_report.md` |
+| **QA Tiles Fase 3** | **APROBADO 7/7** — `docs/qa/fase3_tiles_report.md` |
 | **Contrato Fase 1** | `docs/architecture_contracts_fase1.md` (estado canónico + API congelada AG-2/AG-3) |
 
 ---
@@ -379,10 +379,10 @@ y `docs/architecture_contracts_fase3_tiles.md` (tiles §10.4).
 | Línea | Owner | Entregable | Estado |
 |---|---|---|---|
 | **Sprites §10.3 (17/17)** | AG-5/AG-2/AG-3 | 51 PNG 64×64/64×80/64×43 + fuentes `src/`; `sprite_sheet` en 17/17; render N2/N3, marcha/mirroring/proyectiles; QA | ✅ **CERRADO — QA APROBADO 6/6** |
-| **Tiles §10.4** | AG-3/AG-2 | 12 tiles 512 (raw en `src/`), campo N3 128 px con rotación, generador desde región; `battle_tiles` + reglas (río/montaña impassable, colina/bosque/camino/villa); QA | ⏳ en curso |
-| Escenarios 1402/1453 | AG-1 | datos + eventos (Ankara, locura de Carlos VI, Constantinopla, Dos Rosas) + evolución tecnológica | ⏸ tras tiles |
-| Retratos herederos/1402/1453 + cuadros idle/ataque/impacto/muerte | AG-5 | hoja de estilo Kimi; petición de generación a Kimi (D-049) | ⏸ tras tiles |
-| Tiles tácticos (hecho), relieve del mapa, música CC, efectos, balance | AG-5/AG-3 | assets e integración | ⏸ fin de fase |
+| **Tiles §10.4** | AG-3/AG-2 | 12 tiles 512 (raw en `src/`), campo N3 128 px con rotación, generador desde región; `battle_tiles` + reglas (río/montaña impassable, colina/bosque/camino/villa); QA | ✅ **CERRADO — QA APROBADO 7/7** |
+| Escenarios 1402/1453 | AG-1 | datos + eventos (Ankara, locura de Carlos VI, Constantinopla, Dos Rosas) + evolución tecnológica | ⏸ siguiente |
+| Retratos herederos/1402/1453 + cuadros idle/ataque/impacto/muerte | AG-5 | hoja de estilo Kimi; petición de generación a Kimi (D-049) | ⏸ siguiente |
+| Relieve del mapa, música CC, efectos, balance | AG-5/AG-3 | assets e integración | ⏸ fin de fase |
 | QA final Fase 3 | AG-4 | 3 escenarios completos, victoria/derrota §4.5, partida automatizada 10 años, sprites/retratos/tiles | ⏸ |
 
 **Sprites §10.3 — aceptación superada (v1.6, 17/17):**
@@ -396,17 +396,27 @@ y `docs/architecture_contracts_fase3_tiles.md` (tiles §10.4).
   `validate_data` 5.570 comprobaciones, 0 errores; sin regresión F1/F2.
 - Decisiones: D-039…D-050.
 
-**Tiles §10.4 — en curso (GDD v1.7):** 12 mosaicos 512×512 (raw 1024 en `src/`); `battle_tiles` validado
-por `validate_data.gd`; campo N3 a 128 px con rotación 90° de río/puente/puente_villa/camino; generador
-derivado de `region.terrain` con río de orilla a orilla + 1-2 puentes, villa y caminos; reglas tácticas
-(río/montaña intransitables, colina/bosque defensa y coste, bosque penaliza caballería, camino/villa_calle
-bonus de movimiento, villa/puente_villa defensa). Criterio: QA `docs/qa/fase3_tiles_report.md` con 12/12
-tiles, tests de impassable/bonus y capturas de campo con río+puente+villa y llanura.
+**Tiles §10.4 — aceptación superada (GDD v1.7):**
+- 12 mosaicos 512×512 en `assets/art/battle/tiles/` (+12 `_raw_1024` en `src/` con `.gdignore`, sin importar);
+  hoja de contacto en `docs/screenshots/tiles_contact_sheet.png`.
+- `data/battle_tiles.json` + schema + validación en `validate_data.gd` como dato de juego: **7 datasets/7
+  schemas, 5.722 comprobaciones, 0 WARN/0 errores**; 12 claves con balance D-053 (río/montaña impassable,
+  colina 2/1, bosque 2/1 + `cavalry_penalty`, camino 0,5 + `move_bonus`, villa/puente_villa defensa).
+- Reglas tácticas en N2/N3 (`BattleTiles`, `TacticalBattle`, `CloseCombat`): intransitables, costes
+  fraccionarios, defensa por tile, penalización de caballería, bonus de camino; determinismo intacto.
+- Render N3: rejilla 8×3 a 128 px (texturas 512), rotación 90° en motor de río/puente/puente_villa/camino;
+  generador determinista derivado de `region.terrain` con río de orilla a orilla + 1-2 puentes, villa y
+  caminos; capturas `tiles_n3_rio_puente_villa.png` y `tiles_n3_llanura.png` (1920×1080) revisadas.
+- QA independiente: `docs/qa/fase3_tiles_report.md` — **APROBADO 7/7**; `run_all` **1194/0/1**; sin
+  regresión sprites 17/17 ni F1/F2.
 
 **Decisiones:** D-039 (GDD v1.6), D-040…D-043 (reparto/fuentes/orientación/pipeline), D-044…D-050
 (17 unidades, id bombarda, fuentes raw, formatos, proyectiles, capturas), D-051…D-056 (GDD v1.7, reparto
 tiles, `battle_tiles`, render/rotación, generador N3, capturas de tiles).
 
-**Próximo cierre:** al aprobar tiles → módulo §10.4 cerrado; después escenarios 1402/1453 (AG-1) y
-retratos/animaciones restantes (AG-5); QA final de Fase 3, tag `fase-3`, reporte y verificación externa
-de Kimi contra GDD v1.7.
+**Próximo tramo de Fase 3:** escenarios 1402/1453 (AG-1 datos+eventos: Ankara 1402, locura de Carlos VI,
+caída de Constantinopla 1453, Guerra de las Dos Rosas; evolución tecnológica), retratos de herederos y de
+los escenarios nuevos (AG-5, hoja de estilo Kimi; petición de generación a Kimi si hace falta) y cuadros
+idle/ataque/impacto/muerte de las 17 unidades (D-049). Después: relieve del mapa, música CC, efectos,
+balance y QA final de Fase 3 (3 escenarios completos, victoria/derrota §4.5, partida automatizada de 10
+años) → tag `fase-3`, reporte y verificación externa de Kimi contra GDD v1.7.
