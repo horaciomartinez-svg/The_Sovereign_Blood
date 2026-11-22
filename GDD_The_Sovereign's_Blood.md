@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vía DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.5 |
-| **Estado** | Aprobado — v1.5: REA ampliado a mecármicas de batalla §3.2, retratos finales diseñados por Kimi §10.2, sprites de unidades §10.3 |
+| **Versión del documento** | 1.6 |
+| **Estado** | Aprobado — v1.6: sprites de unidades núcleo entregados por Kimi (§10.3) e integración en Fase 3; hereda v1.5 (REA ampliado §3.2, retratos finales §10.2) |
 
 ---
 
@@ -552,6 +552,14 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 - **Asignación:** `units.json` añade campo opcional `"sprite_sheet": "res://assets/art/units/<unit_id>.png"`; fallback = marcador heráldico por facción (ya existente) si falta el sprite.
 - **Producción:** AG-5 (Fase 3) con guía de estilo; la lista de hojas requeridas se deriva de `units.json` (17 tipos × variantes por época según aplique). Prioridad: las 6-8 unidades más comunes del Escenario 1.
 
+**Sprites núcleo ENTREGADOS (v1.6 — Kimi, 2026-11-22).** Paquete `Sprites_Unidades_TSB.zip`: 6 unidades × 3 cuadros de marcha con los IDs reales de `units.json` — `militia_spearman`, `swiss_pikeman`, `crossbowmen`, `longbowman`, `men_at_arms`, `light_horseman` — + 3 proyectiles (`proyectil_virote.png`, `proyectil_flecha.png`, `proyectil_piedra.png`). Contrato del asset:
+- **Archivos:** `<unit_id>_march_{1,2,3}.png`; infantería 512×512, caballería 512×640 (proporción 64×80), RGBA transparente, figura aislada sin sombra de suelo. Originales 1024 incluidos. Ancla: pies en borde inferior, centro horizontal.
+- **Animación de marcha (ciclo 3):** `march_1` extremidad izquierda adelante → `march_2` reunión/paso → `march_3` derecha adelante (equivalente en el paso del caballo). Todos miran a E; para O espejar en el motor (convención GK2); S/SE usan la versión actual.
+- **Reescalado:** LANCZOS a 64×64 / 64×80 en importación; validar legibilidad del arma a 64 px (QA visual).
+- **Proyectiles:** capa separada con trayectoria balística; virote→`crossbowmen`, flecha→`longbowman`, piedra→`bombarda`.
+- **Campo `units.json` (D-037):** `"sprite_sheet": {"frames": ["res://assets/art/sprites/units/<unit_id>_march_1.png", "..._2", "..._3"], "anim": {"march": [0,1,2], "fps": 6, "loop": true}, "size": [64,64], "anchor": "bottom_center", "facing": "E"}` (64×80 en caballería). Fallback heráldico si falta.
+- Pendiente bajo el mismo pipeline: cuadros idle/ataque/impacto/muerte §10.3 y las 11 unidades restantes del dataset (incluidas las de era 2-3: `swiss_pikeman` ya cubierta, `arquebusier`, `hussite_war_wagon`, etc.).
+
 **Criterios de aceptación:** cada tipo de unidad del Escenario 1 identificable en silueta a 64 px; animación de ataque con proyectil visible para ballesteros/arqueros/bombardas; todas las hojas referenciadas en `units.json` cargan sin error en CI; capturas de las 3 unidades de ejemplo (milicia, ballesteros, arqueros) en `docs/screenshots/`.
 
 ---
@@ -671,7 +679,8 @@ C:\Proyectos\TSB\sovereigns-blood --script tests/run_all.gd
 - **Aceptación:** Crécy puede jugarse en los 3 niveles con resultados coherentes; pérdida de líder sin herederos termina la partida correctamente; módulos Mapa y Retratos cumplen §10.1/§10.2; informe REA ampliado entregado.
 
 ### Fase 3 — Contenido y remaster (objetivo: 2-3 semanas)
-- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2, tiles, música CC); balance general.
+- **Integración de sprites Kimi (primero):** AG-5 copia el paquete `Sprites_Unidades_TSB.zip` a `assets/art/sprites/units/`, reescala a 64×64 / 64×80 (LANCZOS), añade `sprite_sheet` a las 6 unidades núcleo en `units.json` (formato §10.3) y valida carga en CI headless. Niveles 2/3 de batalla usan estos sprites con el ciclo de marcha; proyectiles en capa separada con trayectoria balística.
+- Escenarios 1402 y 1453 completos (datos + eventos: Ankara, locura de Carlos VI, caída de Constantinopla, Dos Rosas); evolución tecnológica por año; arte final (retratos §10.2 de herederos y nuevos escenarios siguiendo la hoja de estilo Kimi, tiles, música CC); balance general.
 - **Aceptación:** los 3 escenarios empiezan y llegan a su año final; victoria/derrota según Sección 4.5; partida completa de test automatizada de 10 años sin errores; set de retratos completo y slot de retrato funcional en las 5 ubicaciones §10.2.
 
 **Total estimado: 7-10 semanas de trabajo del equipo de agentes, revisado por ti en sesiones cortas.**
@@ -720,4 +729,4 @@ PG: Puntos de Gobernanza · Casus Belli: justificación de guerra · Devshirme: 
 
 ---
 
-*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3. v1.5: REA ampliado a mecármicas de batalla Nivel 2/3 y estructura de sprites (Sección 3.2, autorización del usuario); retratos finales de los 14 soberanos diseñados por Kimi con heráldica real (Sección 10.2); sprites de unidades con armas de época y proyectiles visibles (Sección 10.3).*
+*Fin del GDD v1.3 — The Sovereign's Blood. Documento de trabajo para el equipo de agentes DSH; ante conflicto entre este documento y el código, este documento manda hasta que el Coordinator apruebe un cambio registrado en `docs/decisions.md`. v1.1: entorno Windows real (Sección 3.1), carpeta `agents\`, godot-mcp y rea-mcp. v1.2: ejecutables Godot 4.7.2 verificados, repo GitHub público y protocolo de verificación (Sección 3.2). v1.3: especificación de mapa geográfico profesional (Sección 10.1, módulo Mapa en Fase 2), solicitud del usuario tras comparar con el mapa de GK2. v1.4: especificación de retratos de soberanos (Sección 10.2) — avatar del soberano en mapa y pantallas clave, placeholders heráldicos en Fase 2 y retratos ilustrados en Fase 3. v1.5: REA ampliado a mecármicas de batalla Nivel 2/3 y estructura de sprites (Sección 3.2, autorización del usuario); retratos finales de los 14 soberanos diseñados por Kimi con heráldica real (Sección 10.2); sprites de unidades con armas de época y proyectiles visibles (Sección 10.3). v1.6: sprites de las 6 unidades núcleo entregados por Kimi (contrato de asset, ciclo de marcha de 3 cuadros, proyectiles) con integración AG-5 como primera tarea de Fase 3 (Sección 10.3 y plan de fases).*
