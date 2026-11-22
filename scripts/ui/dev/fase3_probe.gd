@@ -4,7 +4,6 @@ extends SceneTree
 ## con sprite/mirror y proyectiles activos tras un disparo.
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
-const CORE_UNITS := ["militia_spearman", "swiss_pikeman", "crossbowmen", "longbowman", "men_at_arms", "light_horseman"]
 
 var _failures: Array[String] = []
 
@@ -15,12 +14,16 @@ func _initialize() -> void:
 	for i in range(3):
 		await process_frame
 
-	var core_ok := 0
-	for unit_id: String in CORE_UNITS:
-		var data: Dictionary = TSBGame.unit(unit_id)
-		var sheet_value: Variant = data.get("sprite_sheet", null)
+	var sprite_units := 0
+	var units_without_sprite := 0
+	for unit_value: Variant in TSBGame.all_units():
+		if not (unit_value is Dictionary):
+			continue
+		var unit_data := unit_value as Dictionary
+		var unit_id := str(unit_data.get("id", ""))
+		var sheet_value: Variant = unit_data.get("sprite_sheet", null)
 		if not (sheet_value is Dictionary) or (sheet_value as Dictionary).is_empty():
-			_check(false, "sprite_sheet de %s" % unit_id)
+			units_without_sprite += 1
 			continue
 		var sheet := sheet_value as Dictionary
 		var frames: Variant = sheet.get("frames", [])
@@ -28,6 +31,10 @@ func _initialize() -> void:
 			_check(false, "3 frames de %s" % unit_id)
 			continue
 		var frames_ok := true
+		var expected_size := Vector2i(64, 64)
+		var raw_size: Variant = sheet.get("size", [64, 64])
+		if raw_size is Array and (raw_size as Array).size() >= 2:
+			expected_size = Vector2i(int(float((raw_size as Array)[0])), int(float((raw_size as Array)[1])))
 		for frame: Variant in (frames as Array):
 			var path := str(frame)
 			if not ResourceLoader.exists(path):
@@ -37,31 +44,23 @@ func _initialize() -> void:
 			if not (loaded is Texture2D):
 				frames_ok = false
 				break
-		_check(frames_ok, "3 texturas cargan para %s" % unit_id)
+			var texture := loaded as Texture2D
+			if texture.get_size() != Vector2(expected_size):
+				frames_ok = false
+				break
+		_check(frames_ok, "3 texturas %d×%d cargan para %s" % [expected_size.x, expected_size.y, unit_id])
 		if frames_ok:
-			core_ok += 1
-	_check(core_ok == CORE_UNITS.size(), "6/6 unidades núcleo con sprites (hay %d)" % core_ok)
-
-	var missing := 0
-	for unit_value: Variant in TSBGame.all_units():
-		if not (unit_value is Dictionary):
-			continue
-		var unit_data := unit_value as Dictionary
-		var unit_id := str(unit_data.get("id", ""))
-		if CORE_UNITS.has(unit_id):
-			continue
-		var sheet: Variant = unit_data.get("sprite_sheet", null)
-		if not (sheet is Dictionary) or (sheet as Dictionary).is_empty():
-			missing += 1
-	_check(missing == 11, "11 unidades sin sprite_sheet (fallback) (hay %d)" % missing)
+			sprite_units += 1
+	_check(sprite_units == 17, "17/17 unidades con sprite_sheet válido (hay %d)" % sprite_units)
+	_check(units_without_sprite == 0, "0 unidades sin sprite en el dataset (hay %d)" % units_without_sprite)
 
 	var world: Node = load("res://scenes/map/world_map.tscn").instantiate()
 	root.add_child(world)
 	for i in range(5):
 		await process_frame
-	var context := _find_core_context()
+	var context := _find_sprite_context()
 	if context.is_empty():
-		_check(false, "contexto N2 con unidades núcleo")
+		_check(false, "contexto N2 con unidades con sprite")
 	else:
 		world.call("_open_tactical_battle", str(context.get("attacker", "")), str(context.get("defender", "")), str(context.get("region", "")))
 		await _frames(3)
@@ -103,10 +102,11 @@ func _initialize() -> void:
 	world.queue_free()
 	await _frames(2)
 
-	# N3: campo con sprite, defensor espejado y proyectil tras disparo.
+	# N3: bombarda (64×43 panorámica) + defensor sintético sin sprite → fallback
+	# y proyectil de piedra.
 	var close_scene: Node = load("res://scenes/battle/close_combat.tscn").instantiate()
 	root.add_child(close_scene)
-	close_scene.call("setup", _unit_dict("longbowman", "england", "atk"), _unit_dict("mamluk", "mamluk", "def"))
+	close_scene.call("setup", _unit_dict("bombarda", "england", "bombarda"), _unit_dict("synthetic_peasant", "france", "fallback"))
 	await _frames(5)
 	var cc: Variant = close_scene.get("_cc")
 	_check(cc != null, "N3 CloseCombat")
@@ -114,9 +114,11 @@ func _initialize() -> void:
 		var attacker_sprite: Variant = close_scene.get("_field_attacker")
 		var defender_sprite: Variant = close_scene.get("_field_defender")
 		var defender_fallback: Variant = close_scene.get("_field_defender_fallback")
-		_check(attacker_sprite != null and (attacker_sprite as Sprite2D).texture != null and (attacker_sprite as Sprite2D).visible, "N3 sprite atacante visible")
-		_check(defender_fallback != null and (defender_fallback as CanvasItem).visible, "N3 fallback visible para unidad sin sprite")
-		_check(defender_sprite != null and not (defender_sprite as Sprite2D).visible, "N3 sin Sprite2D para mamluk (fallback)")
+		_check(attacker_sprite != null and (attacker_sprite as Sprite2D).texture != null and (attacker_sprite as Sprite2D).visible, "N3 sprite panorámico bombarda visible")
+		if attacker_sprite is Sprite2D and (attacker_sprite as Sprite2D).texture != null:
+			_check(int((attacker_sprite as Sprite2D).texture.get_height()) == 43, "N3 bombarda usa textura 64×43 sin deformar")
+		_check(defender_fallback != null and (defender_fallback as CanvasItem).visible, "N3 fallback sintético visible")
+		_check(defender_sprite != null and not (defender_sprite as Sprite2D).visible, "N3 sin Sprite2D para unidad sintética sin sprite")
 		var fired := false
 		for attempt in range(8):
 			var state: Dictionary = cc.call("get_state")
@@ -136,8 +138,9 @@ func _initialize() -> void:
 			await _frames(2)
 		if fired:
 			cc.call("tick_animation", 120.0)
-			var projectiles: Array = cc.call("get_projectiles")
-			_check(not projectiles.is_empty(), "N3 proyectil activo tras disparo")
+			var projectile_types := _projectile_types(cc)
+			print("  [info] N3 tipos de proyectil: ", projectile_types)
+			_check(projectile_types.has("piedra"), "N3 proyectil de piedra activo tras disparo")
 		else:
 			_check(false, "N3 mano con disparo")
 	close_scene.queue_free()
@@ -161,18 +164,21 @@ func _unit_dict(unit_id: String, faction: String, suffix: String) -> Dictionary:
 	}
 
 
-func _find_core_context() -> Dictionary:
+func _find_sprite_context() -> Dictionary:
 	for army: Variant in TSBGame.armies().values():
 		if not (army is Dictionary):
 			continue
 		var units: Variant = (army as Dictionary).get("units", [])
-		var has_core := false
+		var has_sprite := false
 		if units is Array:
 			for unit_value: Variant in (units as Array):
-				if unit_value is Dictionary and CORE_UNITS.has(str((unit_value as Dictionary).get("unit_id", ""))):
-					has_core = true
-					break
-		if not has_core:
+				if unit_value is Dictionary:
+					var unit_id := str((unit_value as Dictionary).get("unit_id", ""))
+					var sheet: Variant = TSBGame.unit(unit_id).get("sprite_sheet", null)
+					if sheet is Dictionary and not (sheet as Dictionary).is_empty():
+						has_sprite = true
+						break
+		if not has_sprite:
 			continue
 		var from_region := str((army as Dictionary).get("region_id", ""))
 		var faction_id := str((army as Dictionary).get("faction_id", ""))
@@ -182,6 +188,18 @@ func _find_core_context() -> Dictionary:
 			if not defender.is_empty():
 				return {"attacker": str((army as Dictionary).get("id", "")), "defender": str(defender.get("id", "")), "region": target}
 	return {}
+
+
+func _projectile_types(cc: Node) -> Array[String]:
+	var types: Array[String] = []
+	var projectiles: Variant = cc.call("get_projectiles")
+	if projectiles is Array:
+		for projectile_value: Variant in (projectiles as Array):
+			if projectile_value is Dictionary:
+				var projectile_type := str((projectile_value as Dictionary).get("type", ""))
+				if not projectile_type.is_empty() and not types.has(projectile_type):
+					types.append(projectile_type)
+	return types
 
 
 func _check(condition: bool, label: String) -> void:

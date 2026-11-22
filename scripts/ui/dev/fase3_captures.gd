@@ -14,8 +14,10 @@ const SHOWCASE_UNITS := [
 	["militia_spearman", "sprites_64_milicia", "MILICIA · lanza"],
 	["crossbowmen", "sprites_64_ballesteros", "BALLESTEROS · ballesta"],
 	["longbowman", "sprites_64_arqueros", "ARQUEROS · arco largo"],
+	["almogavar", "sprites_64_almogavar", "ALMOGÁVAR · espada y escudo"],
+	["janissary", "sprites_64_jenizaro", "JENÍZARO · arco compuesto"],
 ]
-const RANGED_UNITS := ["longbowman", "crossbowmen", "bombarda"]
+const RANGED_UNITS := ["longbowman", "crossbowmen", "bombarda", "janissary", "steppe_cavalry"]
 
 var _captures := 0
 
@@ -28,6 +30,7 @@ func _initialize() -> void:
 
 	for entry: Array in SHOWCASE_UNITS:
 		await _capture_unit_64(str(entry[0]), str(entry[1]), str(entry[2]))
+	await _capture_contact_sheet_17()
 
 	var world: Node = load("res://scenes/map/world_map.tscn").instantiate()
 	root.add_child(world)
@@ -125,7 +128,9 @@ func _capture_unit_64(unit_id: String, file_name: String, title_text: String) ->
 
 
 func _capture_n2(world: Node) -> void:
-	var context := _find_ranged_context()
+	var context := _prepare_longbowman_context()
+	if context.is_empty():
+		context = _find_ranged_context()
 	if context.is_empty():
 		context = _find_any_context()
 	if context.is_empty():
@@ -193,12 +198,12 @@ func _capture_n3() -> void:
 	var scene: Node = load("res://scenes/battle/close_combat.tscn").instantiate()
 	root.add_child(scene)
 	var attacker_unit: Dictionary = {
-		"id": "demo_longbowman", "faction": "england", "unit_id": "longbowman",
-		"size": 2400, "strength": 12, "morale": 1.0, "experience": 60, "commander_stat": 85,
+		"id": "demo_bombarda", "faction": "england", "unit_id": "bombarda",
+		"size": 2400, "strength": 20, "morale": 1.0, "experience": 60, "commander_stat": 85,
 	}
 	var defender_unit: Dictionary = {
-		"id": "demo_spearman", "faction": "france", "unit_id": "militia_spearman",
-		"size": 2400, "strength": 10, "morale": 1.0, "experience": 50, "commander_stat": 75,
+		"id": "demo_longbowman", "faction": "france", "unit_id": "longbowman",
+		"size": 2400, "strength": 12, "morale": 1.0, "experience": 50, "commander_stat": 75,
 	}
 	scene.call("setup", attacker_unit, defender_unit)
 	await _frames(5)
@@ -207,8 +212,9 @@ func _capture_n3() -> void:
 		print("[WARN] N3 sin CloseCombat")
 		scene.queue_free()
 		return
-	var fired := false
-	for attempt in range(8):
+	var fired_piedra := false
+	var both_types := false
+	for attempt in range(12):
 		var state: Dictionary = cc.call("get_state")
 		var hands: Variant = state.get("hands", {})
 		var hand: Array = []
@@ -218,22 +224,151 @@ func _capture_n3() -> void:
 				hand = raw_hand as Array
 		if hand.has("disparo"):
 			scene.call("_play_card", "disparo")
-			fired = true
-			break
-		if hand.is_empty():
-			break
-		scene.call("_play_card", str(hand[0]))
+			fired_piedra = true
+		elif not hand.is_empty():
+			scene.call("_play_card", str(hand[0]))
 		await _frames(2)
+		await create_timer(0.06).timeout
+		var types := _projectile_types(cc)
+		print("[F3] N3 ronda ", attempt + 1, " proyectiles=", types)
+		if types.has("piedra") and types.has("flecha"):
+			both_types = true
+			break
 		if bool(cc.call("is_finished")):
 			break
-	if fired:
-		await create_timer(0.14).timeout
-		await _frames(4)
-		print("[F3] N3 proyectiles activos: ", (cc.call("get_projectiles") as Array).size())
+		await create_timer(0.10).timeout
+		await _frames(2)
+	if fired_piedra or both_types:
+		await create_timer(0.10).timeout
+		await _frames(3)
+		print("[F3] N3 proyectiles antes de captura=", _projectile_types(cc), " piedra+flecha=", both_types)
 	await _frames(2)
 	await _capture("sprites_n3")
 	scene.queue_free()
 	await _frames(2)
+	# Si el duelo anterior solo mostró piedra, una captura extra garantiza flecha.
+	if not both_types:
+		await _capture_n3_flecha()
+
+
+func _capture_n3_flecha() -> void:
+	var scene: Node = load("res://scenes/battle/close_combat.tscn").instantiate()
+	root.add_child(scene)
+	scene.call("setup", _unit_dict("longbowman", "england", "n3flecha"), _unit_dict("militia_spearman", "france", "n3spear"))
+	await _frames(5)
+	var cc: Variant = scene.get("_cc")
+	if cc != null:
+		for attempt in range(8):
+			var state: Dictionary = cc.call("get_state")
+			var hands: Variant = state.get("hands", {})
+			var hand: Array = []
+			if hands is Dictionary:
+				var raw: Variant = (hands as Dictionary).get("attacker", [])
+				if raw is Array:
+					hand = raw as Array
+			if hand.has("disparo"):
+				scene.call("_play_card", "disparo")
+				await create_timer(0.12).timeout
+				await _frames(3)
+				break
+			if hand.is_empty():
+				break
+			scene.call("_play_card", str(hand[0]))
+			await _frames(2)
+		await _capture("sprites_n3_flecha")
+	scene.queue_free()
+	await _frames(2)
+
+
+func _projectile_types(cc: Node) -> Array[String]:
+	var types: Array[String] = []
+	var projectiles: Variant = cc.call("get_projectiles")
+	if projectiles is Array:
+		for projectile_value: Variant in (projectiles as Array):
+			if projectile_value is Dictionary:
+				var projectile_type := str((projectile_value as Dictionary).get("type", ""))
+				if not projectile_type.is_empty() and not types.has(projectile_type):
+					types.append(projectile_type)
+	return types
+
+
+func _capture_contact_sheet_17() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 60
+	root.add_child(layer)
+	var backdrop := ColorRect.new()
+	backdrop.color = Color("18212c")
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(backdrop)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(center)
+	var panel := PanelContainer.new()
+	panel.theme_type_variation = "ParchmentPanel"
+	panel.theme = ThemeBuilder.get_theme()
+	panel.custom_minimum_size = Vector2(1640, 920)
+	center.add_child(panel)
+	var margin := UIKit.margin(panel, 24, 18, 24, 16)
+	var column := UIKit.vbox(margin, 8)
+	var title := UIKit.label(column, "17 UNIDADES · HOJA DE CONTACTO v2 (sprites finales)", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	title.add_theme_font_size_override("font_size", 25)
+	title.add_theme_color_override("font_color", Palette.INK_TEXT)
+	var subtitle := UIKit.label(column, "64×64 infantería/ranged · 64×80 caballería · 64×43 panorámicos (bombarda, carro húsita) · ancla bottom_center/facing E", "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	subtitle.add_theme_font_size_override("font_size", 13)
+	subtitle.add_theme_color_override("font_color", Palette.CRIMSON)
+	var grid := UIKit.grid(column, 6, 10, 8)
+	var shown := 0
+	for unit_value: Variant in TSBGame.all_units():
+		if not (unit_value is Dictionary):
+			continue
+		var unit_data := unit_value as Dictionary
+		var sheet_value: Variant = unit_data.get("sprite_sheet", null)
+		if not (sheet_value is Dictionary) or (sheet_value as Dictionary).is_empty():
+			continue
+		var sheet := sheet_value as Dictionary
+		var frames: Variant = sheet.get("frames", [])
+		if not (frames is Array) or (frames as Array).is_empty():
+			continue
+		var texture: Texture2D = null
+		if ResourceLoader.exists(str((frames as Array)[0])):
+			var loaded: Variant = load(str((frames as Array)[0]))
+			if loaded is Texture2D:
+				texture = loaded as Texture2D
+		if texture == null:
+			continue
+		var cell := UIKit.vbox(grid, 2)
+		var rect := TextureRect.new()
+		rect.texture = texture
+		rect.custom_minimum_size = Vector2(110, 110)
+		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		cell.add_child(rect)
+		var label := UIKit.label(cell, str(unit_data.get("id", "")), "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		label.add_theme_font_size_override("font_size", 11)
+		label.add_theme_color_override("font_color", Palette.INK_TEXT)
+		var raw_size: Variant = sheet.get("size", [64, 64])
+		var size_text := "64×64"
+		if raw_size is Array and (raw_size as Array).size() >= 2:
+			size_text = "%d×%d" % [int(float((raw_size as Array)[0])), int(float((raw_size as Array)[1]))]
+		var size_label := UIKit.label(cell, size_text, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+		size_label.add_theme_font_size_override("font_size", 10)
+		size_label.add_theme_color_override("font_color", Palette.MUTED)
+		shown += 1
+	var footer := UIKit.label(column, "%d/17 unidades con sprite final; hoja de contacto v2 para revisión de silueta y tamaños." % shown, "InkLabel", HORIZONTAL_ALIGNMENT_CENTER)
+	footer.add_theme_font_size_override("font_size", 13)
+	footer.add_theme_color_override("font_color", Palette.MUTED)
+	await _frames(4)
+	await _capture("sprites_contact_sheet_v2")
+	layer.queue_free()
+	await _frames(2)
+
+
+func _unit_dict(unit_id: String, faction: String, suffix: String) -> Dictionary:
+	return {
+		"id": "demo_%s" % suffix, "faction": faction, "unit_id": unit_id,
+		"size": 2400, "strength": 12, "morale": 1.0, "experience": 50, "commander_stat": 80,
+	}
 
 
 func _find_ranged_context() -> Dictionary:
@@ -254,6 +389,45 @@ func _find_ranged_context() -> Dictionary:
 		var context := _context_for_army(army as Dictionary)
 		if not context.is_empty():
 			return context
+	return {}
+
+
+func _prepare_longbowman_context() -> Dictionary:
+	# La captura N2 de flecha necesita un longbowman inglés en un borde. Si el
+	# ejército de Londres no tiene enemigo adyacente, se traslada a Inglaterra
+	# del Sur (propia) para mirar a Normandía.
+	for army: Variant in TSBGame.armies().values():
+		if not (army is Dictionary):
+			continue
+		var army_data := army as Dictionary
+		if str(army_data.get("faction_id", "")) != TSBGame.player_faction():
+			continue
+		var units: Variant = army_data.get("units", [])
+		var has_longbow := false
+		if units is Array:
+			for unit_value: Variant in (units as Array):
+				if unit_value is Dictionary and str((unit_value as Dictionary).get("unit_id", "")) == "longbowman":
+					has_longbow = true
+					break
+		if not has_longbow:
+			continue
+		var direct := _context_for_army(army_data)
+		if not direct.is_empty():
+			return direct
+		var army_id := str(army_data.get("id", ""))
+		var from_region := str(army_data.get("region_id", ""))
+		for adjacent: Variant in TSBGame.region_adjacency(from_region):
+			var staging := str(adjacent)
+			if str(TSBGame.region(staging).get("owner", "")) != TSBGame.player_faction():
+				continue
+			for border: Variant in TSBGame.region_adjacency(staging):
+				var defender := TSBGame.defender_army_in(str(border), TSBGame.player_faction())
+				if defender.is_empty():
+					continue
+				var moved: bool = TSBGame.move_army(army_id, staging)
+				if moved:
+					print("[F3] longbowman trasladado a ", staging, " para captura de flecha")
+					return {"attacker": army_id, "defender": str(defender.get("id", "")), "region": str(border)}
 	return {}
 
 

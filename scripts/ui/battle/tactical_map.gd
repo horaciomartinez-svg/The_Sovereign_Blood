@@ -690,6 +690,16 @@ class TacticalCanvas extends Control:
 	func _unit_foot(center: Vector2) -> Vector2:
 		return center + Vector2(0, _radius * 0.48)
 
+	## Ajuste de pies para sprites panorámicos 64×43 (bombarda/carro húsita).
+	func _sprite_foot_offset(unit_id: String) -> float:
+		match unit_id:
+			"bombarda":
+				return 5.0
+			"hussite_war_wagon":
+				return 3.0
+			_:
+				return 0.0
+
 	## Crea/actualiza un Sprite2D por unidad con sprite_sheet (Fase 3 §4). Las 11
 	## unidades sin sprite siguen usando el marcador heráldico dibujado en _draw.
 	func _sync_unit_sprites() -> void:
@@ -731,7 +741,8 @@ class TacticalCanvas extends Control:
 			var scale := _sprite_scale
 			sprite.scale = Vector2(scale, scale)
 			var sprite_size := Vector2(texture.get_width(), texture.get_height()) * scale
-			sprite.position = _unit_foot(center) - Vector2(sprite_size.x * 0.5, sprite_size.y - 1.0)
+			var foot := _unit_foot(center) + Vector2(0, _sprite_foot_offset(str(unit.get("unit_id", ""))))
+			sprite.position = foot - Vector2(sprite_size.x * 0.5, sprite_size.y - 1.0)
 		for unit_id: Variant in _unit_sprites.keys():
 			if not alive.has(str(unit_id)):
 				var old: Variant = _unit_sprites[unit_id]
@@ -823,14 +834,15 @@ class TacticalCanvas extends Control:
 			var count_text := TSBGameLocal.short_number(int(data.get("size", 0)))
 			var font_size := int(clampf(_radius * 0.42, 9.0, 15.0))
 			var text_size := font.get_string_size(count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-			var label_center := _unit_foot(center) + Vector2(0, font_size + 5.0) if has_sprite else center
+			var foot := _unit_foot(center) + Vector2(0, _sprite_foot_offset(str(data.get("unit_id", ""))) if has_sprite else 0.0)
+			var label_center := foot + Vector2(0, font_size + 5.0) if has_sprite else center
 			draw_string(font, label_center + Vector2(-text_size.x * 0.5 + 1.0, font_size * 0.35 + 1.0), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, PaletteLocal.with_alpha(PaletteLocal.INK_DEEP, 0.8))
 			draw_string(font, label_center + Vector2(-text_size.x * 0.5, font_size * 0.35), count_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, PaletteLocal.PARCHMENT_LIGHT)
 			if is_selected:
-				draw_arc(_unit_foot(center) if has_sprite else center, _radius * 0.86, 0.0, TAU, 36, PaletteLocal.GOLD_BRIGHT, maxf(_radius * 0.09, 2.0), true)
+				draw_arc(foot if has_sprite else center, _radius * 0.86, 0.0, TAU, 36, PaletteLocal.GOLD_BRIGHT, maxf(_radius * 0.09, 2.0), true)
 			if has_sprite:
 				# Banderín de faccion bajo los pies para no perder el bando con sprites.
-				var flag_rect := Rect2(_unit_foot(center) + Vector2(-3.0, 2.0), Vector2(6.0, 10.0))
+				var flag_rect := Rect2(foot + Vector2(-3.0, 2.0), Vector2(6.0, 10.0))
 				draw_rect(flag_rect, color)
 				draw_rect(flag_rect, PaletteLocal.INK, false, 1.0)
 

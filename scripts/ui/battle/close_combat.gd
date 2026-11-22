@@ -47,6 +47,8 @@ var _field_defender_fallback: ColorRect = null
 var _field_defender_label: Label = null
 var _field_projectiles: Node2D = null
 var _field_textures: Dictionary = {}
+var _field_attacker_foot_extra := 0.0
+var _field_defender_foot_extra := 0.0
 
 
 func _ready() -> void:
@@ -153,8 +155,8 @@ func _layout_battlefield() -> void:
 	if _field_projectiles != null:
 		_field_projectiles.call("set_arena_size", _battlefield.size)
 	var foot_y := _battlefield.size.y - 20.0
-	_place_field_sprite(_field_attacker, _field_attacker_fallback, _battlefield.size.x * 0.28, foot_y)
-	_place_field_sprite(_field_defender, _field_defender_fallback, _battlefield.size.x * 0.72, foot_y)
+	_place_field_sprite(_field_attacker, _field_attacker_fallback, _battlefield.size.x * 0.28, foot_y + _field_attacker_foot_extra)
+	_place_field_sprite(_field_defender, _field_defender_fallback, _battlefield.size.x * 0.72, foot_y + _field_defender_foot_extra)
 	if _field_defender_label != null:
 		_field_defender_label.position = Vector2(_battlefield.size.x - 140.0, 8.0)
 
@@ -177,9 +179,22 @@ func _update_battlefield_units() -> void:
 	var defender_value: Variant = state.get("defender", {})
 	var attacker := attacker_value as Dictionary if attacker_value is Dictionary else {}
 	var defender := defender_value as Dictionary if defender_value is Dictionary else {}
+	_field_attacker_foot_extra = _sprite_foot_offset(str(attacker.get("unit_id", "")))
+	_field_defender_foot_extra = _sprite_foot_offset(str(defender.get("unit_id", "")))
 	_apply_field_unit(_field_attacker, _field_attacker_fallback, attacker)
 	_apply_field_unit(_field_defender, _field_defender_fallback, defender, true)
 	_layout_battlefield()
+
+
+## Ajuste de pies para sprites panorámicos 64×43 (bombarda/carro húsita).
+func _sprite_foot_offset(unit_id: String) -> float:
+	match unit_id:
+		"bombarda":
+			return 5.0
+		"hussite_war_wagon":
+			return 3.0
+		_:
+			return 0.0
 
 
 func _apply_field_unit(sprite: Sprite2D, fallback: ColorRect, unit: Dictionary, mirror_default: bool = false) -> void:
