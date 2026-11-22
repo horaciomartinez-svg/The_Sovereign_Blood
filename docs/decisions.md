@@ -169,3 +169,23 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** AG-3 comprobó que el combate cerrado (Nivel 3) resolvía el duelo pero no aplicaba el resultado a la campaña (faltaba el mapeo unidad→ejército/región), a diferencia de N1/N2.
 **Decisión:** AG-2 añade `BattleManager.apply_close_combat_outcome(attacker_army_id, defender_army_id, region_id, outcome) -> Dictionary`, que traduce el resultado del duelo a bajas/captura vía `MilitarySystem.apply_battle_outcome` (idempotente). AG-3 lo invoca cuando el jugador resuelve el combate cerrado en el contexto de una batalla de campaña; el acceso directo desde el selector de nivel se mantiene como vista previa. Contrato de Fase 2 actualizado en §4.
 **Consecuencia:** jugar una batalla en Nivel 3 tiene efecto en la partida, igual que N1/N2; test de regresión en AG-2/AG-4.
+
+## D-034 · Sincronización GDD v1.5 (2026-11-21)
+**Contexto:** el GDD maestro pasó a v1.5 con tres cambios vinculantes: §3.2 REA ampliado (observación de batallas Nivel 2/3 en DOSBox y estructura de `SUNIT.DAT`/`KPAT.DAT`/`GRPDATA.DAT`), §10.2 retratos finales de los 14 soberanos diseñados por Kimi, §10.3 sprites de unidades (Fase 3).
+**Decisión:** se sincroniza `GDD_The_Sovereign's_Blood.md` en el repo (commit `[GDD]`). Las nuevas especificaciones se incorporan al cierre de Fase 2: retratos integrados y REA ampliado son criterios de aceptación (§12 actualizado); §10.3 (sprites) queda planificado para Fase 3 con AG-5.
+**Consecuencia:** la fuente de verdad remota coincide con la v1.5; el alcance de Fase 2 se amplía con estos dos entregables.
+
+## D-035 · Integración de los 14 retratos finales (§10.2 v1.5) (2026-11-21)
+**Contexto:** el usuario entregó `Retratos_Soberanos_TSB.zip` con 14 PNG 256×256 (estilo miniatura iluminada, escudo heráldico integrado) y hoja de contacto; sustituyen cualquier retrato previo.
+**Decisión:** se copian a `assets/art/portraits/<character_id>.png` del repo; los 7 archivos con nombre corto se renombran al id real de `characters.json` (john_bohemia→jan_lucembursky, charles_robert→karoly_robert_anjou, alfonso_xi→alfonso_xi_borgona, peter_iv→pere_iv_d_arago, casimir_iii→kazimierz_iii_piast, david_ii→david_ii_bruce, oz_beg ya coincidía). AG-1 añade a cada `role: ruler` el campo `portrait: "res://assets/art/portraits/<id>.png"`. AG-3 acepta tanto id como ruta `res://` en el widget. El fallback heráldico se conserva para herederos/personajes sin retrato y la sucesión cambia el retrato al personaje vigente. Hoja de contacto final en `docs/screenshots/portraits_contact_sheet_final.png`.
+**Consecuencia:** los 5 slots de §10.2 muestran los retratos finales; AG-5 solo producirá retratos de herederos/escenarios 1402-1453 en Fase 3.
+
+## D-036 · REA ampliado de batallas Nivel 2/3 (§3.2 v1.5) (2026-11-21)
+**Contexto:** el usuario autoriza reactivar a AG-REA para documentar mecánicas observadas de batalla en DOSBox y la estructura de `SUNIT.DAT`, `KPAT.DAT`, `GRPDATA.DAT`, con el fin de alimentar el estilo de sprites de §10.3.
+**Decisión:** AG-REA produce `docs/rea/gk2_battle_mechanics.md` con: tipos de unidad y su distinción visual, animaciones de ataque y proyectiles, moral/fatiga en el mapa táctico, formación/movimiento de grupos y cadencias del combate cerrado; además de la estructura de los tres `.DAT` (dimensiones, cuadros, convenciones). Siguen prohibidos: descompilar ejecutables, copiar píxeles/paletas/assets y transcribir texto. Si el entorno no permite ejecutar DOSBox (no está instalado), AG-REA documenta la limitación y extrae lo observable de los datos + lecciones de diseño, solicitando capturas al usuario. El informe es criterio de aceptación de Fase 2 (GDD §12 v1.5).
+**Consecuencia:** el diseño de sprites de Fase 3 tendrá referencia de legibilidad sin material derivado de Koei.
+
+## D-037 · Sprites de unidades §10.3 — planificación Fase 3 (2026-11-21)
+**Contexto:** §10.3 exige sprites 64×64/64×80 con hojas de animación, proyectiles visibles y campo opcional `units.json.sprite_sheet`; AG-5 se activa en Fase 3.
+**Decisión:** en Fase 2 solo se entrega el REA de apoyo (D-036); la producción de sprites, la animación con proyectiles y el campo `sprite_sheet` en `units.json` se implementan en Fase 3 con AG-5 según la hoja de estilo derivada de §10.2/§10.3. No se añade aún el campo para no alterar datos sin assets.
+**Consecuencia:** alcance de Fase 2 cerrado sin scope creep; Fase 3 arranca con la especificación y el informe REA listos.
