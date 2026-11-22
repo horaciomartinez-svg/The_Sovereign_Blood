@@ -1136,7 +1136,7 @@
       "strength": 9,
       "move": 2,
       "cost": {
-        "gold": 80,
+        "gold": 170,
         "recruits": 60
       },
       "multipliers": {

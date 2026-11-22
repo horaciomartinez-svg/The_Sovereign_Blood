@@ -724,7 +724,7 @@ caballería pesada > caballería ligera; **artillería > caballería**; élites 
 | `dismounted_men_at_arms` | infantería pesada a pie | 95 | 100 | armas 1 |
 | `arquebusier` | infantería con pólvora | 90 | 120 | — |
 | `janissary` | infantería de élite | 120 | 80 | — |
-| `hussite_war_wagon` | especial/artillería | 80 | 60 | madera 2, hierro 1 |
+| `hussite_war_wagon` | especial/artillería | 170 | 60 | madera 2, hierro 1 |
 | `bombarda` | artillería | 200 | 40 | hierro 2, madera 1 |
 
 **Justificación (estimación de diseño):** un caballo de guerra, su equipo, forraje y la reposición
@@ -732,10 +732,12 @@ de bajas encarecen la caballería frente a la infantería; la caballería pesada
 mameluco, caballero teutónico) suma armadura y entrenamiento, de ahí 140-160. Los arqueros son más
 baratos que la caballería (45-60) pero el arco largo exige entrenamiento y reclutamiento selectivo
 (60). La milicia y las picas son la base barata (20-60); la infantería de élite con pólvora o
-jenizaros sube a 90-120. La artillería es la más cara (bombarda 200; carro húsita 80 por su
-naturaleza de carro). No se citan precios de época porque el valor es una **estimación de
+jenizaros sube a 90-120. La artillería es la más cara: el **carro húsita 170** (unidad
+especial/artillería, por encima de toda la caballería: teutónicos 160) y la **bombarda 200** (la
+mayor del set). No se citan precios de época porque el valor es una **estimación de
 balance**, no una fuente histórica; la referencia de diseño es GDD §6.4 y D-070/D-075. Se evita el
-efecto «todo cuesta igual» y la anomalía «caballería ligera más barata que un arquero».
+efecto «todo cuesta igual», la anomalía «caballería ligera más barata que un arquero» y la de
+«artillería especial por debajo de la caballería» (C14: 170 > 160).
 
 **Verificación:** 17/17 unidades con `cost.gold` entero > 0 y ranking correcto; `cost.recruits` y
 `recruit_goods` sin cambios; JSON válido; `validate_data` 14 datasets/10 schemas, 0 WARN/0 errores
