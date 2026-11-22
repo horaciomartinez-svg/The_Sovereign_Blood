@@ -1,4 +1,4 @@
-# Godot 4+ specific ignores
+﻿# Godot 4+ specific ignores
 .godot/
 /android/
 
@@ -23,7 +23,7 @@ Thumbs.db
 *.swp
 *~
 
-# Godot import sidecars de capturas de documentación (no son assets del juego)
+# Godot import sidecars de capturas de documentaciÃ³n (no son assets del juego)
 docs/screenshots/*.png.import
 
 # Local tooling
@@ -38,3 +38,5 @@ exports/
 *.pck
 *.exe
 !assets/**/*.exe
+docs/references/*.import
+

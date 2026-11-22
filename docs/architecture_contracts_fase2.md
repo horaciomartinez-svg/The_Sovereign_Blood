@@ -128,6 +128,12 @@ finta permite reposicionar; retirada ordenada reduce bajas. El comandante con ma
 **+1 orden por ronda** (mano de 3 en vez de 2). API: `get_state()`, `play_order(order_id)`,
 `enemy_respond()`, `is_finished()`, `get_outcome() -> Dictionary`.
 
+**Aplicación a campaña (addendum 1.1, D-033):** cuando el Nivel 3 se juega en el contexto de una batalla
+de campaña, AG-3 invoca
+`BattleManager.apply_close_combat_outcome(attacker_army_id, defender_army_id, region_id, outcome) -> Dictionary`,
+que traduce el duelo a bajas/captura vía `MilitarySystem.apply_battle_outcome` (idempotente). El selector
+directo de nivel en la UI es vista previa y no muta la partida.
+
 **Crécy (1346) jugable en 3 niveles:** debe existir un escenario de prueba (no UI obligatoria) que cree
 ejércitos Inglaterra/Francia en la región correspondiente y resuelva Nivel 1, Nivel 2 (táctico) y Nivel 3
 (cerrado) con resultados coherentes; AG-4 lo añade a `qa_acceptance.gd`. La escena UI `tactical_map.tscn`
