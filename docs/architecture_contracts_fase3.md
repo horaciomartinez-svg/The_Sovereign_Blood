@@ -182,3 +182,28 @@ Set entregado por Kimi: `Anim_Combate_TSB.zip` — **170 PNG** (17 unidades × 1
   `docs/qa/fase3_anim_report.md`.
 - **Ownership:** AG-5 assets (`assets/art/sprites/**`), AG-2 datos/motor (`data/units.json`, schema,
   `scripts/battle/**`, tests), AG-3 render N3 (`scenes/**`, `scripts/ui/**`), AG-4 QA, AG-0 docs/git.
+
+---
+
+## 10. Addendum 5.1 — Delta v1.8.1: ataque de 6 cuadros e `impact` (D-065)
+
+Paquete `Anim_Combate_Rango_Artilleria_TSB.zip`: **76 PNG** = 42 `attack_1..6` (7 unidades a distancia/
+artillería) + 34 `impact_1/2` (17 unidades; mismos píxeles que los `hit_*`, renombrados) + 42 raws + hoja.
+
+- **Unidades de choque (10):** 13 frames — `march [0,1,2]`, `idle [3,4]`, `attack [5,6,7,8]`,
+  `impact [9,10]`, `death [11,12]`.
+- **Unidades a distancia/artillería (7:** `janissary`, `arquebusier`, `crossbowmen`, `longbowman`,
+  `steppe_cavalry`, `bombarda`, `hussite_war_wagon`): 15 frames — `march [0,1,2]`, `idle [3,4]`,
+  `attack [5,6,7,8,9,10]`, `impact [11,12]`, `death [13,14]`.
+- **`anim`:** `{"march","idle","attack","impact","death","fps":6,"loop":true,"fps_attack":9,
+  "fps_impact":8,"fps_death":6,"death_hold":true}`; NO se usa el esquema `animations` de §3.6.
+- **Sustitución:** los `attack_1..4` v1 de las 7 unidades quedan obsoletos → `attack_1..6` del delta;
+  `hit_*` → `impact_*` (renombrar producción y raws; no dejar `hit_*` referenciados ni huérfanos).
+- **Motor N3:** ataque una vez; `attack_4` (índice absoluto 8) = disparo/golpe a t≈333,3 ms (9 fps),
+  lanza el proyectil (virote/flecha/piedra, capa separada); reacción `impact` del defensor a t≈444,4 ms
+  (tras la ventana de `attack_4`); a distancia completa 6 cuadros (recoil/recarga) y vuelve a idle; muerte
+  con `death_hold`; espejo oeste; sin RNG.
+- **QA:** 10×13 + 7×15 = 235 frames producción + 235 raws cargan headless; Pillow del ZIP (76, 512-wide,
+  RGBA con alfa); AE/attack/impact/death visible en N3 con proyectil; `run_all`/`validate_data` verdes;
+  capturas y actualización de `docs/qa/fase3_anim_report.md`.
+- **Ownership:** AG-5 assets; AG-2 data/schema/engine/tests; AG-3 render; AG-4 QA; AG-0 docs/git.
