@@ -130,3 +130,31 @@ Criterios para esta integración (se suman a los de Fase 3 §12):
 - Animación de ataque con proyectil visible para ballesteros/arqueros/bombardas (capa separada).
 - Todas las hojas referenciadas en `units.json` cargan sin error en CI headless.
 - Capturas de las 3 unidades de ejemplo en `docs/screenshots/`.
+
+---
+
+## 8. Addendum 2.1 — Paquete v2: 17 unidades (2026-11-22, D-044)
+
+Este addendum **sustituye los conteos y tamaños de §1-§2** tras la entrega del paquete v2 de Kimi
+(106 MB). GDD v1.6 §10.3 actualizado y decisiones D-044…D-050 son la referencia.
+
+- **Producción:** 51 PNG (`17 unidades × march_1/2/3`) en `assets/art/sprites/units/`:
+  - infantería/ranged (9 unidades) → **64×64**;
+  - caballería (6) → **64×80**;
+  - `bombarda` y `hussite_war_wagon` → **64×43** (panorámico 512×341 / 1536×1024 raw; proporción).
+- **Fuentes:** `assets/art/sprites/units/src/` = **51 originales `_raw_1024`** (1024², 1024×1280,
+  1536×1024) con `.gdignore`; ya no se almacenan los 512 como fuente (D-046). Tamaño ~91,6 MB.
+- **ID:** archivos `bombard_*` del paquete renombrados a `bombarda_*` (dataset `bombarda`, D-045).
+- **`sprite_sheet`:** las **17** unidades de `units.json`; `size` [64,64] / [64,80] / [64,43];
+  resto igual (frames 3, anim march [0,1,2] fps 6 loop, anchor bottom_center, facing E).
+- **Proyectiles:** virote→`crossbowmen`; flecha→`longbowman`/`janissary`/`steppe_cavalry`;
+  piedra→`bombarda` (D-048).
+- **Fallback:** todas las unidades del dataset tienen sprite; el fallback se prueba con una unidad
+  sintética sin `sprite_sheet` y debe seguir sin huecos.
+- **QA:** 17/17 hojas con frames cargando headless (64×64/64×80/64×43 reales), Crécy N1 + N2/N3,
+  capturas a 64 px de `militia_spearman`, `crossbowmen`, `longbowman`, `almogavar` y `janissary`,
+  más N2/N3 con proyectiles (D-050).
+- **Nota de entrega:** el README v2 de Kimi omite `crossbowmen`/`longbowman` en sus tablas pero los
+  archivos existen (51 = 17×3); se integran igualmente. Varias fuentes llegan con el arma/figura
+  tocando el borde del lienzo (recorte del artista); no hay margen recuperable sin regenerar y no
+  bloquea el render.
