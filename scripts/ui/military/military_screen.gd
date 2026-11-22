@@ -3,6 +3,8 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## adyacencia y creacion de ejército. Reclutamiento se detalla en el panel de
 ## region (MilitarySystem.recruit). Toda accion llama a la API de sistemas.
 
+signal army_management_requested
+
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 
 var _body: VBoxContainer = null
@@ -12,8 +14,16 @@ func _build_content() -> void:
 	dialog.custom_minimum_size = Vector2(1320, 800)
 	add_title("EJÉRCITOS DEL REINO", "Movimiento por adyacencia, creación y disolución de huestes")
 	_body = add_body_scroll()
-	add_footer("CERRAR")
+	var footer := add_footer("CERRAR")
+	var management := UIKit.button(footer, "GESTIÓN GLOBAL", "SmallButton", "Reclutar, entrenar y disolver por tipo de unidad")
+	management.pressed.connect(_open_management)
+	management.move_to_front()
 	_rebuild()
+
+
+func _open_management() -> void:
+	army_management_requested.emit()
+	close_overlay()
 
 
 func refresh() -> void:

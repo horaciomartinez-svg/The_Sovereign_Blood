@@ -558,6 +558,12 @@ static func unit(unit_id: String) -> Dictionary:
 	return (entry as Dictionary).duplicate(true) if entry is Dictionary else {}
 
 
+static func unit_name(unit_id: String) -> String:
+	var data := unit(unit_id)
+	var name_text := str(data.get("name", ""))
+	return name_text if not name_text.is_empty() else unit_id.capitalize()
+
+
 static func all_units() -> Array:
 	ensure_data()
 	var out: Array = []
@@ -870,6 +876,174 @@ static func move_army(army_id: String, to_region: String) -> bool:
 static func disband_army(army_id: String) -> bool:
 	var result: Variant = _call("MilitarySystem", "disband_army", [army_id])
 	return bool(result) if result != null else false
+
+
+## D-070: resumen global por tipo de unidad (API de AG-2 o agregación local).
+static func faction_army_summary(faction_id: String) -> Array:
+	var from_system: Variant = _call("MilitarySystem", "get_faction_army_summary", [faction_id])
+	if from_system is Array:
+		return (from_system as Array).duplicate(true)
+	var grouped: Dictionary = {}
+	for army_value: Variant in armies().values():
+		if not (army_value is Dictionary):
+			continue
+		var army_dict := army_value as Dictionary
+		if str(army_dict.get("faction_id", "")) != faction_id:
+			continue
+		for unit_value: Variant in (army_dict.get("units", []) as Array):
+			if not (unit_value is Dictionary):
+				continue
+			var unit_entry := unit_value as Dictionary
+			var unit_id := str(unit_entry.get("unit_id", ""))
+			if unit_id.is_empty():
+				continue
+			var aggregate: Dictionary = grouped.get(unit_id, {
+				"unit_id": unit_id, "count": 0, "men": 0, "strength": 0.0,
+				"morale": 0.0, "experience": 0.0, "samples": 0,
+			})
+			aggregate["count"] = int(aggregate.get("count", 0)) + 1
+			aggregate["men"] = int(aggregate.get("men", 0)) + int(unit_entry.get("size", 0))
+			aggregate["strength"] = float(aggregate.get("strength", 0.0)) + float(unit_entry.get("strength", 0))
+			aggregate["morale"] = float(aggregate.get("morale", 0.0)) + float(unit_entry.get("morale", 1.0))
+			aggregate["experience"] = float(aggregate.get("experience", 0.0)) + float(unit_entry.get("experience", 0))
+			aggregate["samples"] = int(aggregate.get("samples", 0)) + 1
+			grouped[unit_id] = aggregate
+	var out: Array = []
+	for unit_id: Variant in grouped.keys():
+		var aggregate: Dictionary = grouped[unit_id]
+		var samples := maxi(1, int(aggregate.get("samples", 1)))
+		var definition := unit(str(unit_id))
+		var frames: Array = []
+		var sheet: Variant = definition.get("sprite_sheet", {})
+		if sheet is Dictionary:
+			frames = (sheet as Dictionary).get("frames", [])
+		out.append({
+			"unit_id": str(unit_id),
+			"unit_name": str(definition.get("name", str(unit_id))),
+			"count": int(aggregate.get("count", 0)),
+			"men": int(aggregate.get("men", 0)),
+			"strength": float(aggregate.get("strength", 0.0)) / float(samples),
+			"morale": float(aggregate.get("morale", 1.0)) / float(samples),
+			"experience": float(aggregate.get("experience", 0.0)) / float(samples),
+			"sprite_path": str(frames[0]) if not frames.is_empty() else "",
+			"is_fallback": frames.is_empty(),
+		})
+	out.sort_custom(func(a: Variant, b: Variant) -> bool: return str((a as Dictionary).get("unit_id", "")) < str((b as Dictionary).get("unit_id", "")))
+	return out
+
+
+static func train_unit(faction_id: String, unit_id: String, amount: int = 100) -> bool:
+	var result: Variant = _call("MilitarySystem", "train_unit", [faction_id, unit_id, amount])
+	return bool(result) if result != null else false
+
+
+static func disband_unit(faction_id: String, unit_id: String, amount: int = 100) -> bool:
+	var result: Variant = _call("MilitarySystem", "disband_unit", [faction_id, unit_id, amount])
+	return bool(result) if result != null else false
+
+
+static func military_last_error() -> String:
+	var result: Variant = _call("MilitarySystem", "get_last_error", [])
+	return str(result) if result != null else ""
+
+
+static func train_last_error() -> String:
+	var result: Variant = _call("MilitarySystem", "get_last_train_reason", [])
+	return str(result) if result != null else ""
+
+
+static func disband_last_error() -> String:
+	var result: Variant = _call("MilitarySystem", "get_last_disband_reason", [])
+	return str(result) if result != null else ""
+
+
+static func recruit_last_error() -> String:
+	var result: Variant = _call("MilitarySystem", "get_last_recruit_reason", [])
+	return str(result) if result != null else ""
+
+
+static func unit_recruit_goods(unit_id: String) -> Dictionary:
+	var sheet: Variant = unit(unit_id).get("recruit_goods", {})
+	return (sheet as Dictionary).duplicate(true) if sheet is Dictionary else {}
+
+
+# D-069: fachada de mercancías/comercio (TradeSystem).
+static func trade_goods_ids() -> Array[String]:
+	var result: Variant = _call("TradeSystem", "get_goods_ids", [])
+	var out: Array[String] = []
+	if result is Array:
+		for value: Variant in (result as Array):
+			out.append(str(value))
+	return out
+
+
+static func trade_good(good_id: String) -> Dictionary:
+	var result: Variant = _call("TradeSystem", "get_good_definition", [good_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func trade_inventory(faction_id: String) -> Dictionary:
+	var result: Variant = _call("TradeSystem", "get_inventory", [faction_id])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func trade_amount(faction_id: String, good_id: String) -> float:
+	var result: Variant = _call("TradeSystem", "get_good_amount", [faction_id, good_id])
+	return float(result) if result != null else 0.0
+
+
+static func trade_price(faction_id: String, good_id: String, region_id: String = "") -> float:
+	var result: Variant = _call("TradeSystem", "get_good_price", [faction_id, good_id, region_id])
+	return float(result) if result != null else 0.0
+
+
+static func trade_merchants(faction_id: String) -> int:
+	var result: Variant = _call("TradeSystem", "get_merchants", [faction_id])
+	return int(result) if result != null else 0
+
+
+static func trade_available_merchants(faction_id: String) -> int:
+	var result: Variant = _call("TradeSystem", "get_available_merchants", [faction_id])
+	return int(result) if result != null else 0
+
+
+static func set_trade_merchants(faction_id: String, amount: int) -> bool:
+	var result: Variant = _call("TradeSystem", "set_merchants", [faction_id, amount])
+	return bool(result) if result != null else false
+
+
+static func can_trade(faction_id: String) -> bool:
+	var result: Variant = _call("TradeSystem", "can_trade", [faction_id])
+	return bool(result) if result != null else false
+
+
+static func trade_volume(faction_id: String) -> int:
+	return maxi(0, trade_merchants(faction_id) * 5)
+
+
+static func buy_goods(faction_id: String, region_id: String, good_id: String, qty: int) -> bool:
+	var result: Variant = _call("TradeSystem", "buy", [faction_id, region_id, good_id, qty])
+	return bool(result) if result != null else false
+
+
+static func sell_goods(faction_id: String, region_id: String, good_id: String, qty: int) -> bool:
+	var result: Variant = _call("TradeSystem", "sell", [faction_id, region_id, good_id, qty])
+	return bool(result) if result != null else false
+
+
+static func send_expedition(faction_id: String, good_id: String, qty: int) -> bool:
+	var result: Variant = _call("TradeSystem", "send_expedition", [faction_id, good_id, qty])
+	return bool(result) if result != null else false
+
+
+static func trade_expeditions() -> Array:
+	var result: Variant = _call("TradeSystem", "get_expeditions", [])
+	return (result as Array).duplicate(true) if result is Array else []
+
+
+static func trade_last_error() -> String:
+	var result: Variant = _call("TradeSystem", "get_last_error", [])
+	return str(result) if result != null else ""
 
 
 static func recruitment_pool(region_id: String) -> int:

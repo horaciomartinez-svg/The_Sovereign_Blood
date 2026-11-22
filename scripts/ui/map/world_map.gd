@@ -1417,6 +1417,10 @@ func _open_overlay(scene_path: String, kind: String, setup_arg: Variant = null) 
 		_overlay.connect("closed", _on_overlay_closed)
 	if _overlay.has_signal("region_requested"):
 		_overlay.connect("region_requested", _on_overlay_region_requested)
+	if _overlay.has_signal("market_requested"):
+		_overlay.connect("market_requested", _on_overlay_market_requested)
+	if _overlay.has_signal("army_management_requested"):
+		_overlay.connect("army_management_requested", _on_overlay_army_management_requested)
 	if _overlay.has_signal("battle_report_ready"):
 		_overlay.connect("battle_report_ready", _on_overlay_battle_report_ready)
 	if _tooltip != null:
@@ -1425,6 +1429,14 @@ func _open_overlay(scene_path: String, kind: String, setup_arg: Variant = null) 
 
 func _on_overlay_region_requested(region_id: String) -> void:
 	_on_region_clicked(region_id)
+
+
+func _on_overlay_market_requested() -> void:
+	call_deferred("_open_overlay", "res://scenes/economy/market_screen.tscn", "market", null)
+
+
+func _on_overlay_army_management_requested() -> void:
+	call_deferred("_open_overlay", "res://scenes/military/army_management.tscn", "army", null)
 
 
 func _on_overlay_battle_report_ready(report: Dictionary) -> void:

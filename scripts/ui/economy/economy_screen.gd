@@ -3,6 +3,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## Las ordenes de mano de obra (1 PG/orden) se ejecutan en el panel de region.
 
 signal region_requested(region_id: String)
+signal market_requested
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 
@@ -13,8 +14,16 @@ func _build_content() -> void:
 	dialog.custom_minimum_size = Vector2(1320, 820)
 	add_title("ECONOMÍA DEL REINO", "Tesoro, apoyo popular y producción de las regiones")
 	_body = add_body_scroll()
-	add_footer("CERRAR")
+	var footer := add_footer("CERRAR")
+	var market_button := UIKit.button(footer, "MERCADO", "SmallButton", "Abrir el mercado de mercancías y comerciantes")
+	market_button.pressed.connect(_open_market)
+	market_button.move_to_front()
 	_rebuild()
+
+
+func _open_market() -> void:
+	market_requested.emit()
+	close_overlay()
 
 
 func refresh() -> void:
