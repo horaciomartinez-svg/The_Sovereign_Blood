@@ -168,8 +168,8 @@ func _build_battlefield() -> void:
 func _process(delta: float) -> void:
 	if _cc != null and is_instance_valid(_cc):
 		_cc.call("tick_animation", delta * 1000.0)
-		# D-064: idle/attack/hit/dead avanzan cada frame; el render consume el
-		# estado y `sprite_frame_path` que expone el motor de AG-2.
+		# D-064/D-065: idle/attack/impact/dead avanzan cada frame; el render
+		# consume el estado y `sprite_frame_path` que expone el motor de AG-2.
 		_update_battlefield_units()
 		if _field_projectiles != null:
 			_field_projectiles.queue_redraw()
@@ -219,8 +219,8 @@ func _update_battlefield_units() -> void:
 	_layout_battlefield()
 
 
-## D-064: idle se dibuja a 2 fps sobre los cuadros `anim.idle` (reposo lento);
-## attack/hit/dead usan el frame exacto que expone el motor.
+## D-064/D-065: idle se dibuja a 2 fps sobre los cuadros `anim.idle` (reposo
+## lento); attack/impact/dead usan el frame exacto que expone el motor.
 func _display_frame_path(unit: Dictionary) -> String:
 	var path := str(unit.get("sprite_frame_path", ""))
 	if str(unit.get("anim_state", "")) != "idle":

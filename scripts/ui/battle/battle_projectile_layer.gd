@@ -45,10 +45,19 @@ func _draw() -> void:
 	var projectiles: Variant = battle_node.call("get_projectiles")
 	if not (projectiles is Array):
 		return
+	var now_ms := -1.0
+	var state_value: Variant = battle_node.call("get_state")
+	if state_value is Dictionary:
+		now_ms = float((state_value as Dictionary).get("animation_ms", -1.0))
 	for projectile_value: Variant in (projectiles as Array):
 		if not (projectile_value is Dictionary):
 			continue
 		var projectile := projectile_value as Dictionary
+		# D-065: el proyectil de N3 se lanza en attack_4; hasta `launch_ms` no
+		# debe pintarse (get_projectiles lo devuelve con t=0 desde el ataque).
+		var launch_ms := float(projectile.get("launch_ms", -1.0))
+		if now_ms >= 0.0 and launch_ms >= 0.0 and now_ms < launch_ms:
+			continue
 		var start := _start_point(projectile)
 		var finish := _end_point(projectile)
 		if start == finish and start == Vector2.ZERO:

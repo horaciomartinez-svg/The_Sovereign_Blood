@@ -1,6 +1,6 @@
 extends SceneTree
-## Capturas Fase 3.1 — animación N3 (idle, ataque con attack_2/proyectil,
-## hit + death_hold) sobre el campo de tiles real. Herramienta de desarrollo.
+## Capturas Fase 3.2 — animación N3 (idle, ataque con attack_4/proyectil,
+## impact + death_hold) sobre el campo de tiles real. Herramienta de desarrollo.
 
 const OUT_DIR := "C:/Proyectos/TSB/.ui_check_f3"
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
@@ -18,7 +18,7 @@ func _initialize() -> void:
 
 	await _capture_idle()
 	await _capture_attack()
-	await _capture_hit_death()
+	await _capture_impact_death()
 
 	print("CAPTURAS ANIMACION: %d en %s" % [_captures, OUT_DIR])
 	TSBGame.reset_game()
@@ -48,7 +48,7 @@ func _capture_idle() -> void:
 
 func _capture_attack() -> void:
 	# Ronda de retirada/finta: sin bajas → el motor deja a ambos en attack, con
-	# el proyectil del arquero en vuelo. Se captura en attack_2.
+	# el proyectil del arquero en vuelo. Se captura en attack_4.
 	var captured := false
 	for attempt in range(6):
 		var scene := _new_scene()
@@ -58,19 +58,23 @@ func _capture_attack() -> void:
 		var hand: Array = (state.get("hands", {}) as Dictionary).get("attacker", [])
 		var card := "retirada" if hand.has("retirada") else ("finta" if hand.has("finta") else (str(hand[0]) if not hand.is_empty() else "carga"))
 		scene.call("_play_card", card)
-		await _frames(2)
-		# Avanza la UI frame a frame y captura en attack_2 (índice 1 del estado
-		# attack) antes de que el motor aplique la reacción hit/dead.
+		# Avanza el reloj de render hasta attack_4 (frame 8, ≈333,3 ms); la
+		# reacción todavía no se aplica (444,4 ms). La UI refresca el Sprite2D.
+		cc.call("tick_animation", 340.0)
+		await _frames(1)
+		# Avanza la UI frame a frame y captura en attack_4 (índice 3 del estado
+		# attack; frame absoluto 8, disparo/golpe a ≈333,3 ms).
 		var captured_frame := false
-		for step in range(24):
+		for step in range(8):
 			var view: Dictionary = cc.call("get_animation_state", "demo_atk")
 			var info: Dictionary = view.get("frame_info", {})
-			if str(view.get("state", "")) == "attack" and int(info.get("frame_index", 0)) >= 1:
+			if str(view.get("state", "")) == "attack" and int(info.get("frame_index", 0)) >= 3:
 				print("[ATTACK] attempt=%d card=%s state=%s frame=%s proj=%d" % [attempt, card, view.get("state", ""), info.get("frame_path", ""), (cc.call("get_projectiles") as Array).size()])
 				await _capture("anim_n3_attack_sequence")
 				captured = true
 				captured_frame = true
 				break
+			cc.call("tick_animation", 20.0)
 			await _frames(1)
 		if captured_frame:
 			scene.queue_free()
@@ -79,15 +83,15 @@ func _capture_attack() -> void:
 		scene.queue_free()
 		await _frames(2)
 	if not captured:
-		print("[WARN] no se pudo capturar attack_2")
+		print("[WARN] no se pudo capturar attack_4")
 
 
-func _capture_hit_death() -> void:
+func _capture_impact_death() -> void:
 	var scene := _new_scene(500, 1200)
 	await _frames(4)
 	var cc: Node = scene.get("_cc")
-	# Juega rondas hasta que uno de los duelistas muera; la reacción hit/death
-	# se aplica tras el impacto y el cadáver queda en death_hold.
+	# Juega rondas hasta que uno de los duelistas muera; la reacción impact/dead
+	# se aplica tras attack_4 y el cadáver queda en death_hold.
 	for round_index in range(10):
 		var state: Dictionary = cc.call("get_state")
 		if bool(state.get("finished", false)):
@@ -99,41 +103,29 @@ func _capture_hit_death() -> void:
 		scene.call("_play_card", card)
 		await _frames(3)
 		var after: Dictionary = cc.call("get_state")
-		print("[HIT/DEATH] round=%d card=%s attacker=%s defender=%s finished=%s" % [
+		print("[IMPACT/DEATH] round=%d card=%s attacker=%s defender=%s finished=%s" % [
 			round_index, card, after.get("attacker", {}).get("anim_state", ""),
 			after.get("defender", {}).get("anim_state", ""), after.get("finished", false)])
 		if bool(after.get("finished", false)):
 			break
-	# Espera a que la reacción programada (attack_2 → hit/dead) se aplique.
-	for wait_step in range(20):
-		var current: Dictionary = cc.call("get_state")
-		if str(current.get("attacker", {}).get("anim_state", "")) != "attack" \
-				or str(current.get("defender", {}).get("anim_state", "")) != "attack":
-			break
-		await _frames(1)
+	# Fuerza el reloj visual hasta la reacción programada (attack_4 → impact/dead
+	# a 444,4 ms) y deja que la UI repinte el Sprite2D.
+	cc.call("tick_animation", 500.0)
 	await _frames(2)
 	var final_state: Dictionary = cc.call("get_state")
-	print("[HIT/DEATH] final attacker=%s defender=%s finished=%s" % [
+	print("[IMPACT/DEATH] final attacker=%s defender=%s finished=%s" % [
 		final_state.get("attacker", {}).get("anim_state", ""),
 		final_state.get("defender", {}).get("anim_state", ""), final_state.get("finished", false)])
-	# Captura de la reacción hit/dead inmediata (attack_2 ya pasó)…
-	var immediate: Dictionary = cc.call("get_state")
-	var any_hit := str(immediate.get("attacker", {}).get("anim_state", "")) == "hit" \
-		or str(immediate.get("defender", {}).get("anim_state", "")) == "hit"
-	if any_hit:
-		await _capture("anim_n3_hit")
-	# …y del cadáver en death_hold (último cuadro persistente).
-	for wait_step in range(24):
-		var held: Dictionary = cc.call("get_state")
-		if str(held.get("defender", {}).get("anim_state", "")) == "dead" or str(held.get("attacker", {}).get("anim_state", "")) == "dead":
-			break
-		await _frames(1)
-	await _frames(24)
+	# Impact + inicio de death (captura requerida).
+	await _capture("anim_n3_impact_death")
+	# Persistencia final del cadáver (death_hold) como evidencia adicional.
+	cc.call("tick_animation", 500.0)
+	await _frames(2)
 	var held_state: Dictionary = cc.call("get_state")
-	print("[HIT/DEATH] held attacker=%s defender=%s" % [
+	print("[IMPACT/DEATH] held attacker=%s defender=%s" % [
 		held_state.get("attacker", {}).get("anim_state", ""),
 		held_state.get("defender", {}).get("anim_state", "")])
-	await _capture("anim_n3_hit_death")
+	await _capture("anim_n3_death_hold")
 	scene.queue_free()
 	await _frames(2)
 
