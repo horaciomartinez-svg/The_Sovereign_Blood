@@ -21,6 +21,12 @@ const Constants = preload("res://scripts/utils/game_constants.gd")
 
 ## Clases de mano de obra asignables (GDD §5.2).
 const WORKER_CLASSES: Array[String] = ["farmers", "artisans", "merchants", "recruits"]
+## D-086: motivo de la última asignación (para UI/tests).
+var last_allocate_reason: String = ""
+
+
+func get_last_allocate_reason() -> String:
+	return last_allocate_reason
 
 
 ## Recalcula producción, apoyo y tesoro de una facción (una vez por trimestre).
@@ -62,15 +68,22 @@ func recalculate(faction_id: String) -> void:
 ## Asigna mano de obra de una región: `amount` es el valor objetivo de la clase.
 ## Cuesta 1 PG por orden y redistribuye contra farmers (o artisans si la clase
 ## es farmers), manteniendo constante el total de trabajadores.
-func allocate(region_id: String, worker_class: String, amount: int) -> bool:
+func allocate(region_id: String, worker_class: String, amount: int, actor_faction: String = "") -> bool:
 	var st: Dictionary = GameState.state
 	if st.is_empty():
+		last_allocate_reason = "no_game"
 		return false
 	var region: Dictionary = GameState.get_region_state(region_id)
 	if region.is_empty() or not WORKER_CLASSES.has(worker_class) or amount < 0:
+		last_allocate_reason = "invalid"
 		return false
 	var owner: String = SafeDict.as_string(region.get("owner"), "")
 	if owner == "":
+		last_allocate_reason = "no_owner"
+		return false
+	# D-086: solo el reino propietario puede decidir en su región.
+	if actor_faction != "" and actor_faction != owner:
+		last_allocate_reason = "not_owner"
 		return false
 	var faction: Dictionary = GameState.get_faction_state(owner)
 	if faction.is_empty() or SafeDict.as_bool(faction.get("eliminated"), false):
@@ -104,6 +117,7 @@ func allocate(region_id: String, worker_class: String, amount: int) -> bool:
 	emit_signal("assignment_changed", region_id, worker_class, amount)
 	GameState.record_turn_action("workers", region_id, 0)
 	EventBus.emit_signal("region_assignment_changed", region_id, worker_class, amount)
+	last_allocate_reason = "ok"
 	return true
 
 

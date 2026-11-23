@@ -23,6 +23,8 @@ const TechScript = preload("res://scripts/utils/tech.gd")
 ## Versión del formato de guardado (GDD §8.4); migraciones al subirla.
 const SAVE_VERSION: int = 1
 const SAVE_DIR: String = "user://saves"
+## D-085: autoguardado + 3 ranuras manuales.
+const SAVE_SLOTS: Array[String] = ["autosave", "slot_1", "slot_2", "slot_3"]
 const DEFAULT_SEED: int = 1337
 
 # Espejo del reloj de TurnManager (autoridad del reloj: TurnManager).
@@ -216,11 +218,53 @@ func save_game(slot: String = "autosave") -> bool:
 	if file == null:
 		last_errors.append("no se puede escribir %s (error %d)" % [path, FileAccess.get_open_error()])
 		return false
-	file.store_string(JSON.stringify(to_dict(), "\t", true, true))
+	var document: Dictionary = to_dict()
+	file.store_string(JSON.stringify(document, "\t", true, true))
 	file.close()
 	emit_signal("game_saved", slot)
 	EventBus.emit_signal("save_completed", slot)
 	return true
+
+
+## D-085: autoguardado explícito (nunca sobrescribe slot_1..slot_3).
+func autosave() -> bool:
+	return save_game("autosave")
+
+
+func get_save_slots() -> Array[String]:
+	return SAVE_SLOTS.duplicate()
+
+
+## Metadatos de las ranuras existentes: slot/year/quarter/faction/saved_at.
+func list_saves() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for slot in SAVE_SLOTS:
+		var path := SAVE_DIR.path_join("%s.json" % slot)
+		if not FileAccess.file_exists(path):
+			continue
+		var file := FileAccess.open(path, FileAccess.READ)
+		if file == null:
+			continue
+		var text := file.get_as_text()
+		file.close()
+		var json := JSON.new()
+		if json.parse(text) != OK:
+			continue
+		var data: Dictionary = SafeDict.as_dict(json.data)
+		var modified: int = FileAccess.get_modified_time(path)
+		var saved_at: String = ""
+		if modified > 0:
+			saved_at = Time.get_datetime_string_from_unix_time(modified)
+		result.append({
+			"slot": slot,
+			"exists": true,
+			"year": SafeDict.as_int(data.get("year"), 0),
+			"quarter": SafeDict.as_int(data.get("quarter"), 0),
+			"faction": SafeDict.as_string(data.get("player_faction"), ""),
+			"saved_at": saved_at,
+			"chronicle_count": SafeDict.as_array(data.get("chronicle", null)).size(),
+		})
+	return result
 
 
 ## Carga user://saves/<slot>.json.

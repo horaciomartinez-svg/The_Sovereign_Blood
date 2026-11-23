@@ -222,6 +222,48 @@ func allocate(region_id: String, worker_class: String, amount: int) -> bool:
 	return SafeDict.as_bool(eco.call("allocate", region_id, worker_class, amount), false)
 
 
+## D-086: asigna con actor (rechaza not_owner si no es el propietario).
+func allocate_as(region_id: String, worker_class: String, amount: int, actor_faction: String) -> bool:
+	return SafeDict.as_bool(eco.call("allocate", region_id, worker_class, amount, actor_faction), false)
+
+
+func allocate_reason() -> String:
+	return SafeDict.as_string(eco.call("get_last_allocate_reason"), "")
+
+
+# --- Fase 5B: ataque multiejército y guardado multislot -------------------
+
+func preview_attack(faction_id: String, target_region: String, army_ids: Array = []) -> Dictionary:
+	return SafeDict.as_dict(mil.call("preview_attack", faction_id, target_region, army_ids))
+
+
+func attack_region(faction_id: String, target_region: String, army_ids: Array = []) -> Dictionary:
+	return SafeDict.as_dict(mil.call("attack_region", faction_id, target_region, army_ids))
+
+
+func autosave() -> bool:
+	return SafeDict.as_bool(gs.call("autosave"), false)
+
+
+func list_saves() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var value: Variant = gs.call("list_saves")
+	if value is Array:
+		for item in value:
+			if item is Dictionary:
+				result.append(item)
+	return result
+
+
+func save_slots() -> Array[String]:
+	var result: Array[String] = []
+	var value: Variant = gs.call("get_save_slots")
+	if value is Array:
+		for item in value:
+			result.append(str(item))
+	return result
+
+
 func region_output(region_id: String) -> Dictionary:
 	var value: Variant = eco.call("get_region_output", region_id)
 	if value is Dictionary:

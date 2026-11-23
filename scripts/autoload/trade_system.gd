@@ -498,6 +498,8 @@ func send_expedition(faction_id: String, good_id: String, qty: int) -> bool:
 	trade["expeditions"] = expeditions
 	GameState.record_turn_action("expedition", good_id, Constants.EXPEDITION_PG_COST)
 	EventBus.emit_signal("expedition_sent", faction_id, good_id, qty, expedition["return_turn"])
+	# D-088: el tutorial avanza al enviar una expedición de mercaderes.
+	TutorialSystem.advance_tutorial("expedition_sent")
 	return true
 
 

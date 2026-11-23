@@ -147,6 +147,8 @@ func advance_quarter() -> void:
 	if SafeDict.as_bool(st.get("game_over"), false):
 		return
 	begin_turn(GameState.current_faction_id)
+	# D-085: autoguardado tras resolver el trimestre (nunca ranuras manuales).
+	GameState.autosave()
 
 
 ## Avanza el año: cosecha, dinastía, eventos, autoguardado y nuevo trimestre.
@@ -179,7 +181,7 @@ func advance_year() -> void:
 	_reset_movement()
 	_run_quarterly_economy()
 	_refresh_all_pg()
-	GameState.save_game("autosave")
+	GameState.autosave()
 	_check_game_over()
 	if SafeDict.as_bool(st.get("game_over"), false):
 		return

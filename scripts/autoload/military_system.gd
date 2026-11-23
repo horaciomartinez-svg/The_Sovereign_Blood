@@ -507,6 +507,149 @@ func get_move_cost(army_id: String, to_region: String) -> int:
 	return Constants.MOVE_PG_COST + penalty
 
 
+## D-084: previsualiza un ataque multi-ejército sin mutar estado ni gastar PG.
+func preview_attack(faction_id: String, target_region: String, army_ids: Array = []) -> Dictionary:
+	var result: Dictionary = {
+		"ok": false,
+		"reason": "",
+		"target_region": target_region,
+		"owner": "",
+		"at_war": false,
+		"allied": false,
+		"eligible_armies": [],
+		"selected_ids": [],
+		"pg_total": 0,
+		"can_attack": false,
+	}
+	var st: Dictionary = GameState.state
+	if st.is_empty():
+		result["reason"] = "no_game"
+		return result
+	var faction: Dictionary = GameState.get_faction_state(faction_id)
+	var target: Dictionary = GameState.get_region_state(target_region)
+	if faction.is_empty() or target.is_empty() or SafeDict.as_bool(faction.get("eliminated"), false):
+		result["reason"] = "invalid_target"
+		return result
+	var owner: String = SafeDict.as_string(target.get("owner"), "")
+	result["owner"] = owner
+	if owner == faction_id:
+		result["reason"] = "own_region"
+		return result
+	if owner != "" and DiplomacySystem.are_allied(faction_id, owner):
+		result["allied"] = true
+		result["reason"] = "ally"
+		return result
+	var at_war: bool = owner != "" and DiplomacySystem.are_at_war(faction_id, owner)
+	result["at_war"] = at_war
+	var eligible: Array[Dictionary] = []
+	var armies: Dictionary = SafeDict.as_dict(st.get("armies", null))
+	for army_id in SafeDict.sorted_keys(armies):
+		var army: Dictionary = SafeDict.as_dict(armies.get(army_id, null))
+		if SafeDict.as_string(army.get("faction_id"), "") != faction_id:
+			continue
+		if SafeDict.as_int(army.get("movement_left"), 0) <= 0:
+			continue
+		var from_region: String = SafeDict.as_string(army.get("region_id"), "")
+		if not _is_adjacent(from_region, target_region):
+			continue
+		var cost: int = get_move_cost(str(army_id), target_region)
+		if cost < 0:
+			continue
+		eligible.append({
+			"army_id": str(army_id),
+			"region_id": from_region,
+			"men": SafeDict.as_int(army.get("men"), 0),
+			"move_cost": cost,
+		})
+	result["eligible_armies"] = eligible
+	var selected: Array[String] = []
+	if army_ids.is_empty():
+		for entry in eligible:
+			selected.append(SafeDict.as_string(entry.get("army_id"), ""))
+	else:
+		for value in army_ids:
+			var army_id: String = str(value)
+			if selected.has(army_id):
+				result["reason"] = "duplicate_army"
+				return result
+			var found: bool = false
+			for entry in eligible:
+				if SafeDict.as_string(entry.get("army_id"), "") == army_id:
+					found = true
+					break
+			if not found:
+				result["reason"] = "ineligible_army"
+				return result
+			selected.append(army_id)
+	if selected.is_empty():
+		result["reason"] = "no_armies"
+		return result
+	var total: int = 0
+	for entry in eligible:
+		if selected.has(SafeDict.as_string(entry.get("army_id"), "")):
+			total += SafeDict.as_int(entry.get("move_cost"), 0)
+	result["selected_ids"] = selected
+	result["pg_total"] = total
+	result["can_attack"] = true
+	# Compatibilidad con UI/QA: también expone `pg_spent` como coste previsto.
+	result["pg_spent"] = total
+	if SafeDict.as_int(faction.get("pg"), 0) < total:
+		result["reason"] = "pg"
+		result["can_attack"] = false
+		return result
+	result["ok"] = true
+	result["reason"] = "ok"
+	return result
+
+
+## D-084: ataca una región con uno o varios ejércitos; declara guerra automática
+## una sola vez si no hay guerra con el propietario. No cambia fórmulas de combate.
+func attack_region(faction_id: String, target_region: String, army_ids: Array = []) -> Dictionary:
+	var preview: Dictionary = preview_attack(faction_id, target_region, army_ids)
+	var result: Dictionary = {
+		"ok": false,
+		"reason": SafeDict.as_string(preview.get("reason"), ""),
+		"declared_war": false,
+		"pg_spent": 0,
+		"results": [],
+	}
+	if not SafeDict.as_bool(preview.get("ok"), false):
+		return result
+	var target: Dictionary = GameState.get_region_state(target_region)
+	var owner: String = SafeDict.as_string(target.get("owner"), "")
+	var declared: bool = false
+	if owner != "" and not SafeDict.as_bool(preview.get("at_war"), false):
+		declared = DiplomacySystem.begin_hostilities(faction_id, owner)
+	result["declared_war"] = declared
+	var st: Dictionary = GameState.state
+	var battles_before: int = SafeDict.as_array(st.get("battle_reports", null)).size()
+	var moved_count: int = 0
+	var spent: int = 0
+	for value in SafeDict.as_array(preview.get("selected_ids", null)):
+		var army_id: String = str(value)
+		var cost: int = get_move_cost(army_id, target_region)
+		if cost < 0:
+			result["results"].append({"army_id": army_id, "moved": false, "battle": null})
+			continue
+		var moved: bool = move_army(army_id, target_region)
+		var battle: Variant = null
+		var reports: Array = SafeDict.as_array(GameState.state.get("battle_reports", null))
+		if moved and reports.size() > battles_before:
+			battle = reports[reports.size() - 1]
+			battles_before = reports.size()
+		if moved:
+			moved_count += 1
+			spent += cost
+		result["results"].append({"army_id": army_id, "moved": moved, "battle": battle})
+	result["pg_spent"] = spent
+	result["ok"] = moved_count > 0
+	result["reason"] = "ok" if moved_count > 0 else "no_armies_moved"
+	if result["ok"]:
+		GameState.record_turn_action("attack", target_region, spent)
+		TutorialSystem.advance_tutorial("attack_launched")
+	return result
+
+
 ## Resuelve batallas pendientes (contrato §3.3). Devuelve cuántas resolvió.
 func resolve_pending_battles() -> int:
 	var count: int = _pending_battles.size()

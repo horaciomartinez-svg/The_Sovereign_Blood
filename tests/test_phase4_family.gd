@@ -77,7 +77,7 @@ func _check_tutorial(runner: TestRunnerScript, h: HarnessScript) -> void:
 		SafeDict.as_array(h.tutorial.call("get_steps")).size())
 	var conditions: Array = h.tutorial.call("get_conditions")
 	for condition in ["open_region", "assign_workers", "open_family", "open_diplomacy",
-			"open_market", "open_military", "end_turn", "battle_played", "saved"]:
+			"expedition_sent", "attack_launched", "end_turn", "battle_played", "saved"]:
 		runner.check("condición de tutorial %s" % condition, conditions.has(condition))
 	h.new_game_with_difficulty(PLAYER, "beginner")
 	var step: Dictionary = h.tutorial_step()
