@@ -1601,3 +1601,31 @@ El prompt actualizado añade **C11 Manual del Jugador actualizado** (task-81) y 
 **C11 y task-80** esperan cierre de task-81 (Manual) y AG-3 (UI/capturas). R-F5A-13 añadido al plan. Sin producción ni git por AG-4.
 
 *Fin de la actualización C11 — baseline Fase 5A (task-79).*
+
+---
+
+### 23.5 Verificación final Fase 5A (task-80, 2026-11-23) — **APROBADO 11/11**
+
+**HEAD `92776cd6`.** Harness `tests/qa_acceptance_fase5a.gd` **×2 → 11 PASS / 0 FAIL / 0 SKIP**, exit **0/0**; 0 `ERROR:`. Informe: **`docs/qa/fase5a_report.md`**.
+
+| # | Estado | Evidencia |
+|---|---|---|
+| C1 | **PASS** | 4 estaciones correctas; HUD/tinte; capturas `season_1..4` 1920×1080 |
+| C2 | **PASS** | `legibility_texts` **7 categorías**; UI `quarterly_bulletin`; captura |
+| C3 | **PASS** | chronicle append/get + hash exacto; pestaña Crónica; capturas anual/year_end |
+| C4 | **PASS** | `turn_actions` record/get; modal con 3 órdenes y vacío; Corregir/Confirmar; capturas |
+| C5 | **PASS** | precio alto→grano / bajo→sal con comerciantes; determinista sin RNG; captura |
+| C6 | **PASS** | `context_help` **18/18**; 4 capturas de ayuda |
+| C7 | **PASS** | paneles N2/N3 con hombres/armas/apoyo/moral/entrenamiento + comandante; capturas |
+| C8 | **PASS** | chronicle save/load 3/3 hash; defaults en suite (`chronicle []`, `turn_actions []`, `advisor_enabled`) |
+| C9 | **PASS** | `run_all` **2.019/0/2 exit0**; validate **16/12, 12.221, 0 WARN**; editor/headless 0; F1/F2/F3/tiles/final/anim/MVP/Fase4 verdes; `ui_smoke` 65/25 |
+| C10 | **PASS** | `git diff fase-4..HEAD` 1402/1453 = **0**; arte congelado; GDD v1.9.2+D-079…083+STATUS; REA completo fuera del repo |
+| C11 | **PASS** | Manual con las 5 mejoras, `context_help` 18/18, claves `legibility_texts`, contraste con capturas |
+
+**Batería:** F1 6/6, F2 6/6, F3 6/6, tiles 7/7, final 7/7, anim 6/6, MVP 11/11, Fase 4 14/14; `ui_smoke` 65/25; `run_all` 2.019/0/2; validate 16/12/12.221/0 WARN; editor/headless 0; REA local ausente del repo (`check-ignore` + sin `ls-files`).
+
+**Veredicto: QA Fase 5A: APROBADO (11/11).** Observaciones no bloqueantes: C4/C8 se apoyan en suite para determinismo/defaults; C5 manipula precios/inventario para alto/bajo; C7 captura muestra unidad sin comandante (badge cubierto por UI); revisión visual de 16 capturas, no click-through completo; GPU no medible. Tags `fase-4`; **`fase-5a` pendiente** de STATUS/tag/push.
+
+**task-80 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la verificación final Fase 5A (task-80).*

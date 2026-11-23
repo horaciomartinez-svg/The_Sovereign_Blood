@@ -24,7 +24,7 @@ const SCREENS: Array[String] = [
 	"battle_n2", "battle_n3", "year_end", "chronicle", "options", "victory",
 ]
 const SEASON_CAPTURES: Array[String] = [
-	"season_spring.png", "season_summer.png", "season_autumn.png", "season_winter.png",
+	"season_1_primavera.png", "season_2_verano.png", "season_3_otono.png", "season_4_invierno.png",
 ]
 
 var _results: Array[Dictionary] = []
@@ -113,14 +113,14 @@ func _criterion_2_bulletin() -> void:
 		_fail(id, name, "categorías detectadas=%d (<5)" % categories, started)
 		return
 	var ui_text := ""
-	for path in ["res://scripts/ui/map/world_map.gd", "res://scripts/ui/economy/economy_screen.gd"]:
+	for path in ["res://scripts/ui/ui/quarterly_bulletin.gd", "res://scripts/ui/map/world_map.gd"]:
 		if FileAccess.file_exists(path):
 			ui_text += FileAccess.get_file_as_string(path)
 	if not (ui_text.to_lower().contains("boletin") or ui_text.to_lower().contains("boletín")):
 		_skip(id, name, "datos OK; pendiente AG-3: UI boletín", started)
 		return
-	if not FileAccess.file_exists("res://docs/screenshots/bulletin.png"):
-		_skip(id, name, "datos/UI OK; pendiente captura bulletin.png", started)
+	if not FileAccess.file_exists("res://docs/screenshots/bulletin_trimestral.png"):
+		_skip(id, name, "datos/UI OK; pendiente captura bulletin_trimestral.png", started)
 		return
 	_pass(id, name, "plantillas con %d categorías; UI boletín; captura presente" % categories, started)
 
@@ -156,8 +156,8 @@ func _criterion_3_chronicle() -> void:
 	if not (ui_text.to_lower().contains("cronica") or ui_text.to_lower().contains("crónica")):
 		_skip(id, name, "API/hash OK; pendiente AG-3: pestaña Crónica", started)
 		return
-	if not FileAccess.file_exists("res://docs/screenshots/chronicle.png"):
-		_skip(id, name, "API/UI OK; pendiente captura chronicle.png", started)
+	if not FileAccess.file_exists("res://docs/screenshots/chronicle_anual.png"):
+		_skip(id, name, "API/UI OK; pendiente captura chronicle_anual.png", started)
 		return
 	_pass(id, name, "append/get_chronicle + hash exacto; pestaña y captura presentes", started)
 
@@ -187,8 +187,9 @@ func _criterion_4_orders() -> void:
 	if not (ui_text.to_lower().contains("tus órdenes") or ui_text.to_lower().contains("tus ordenes") or ui_text.to_lower().contains("confirm")):
 		_skip(id, name, "API OK; pendiente AG-3: modal de confirmación", started)
 		return
-	if not FileAccess.file_exists("res://docs/screenshots/confirm_orders.png"):
-		_skip(id, name, "API/UI OK; pendiente capturas confirm_orders/empty", started)
+	if not FileAccess.file_exists("res://docs/screenshots/orders_with_actions.png") \
+			or not FileAccess.file_exists("res://docs/screenshots/orders_empty.png"):
+		_skip(id, name, "API/UI OK; pendiente capturas orders_with_actions/orders_empty", started)
 		return
 	_pass(id, name, "record/get turn_actions; modal y capturas presentes; log determinista se valida en test", started)
 
@@ -206,18 +207,56 @@ func _criterion_5_advice() -> void:
 		_skip(id, name, "pendiente AG-2: sin get_trade_advice", started)
 		return
 	_new_game("scenario_1337", "england")
+	var trade_state: Dictionary = trade.call("ensure_state")
+	var merchants: Variant = trade_state.get("merchants_assigned", null)
+	if merchants is Dictionary:
+		(merchants as Dictionary)["england"] = 10
+	var inventory: Variant = trade_state.get("inventory", null)
+	if inventory is Dictionary:
+		(inventory as Dictionary)["england"] = {"grano": 100.0, "sal": 50.0, "armas": 20.0}
+	var gs := _autoload("GameState")
+	if gs != null:
+		var faction: Dictionary = gs.call("get_faction_state", "england")
+		faction["gold"] = 100000
+	var owned_region := ""
+	var regions: Variant = _state().get("regions", null)
+	if regions is Dictionary:
+		for region_id in (regions as Dictionary).keys():
+			var region_value: Variant = (regions as Dictionary)[region_id]
+			if region_value is Dictionary and str((region_value as Dictionary).get("owner", "")) == "england":
+				owned_region = str(region_id)
+				break
+	var prices: Variant = trade_state.get("prices", null)
+	if prices is Dictionary:
+		(prices as Dictionary)[owned_region] = {"grano": 30.0, "sal": 5.0}
+	var high: Variant = trade.call("get_trade_advice", "england", owned_region)
+	if not (high is Dictionary) or not bool((high as Dictionary).get("ok", false)):
+		_fail(id, name, "advice no ok con precio alto: %s" % str(high), started)
+		return
+	if str((high as Dictionary).get("good_id", "")) != "grano":
+		_fail(id, name, "precio alto no elige grano: %s" % str(high), started)
+		return
+	if prices is Dictionary:
+		(prices as Dictionary)[owned_region] = {"grano": 5.0, "sal": 30.0}
+	var low: Variant = trade.call("get_trade_advice", "england", owned_region)
+	if not (low is Dictionary) or not bool((low as Dictionary).get("ok", false)):
+		_fail(id, name, "advice no ok con precio bajo: %s" % str(low), started)
+		return
+	if str((low as Dictionary).get("good_id", "")) != "sal":
+		_fail(id, name, "precio bajo no elige sal: %s" % str(low), started)
+		return
 	var first: Variant = trade.call("get_trade_advice", "england")
 	var second: Variant = trade.call("get_trade_advice", "england")
 	if not (first is Dictionary) or not bool((first as Dictionary).get("ok", false)):
-		_skip(id, name, "get_trade_advice existe pero aún no devuelve ok (AG-2 en curso): %s" % str(first), started)
+		_fail(id, name, "get_trade_advice no devuelve ok aun con comerciantes/inventario: %s" % str(first), started)
 		return
 	if str(first) != str(second):
 		_fail(id, name, "advice no determinista", started)
 		return
-	if not FileAccess.file_exists("res://docs/screenshots/market_advice.png"):
-		_skip(id, name, "API/determinismo OK; pendiente AG-3: captura market_advice.png", started)
+	if not FileAccess.file_exists("res://docs/screenshots/market_advisor.png"):
+		_skip(id, name, "API/determinismo/altos-bajos OK; pendiente captura market_advisor.png", started)
 		return
-	_pass(id, name, "advice determinista (%s); captura presente" % str((first as Dictionary).get("kind", "")), started)
+	_pass(id, name, "precio alto→grano y bajo→sal (sin RNG); advice determinista (%s); captura presente" % str((first as Dictionary).get("kind", "")), started)
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +280,7 @@ func _criterion_6_help() -> void:
 		if not (data as Dictionary).has(screen):
 			errors.append("falta %s" % screen)
 	var captures := 0
-	for capture in ["help_map.png", "help_diplomacy.png", "help_market.png", "help_military.png"]:
+	for capture in ["help_main_menu.png", "help_world_map.png", "help_diplomacy.png", "help_battle_n2.png"]:
 		if FileAccess.file_exists("res://docs/screenshots/%s" % capture):
 			captures += 1
 	if captures < 4:
@@ -266,11 +305,12 @@ func _criterion_7_unit_panels() -> void:
 		if FileAccess.file_exists(path):
 			ui_text += FileAccess.get_file_as_string(path)
 	var errors: Array[String] = []
-	for marker in ["arms", "supply", "morale", "training", "commander"]:
-		if not ui_text.to_lower().contains(marker):
-			errors.append("UI batalla sin %s" % marker)
+	var ui_lower := ui_text.to_lower()
+	for pair in [["arms", "armas"], ["supply", "apoyo"], ["morale", "moral"], ["training", "entrenamiento"], ["commander", "comandante"]]:
+		if not (ui_lower.contains(str(pair[0])) or ui_lower.contains(str(pair[1]))):
+			errors.append("UI batalla sin %s/%s" % [str(pair[0]), str(pair[1])])
 	var captures := 0
-	for capture in ["unit_panel_n2.png", "unit_panel_n3.png"]:
+	for capture in ["panel_n2.png", "panel_n3.png"]:
 		if FileAccess.file_exists("res://docs/screenshots/%s" % capture):
 			captures += 1
 	if captures < 2:
@@ -425,7 +465,7 @@ func _criterion_11_manual() -> void:
 				missing.append("legibility sin %s" % key)
 	# Contraste mínimo con capturas de las mejoras.
 	var captures := 0
-	for capture in ["season_winter.png", "bulletin.png", "chronicle.png", "confirm_orders.png", "help_map.png", "unit_panel_n2.png"]:
+	for capture in ["season_4_invierno.png", "bulletin_trimestral.png", "chronicle_anual.png", "orders_with_actions.png", "help_main_menu.png", "panel_n2.png"]:
 		if FileAccess.file_exists("res://docs/screenshots/%s" % capture):
 			captures += 1
 	if captures < 2:

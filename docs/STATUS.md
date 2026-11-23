@@ -2,11 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 4 — Profundidad GK2 (CERRADA)**; **QA Fase 4 14/14 APROBADO**; mercancías/comercio, ejércitos, consorte, Manual, tutorial/Consejero, acciones 1/turno y costes por tipo integrados; 1402/1453 siguen congelados (D-066); sin arte externo |
-| **Fase anterior** | **Fase 3.3 — MVP-1337 (CERRADA)**; QA 11/11 APROBADO |
-| **Siguiente fase** | Fase 5 — no definida (reanudar 1402/1453, Paquete A de retratos y ampliación de contenido es decisión del usuario) |
-| **GDD** | **v1.9.1** — `GDD_The_Sovereign's_Blood.md` (Fase 4 §5.2/§5.3/§5.5/§9/§12 + D-074/D-075; hereda §10.2-§10.4 y v1.8.1) |
-| **Contrato Fase 4** | `docs/architecture_contracts_fase4.md` (comercio, ejércitos, consorte, Manual, tutorial, acciones 1/turno, costes) |
+| **Fase actual** | **Fase 5A — «El juego te explica» (CERRADA)**; QA **11/11 APROBADO**; GDD v1.9.2; HUD de estaciones, boletín/crónica con histórico, confirmación de órdenes, consejero/ayuda contextual y paneles N2/N3; 1402/1453 congelados (D-066); sin arte externo |
+| **Fase anterior** | **Fase 4 — Profundidad GK2 (CERRADA)**; QA 14/14 APROBADO |
+| **Siguiente fase** | Fase 5B/6 — no definida (Bloque B, reanudar 1402/1453, Paquete A y ampliación de contenido: decisión del usuario) |
+| **GDD** | **v1.9.2** — `GDD_The_Sovereign's_Blood.md` (§5.6 Legibilidad y ayuda; §9 pantallas 14-19; Fase 4 §5.2/§5.3/§5.5; Fase 5A D-079…D-083) |
+| **Contrato Fase 5A** | `docs/architecture_contracts_fase5a.md` (estado/API de legibilidad, datos, UI y QA C1-C11) |
+| **Contrato Fase 4** |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
 | **Coordinador** | AG-0 |
@@ -17,6 +18,8 @@
 | **Fecha de cierre Fase 3.2** | 2026-11-23 |
 | **Fecha de cierre Fase 3.3** | 2026-11-23 |
 | **Fecha de cierre Fase 4** | 2026-11-23 |
+| **Fecha de cierre Fase 5A** | 2026-11-23 |
+| **QA Fase 5A** | **APROBADO 11/11** — `docs/qa/fase5a_report.md` |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
 | **QA Fase 2** | **APROBADO (v1.5)** — 6/6 criterios §12/§10.1/§10.2 + REA §3.2 verificado; 0 bloqueantes (ver `docs/qa/fase2_report.md`) |
@@ -636,20 +639,32 @@ y sin material con copyright.
 
 ---
 
-## 21. Fase 5A — «El juego te explica»: legibilidad y aprendizaje (EN CURSO)
+## 21. Fase 5A — «El juego te explica»: legibilidad y aprendizaje (CERRADA)
 
 **Directiva:** `prompt_DSH_fase5a_legibilidad_v1.md` (Kimi, a partir del REA completo D-077/D-078, uso interno no publicado). **GDD v1.9.2** (nuevo §5.6 Legibilidad y ayuda; §9 ampliado). **Baseline:** tag `fase-4` (HEAD `6e9f9764`). Solo presentación/flujo sobre sistemas existentes; sin cambios de simulación, balance ni IA; determinismo intacto.
 
 | Línea | Owner | Entregable | Estado |
 |---|---|---|---|
-| Textos de ayuda, boletín y crónica | AG-1 | `data/context_help.json` (3-5 líneas por pantalla §9) + `data/legibility_texts.json` (plantillas de boletín/crónica, etiquetas de estación; español propio) | ⏳ |
-| Estado/API: `turn_actions`, `chronicle`, estación, consejo comercial, `advisor_enabled` | AG-2 | registro transitorio de órdenes (D-081); `state.chronicle` persistido con defaults (D-080); `get_season_name/label` (D-079); `TradeSystem.get_trade_advice` determinista y conmutador (D-082); tests/save | ⏳ |
-| UI: HUD estaciones/tinte, boletín, crónica+histórico, confirmación de órdenes, «?», Consejero, panel unidad N2/N3 | AG-3 | pantallas/modales y capturas 1920×1080 (D-079…D-083) | ⏳ |
-| QA Fase 5A | AG-4 | harness C1-C10, capturas, informe `docs/qa/fase5a_report.md` | ⏳ |
-| Gobernanza/cierre | AG-0 | GDD v1.9.2, D-079…D-083, STATUS, tag `fase-5a`, push y aviso a Kimi | ⏳ |
+| Textos de ayuda, boletín y crónica | AG-1 | `data/context_help.json` (3-5 líneas por pantalla §9) + `data/legibility_texts.json` (plantillas de boletín/crónica, etiquetas de estación; español propio) | ✅ |
+| Estado/API: `turn_actions`, `chronicle`, estación, consejo comercial, `advisor_enabled` | AG-2 | registro transitorio de órdenes (D-081); `state.chronicle` persistido con defaults (D-080); `get_season_name/label` (D-079); `TradeSystem.get_trade_advice` determinista y conmutador (D-082); tests/save | ✅ |
+| UI: HUD estaciones/tinte, boletín, crónica+histórico, confirmación de órdenes, «?», Consejero, panel unidad N2/N3 | AG-3 | pantallas/modales y capturas 1920×1080 (D-079…D-083) | ✅ |
+| QA Fase 5A | AG-4 | harness C1-C10, capturas, informe `docs/qa/fase5a_report.md` | ✅ |
+| Gobernanza/cierre | AG-0 | GDD v1.9.2, D-079…D-083, STATUS, tag `fase-5a`, push y aviso a Kimi | ✅ |
 
 **Criterios C1-C10:** HUD estación+año+tinte con capturas ×4; boletín ≥5 categorías/texto propio/0 botones muertos; crónica anual + histórico persistido (hash) y consultable; confirmación de órdenes con lista (incl. vacía), Corregir/Confirmar y log determinista; consejo comercial correcto sin RNG; «?» en todas las pantallas §9 (capturas ≥4); paneles N2/N3 con hombres/armas/apoyo/moral/experiencia y comandante; save/load con chronicle (3 puntos) y defaults; no regresión (run_all, validate 0 WARN, editor 0, IA<2 s, mapa<8 ms); congelamientos 1402/1453 diff 0, sin arte externo, GDD v1.9.2 + D-079…D-083 + tag `fase-5a`.
 
 **Cierre previsto:** QA APROBADO 10/10 → commits por agente + `[AG-0]`, tag anotado **`fase-5a`**, push y aviso para verificación de Kimi contra GDD v1.9.2 + esta directiva.
 
 **Actualización de la directiva (C11):** el Manual del Jugador (`docs/MANUAL_DEL_JUGADOR.md`) debe actualizarse con las cinco mejoras de Fase 5A y verificarse contra capturas; añadido como criterio **C11** del QA (task-80 y task-81).
+
+**Cierre — Fase 5A CERRADA (QA 11/11 APROBADO):**
+- **HUD/estaciones (D-079):** «Primavera 1337 — Tesoro: 8000 oro — PG: 38/38»; Primavera/Verano/Otoño/Invierno derivados del turno, tinte de mapa por estación por código (apagable en Opciones) y capturas de las 4 estaciones.
+- **Boletín y Crónica (D-080):** boletín trimestral con encabezado «Ha terminado el {estación} de {año}» y 6 categorías; Crónica anual con oro/bienes, eventos, guerras y ranking de prestigio de las 8 jugables; `state.chronicle` persistido (hash exacto, defaults para saves antiguos) y pestaña «Crónica».
+- **Confirmación de órdenes (D-081):** «Tus órdenes este trimestre» con lista real o vacía, Corregir/Confirmar y aviso de acciones libres; `turn_actions` transitorio, reseteado por turno y no serializado.
+- **Consejero/ayuda (D-082):** consejo comercial determinista en Mercado (mejor margen precio/base y retorno de expediciones), conmutador del Consejero persistido y botón «?» en las 18 pantallas §9 desde `data/context_help.json`.
+- **Paneles N2/N3 (D-083):** hombres, armas, apoyo, moral, entrenamiento y comandante (estado/Mando) por unidad seleccionada; solo lectura.
+- **Manual (C11):** `docs/MANUAL_DEL_JUGADOR.md` actualizado a 11 secciones con las cinco mejoras.
+- **QA/estabilidad:** harness Fase 5A **11/11 ×2**, `run_all` **2019/0/2**, `validate_data` **16/12, 12.221 comprobaciones, 0 WARN**, editor/headless 0, `ui_smoke` **65 scripts/25 escenas**; `git diff fase-4..HEAD` en 1402/1453 = **0 archivos**; sin arte externo; informe REA completo sigue **fuera del repo** (D-078).
+- **Observaciones no bloqueantes:** C4/C8 se apoyan en la suite para determinismo/defaults; C5 manipula precios/inventario para los casos alto/bajo; C7 captura N2 sin badge de comandante (UI cubierta); revisión visual de capturas sin click-through completo; GPU no medible.
+- **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-5a`**. Se avisa al usuario para la verificación de Kimi contra GDD v1.9.2 + directiva.
+
