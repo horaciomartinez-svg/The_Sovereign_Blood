@@ -4,6 +4,7 @@ extends "res://scripts/ui/widgets/overlay_base.gd"
 ## region (MilitarySystem.recruit). Toda accion llama a la API de sistemas.
 
 signal army_management_requested
+signal attack_requested
 
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 
@@ -18,6 +19,10 @@ func _build_content() -> void:
 	var management := UIKit.button(footer, "GESTIÓN GLOBAL", "SmallButton", "Reclutar, entrenar y disolver por tipo de unidad")
 	management.pressed.connect(_open_management)
 	management.move_to_front()
+	var attack := UIKit.button(footer, "ATACAR", "PrimaryButton", "Elegir objetivo y ejércitos para atacar (D-084)")
+	attack.name = "attack_button"
+	attack.custom_minimum_size = Vector2(180, 44)
+	attack.pressed.connect(func() -> void: attack_requested.emit())
 	_rebuild()
 
 

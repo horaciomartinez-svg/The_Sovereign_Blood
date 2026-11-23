@@ -8,6 +8,7 @@ const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const UIManual = preload("res://scripts/ui/ui_manual.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const SAVE_LOAD_PACKED = preload("res://scenes/ui/save_load_screen.tscn")
 const ParchmentBackdrop = preload("res://scripts/ui/widgets/parchment_backdrop.gd")
 const OptionsScene = preload("res://scenes/ui/options_menu.tscn")
 
@@ -63,6 +64,10 @@ func _build() -> void:
 	_load_button = UIKit.button(menu, "CARGAR PARTIDA", "", "Carga el autoguardado de user://saves/autosave.json")
 	_load_button.custom_minimum_size = Vector2(500, 58)
 	_load_button.pressed.connect(_on_load_game)
+
+	var save_load := UIKit.button(menu, "GUARDAR / CARGAR", "", "Abre las 4 ranuras: autoguardado y 3 manuales")
+	save_load.custom_minimum_size = Vector2(500, 58)
+	save_load.pressed.connect(_on_save_load)
 
 	var options := UIKit.button(menu, "OPCIONES", "")
 	options.custom_minimum_size = Vector2(500, 58)
@@ -145,6 +150,19 @@ func _on_load_game() -> void:
 		get_tree().change_scene_to_file(WORLD_MAP_SCENE)
 	else:
 		_notify("No se pudo cargar el autoguardado (los sistemas aún están en integración).")
+
+
+func _on_save_load() -> void:
+	if _overlay != null and is_instance_valid(_overlay):
+		return
+	_overlay = SAVE_LOAD_PACKED.instantiate()
+	add_child(_overlay)
+	if _overlay.has_signal("loaded"):
+		_overlay.connect("loaded", func(_slot: String) -> void:
+			get_tree().change_scene_to_file(WORLD_MAP_SCENE)
+		)
+	if _overlay.has_signal("closed"):
+		_overlay.connect("closed", _on_overlay_closed)
 
 
 func _on_options() -> void:

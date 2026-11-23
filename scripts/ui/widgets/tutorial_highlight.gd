@@ -52,6 +52,11 @@ func _draw() -> void:
 		# para no tapar los controles vecinos.
 		if rect.position.x < 240.0:
 			label_pos = Vector2(rect.end.x + 8.0, rect.position.y + 4.0)
+		elif rect.size.y <= 200.0 and rect.position.y > 120.0:
+			# Botones pequeños: etiqueta encima para no tapar su texto.
+			label_pos = Vector2(rect.position.x + 4.0, rect.position.y - 30.0)
+		elif rect.size.y <= 200.0:
+			label_pos = Vector2(rect.position.x + 4.0, rect.end.y + 6.0)
 		var label_rect := Rect2(label_pos, text_size + Vector2(16, 10))
 		draw_rect(label_rect, Palette.with_alpha(Palette.INK_DEEP, 0.92), true)
 		draw_rect(label_rect, Palette.GOLD, false, 1.0)

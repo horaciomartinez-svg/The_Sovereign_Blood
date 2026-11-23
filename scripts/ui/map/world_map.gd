@@ -26,6 +26,7 @@ const TutorialHighlight = preload("res://scripts/ui/widgets/tutorial_highlight.g
 const UIPreferences = preload("res://scripts/ui/ui_preferences.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
 const UILegibility = preload("res://scripts/ui/ui_legibility.gd")
+const FontScaler = preload("res://scripts/ui/widgets/font_scaler.gd")
 const CouncilScene = preload("res://scenes/council/council_menu.tscn")
 const RegionPanelScene = preload("res://scenes/map/region_panel.tscn")
 const TooltipScene = preload("res://scenes/ui/tooltip.tscn")
@@ -34,6 +35,8 @@ const BattleReportScene = preload("res://scenes/battle/battle_report.tscn")
 const YearEndScene = preload("res://scenes/ui/year_end_report.tscn")
 const VictoryScene = preload("res://scenes/ui/victory_screen.tscn")
 const OrderConfirmationScene = preload("res://scenes/ui/order_confirmation.tscn")
+const SaveLoadScene = preload("res://scenes/ui/save_load_screen.tscn")
+const AttackScene = preload("res://scenes/military/attack_screen.tscn")
 const FamilyScene = preload("res://scenes/family/family_tree.tscn")
 const DiplomacyScene = preload("res://scenes/diplomacy/diplomacy_screen.tscn")
 const MilitaryScene = preload("res://scenes/military/military_screen.tscn")
@@ -54,8 +57,8 @@ const SEASON_TINT_COLORS: Array[Color] = [
 ]
 const MAP_W := 2048.0
 const MAP_H := 1536.0
-const SIDEBAR_LEFT := 300.0
-const SIDEBAR_RIGHT := 440.0
+const SIDEBAR_LEFT := 340.0
+const SIDEBAR_RIGHT := 560.0
 const ZOOM_MIN := 0.5
 const ZOOM_MAX := 3.0
 const DEFAULT_ZOOM := 0.7
@@ -108,6 +111,7 @@ var _zoom_label: Label = null
 var _zoom_controls: Control = null
 var _advisor: Control = null
 var _tutorial_highlight: Control = null
+var _tutorial_layer: CanvasLayer = null
 var _season_hud: Label = null
 var _season_tint: ColorRect = null
 var _deferred_year_end: int = 0
@@ -153,6 +157,7 @@ func _ready() -> void:
 	_set_view_year(_view_year)
 	_refresh_all()
 	set_process(true)
+	FontScaler.attach(self)
 
 
 func _process(_delta: float) -> void:
@@ -612,7 +617,8 @@ func _build_info_sidebar() -> void:
 
 	UIKit.hsep(column, Palette.with_alpha(Palette.GOLD_DIM, 0.7))
 	var buttons := UIKit.hbox(column, 6)
-	var save_button := UIKit.button(buttons, "Guardar", "SmallButton", "GameState.save_game('autosave')")
+	var save_button := UIKit.button(buttons, "Guardar/Cargar", "SmallButton", "Abrir ranuras de guardado (D-085)")
+	save_button.name = "save_button"
 	save_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	save_button.pressed.connect(_on_save_pressed)
 	var options_button := UIKit.button(buttons, "Opciones", "SmallButton", "Opciones y pausa")
@@ -691,8 +697,11 @@ func _build_notifications() -> void:
 # Tutorial / Consejero (D-073)
 # ==========================================================================
 func _build_tutorial_ui() -> void:
+	_tutorial_layer = CanvasLayer.new()
+	_tutorial_layer.layer = 25
+	add_child(_tutorial_layer)
 	_tutorial_highlight = TutorialHighlight.new()
-	_hud.add_child(_tutorial_highlight)
+	_tutorial_layer.add_child(_tutorial_highlight)
 	_advisor = AdvisorPanel.new()
 	_advisor.anchor_left = 1.0
 	_advisor.anchor_right = 1.0
@@ -702,7 +711,7 @@ func _build_tutorial_ui() -> void:
 	_advisor.offset_right = -SIDEBAR_RIGHT - 20
 	_advisor.offset_top = -330
 	_advisor.offset_bottom = -90
-	_hud.add_child(_advisor)
+	_tutorial_layer.add_child(_advisor)
 
 
 func _advance_tutorial(condition_id: String) -> void:
@@ -720,9 +729,6 @@ func _refresh_tutorial_ui() -> void:
 func _update_tutorial_highlight() -> void:
 	if _tutorial_highlight == null:
 		return
-	if _overlay != null and is_instance_valid(_overlay):
-		_tutorial_highlight.call("clear_highlight")
-		return
 	if not TSBGame.tutorial_active():
 		_tutorial_highlight.call("clear_highlight")
 		return
@@ -730,7 +736,11 @@ func _update_tutorial_highlight() -> void:
 	if step.is_empty():
 		_tutorial_highlight.call("clear_highlight")
 		return
-	var target := _tutorial_target_rect(str(step.get("highlight", "")))
+	var highlight := str(step.get("highlight", ""))
+	if _overlay != null and is_instance_valid(_overlay) and highlight not in ["attack_button", "expedition_button", "save_button"]:
+		_tutorial_highlight.call("clear_highlight")
+		return
+	var target := _tutorial_target_rect(highlight)
 	var hint := "Consejo: %s" % str(step.get("title", ""))
 	_tutorial_highlight.call("set_highlight", target, hint)
 
@@ -760,7 +770,11 @@ func _tutorial_target_rect(highlight: String) -> Rect2:
 		"end_turn_button":
 			return _control_rect_by_text("TERMINAR TURNO", Rect2(Vector2(20, view_size.y - 120), Vector2(SIDEBAR_LEFT - 40, 56)))
 		"save_button":
-			return _control_rect_by_text("Guardar", Rect2(Vector2(view_size.x - SIDEBAR_RIGHT + 20, 680), Vector2(400, 42)))
+			return _control_rect_by_name("save_button", _control_rect_by_text("Guardar/Cargar", Rect2(Vector2(view_size.x - SIDEBAR_RIGHT + 20, 680), Vector2(400, 42))))
+		"attack_button":
+			return _control_rect_by_name("attack_button", _control_rect_by_text("ATACAR", Rect2(Vector2(24, view_size.y - 120), Vector2(240, 52))))
+		"expedition_button":
+			return _control_rect_by_name("expedition_button", _control_rect_by_text("Enviar expedición", Rect2(Vector2(view_size.x * 0.3, view_size.y * 0.6), Vector2(340, 44))))
 		"battle_report":
 			if _overlay != null and is_instance_valid(_overlay):
 				return _overlay.get_global_rect()
@@ -769,14 +783,35 @@ func _tutorial_target_rect(highlight: String) -> Rect2:
 
 
 func _control_rect_by_text(text: String, fallback: Rect2) -> Rect2:
+	if _overlay != null and is_instance_valid(_overlay):
+		var found_overlay := _find_control_with_text(_overlay, text)
+		if found_overlay != null:
+			return found_overlay.get_global_rect()
 	var found := _find_control_with_text(self, text)
 	if found != null:
 		return found.get_global_rect()
-	if _overlay != null and is_instance_valid(_overlay):
-		found = _find_control_with_text(_overlay, text)
-		if found != null:
-			return found.get_global_rect()
 	return fallback
+
+
+func _control_rect_by_name(name: String, fallback: Rect2) -> Rect2:
+	if _overlay != null and is_instance_valid(_overlay):
+		var found_overlay := _find_control_with_name(_overlay, name)
+		if found_overlay != null:
+			return found_overlay.get_global_rect()
+	var found := _find_control_with_name(self, name)
+	if found != null:
+		return found.get_global_rect()
+	return fallback
+
+
+func _find_control_with_name(root_node: Node, node_name: String) -> Control:
+	for child: Node in root_node.get_children():
+		if child.name == node_name and child is Control:
+			return child as Control
+		var nested := _find_control_with_name(child, node_name)
+		if nested != null:
+			return nested
+	return null
 
 
 func _find_control_with_text(root_node: Node, text: String) -> Control:
@@ -1586,6 +1621,8 @@ func _perform_end_turn() -> void:
 	_end_turn_in_progress = true
 	await get_tree().process_frame
 	TSBGame.end_turn()
+	# D-085: autoguardado solo después del cierre resuelto, nunca antes de confirmar.
+	TSBGame.autosave()
 	_end_turn_in_progress = false
 	_turn_processing = false
 	_refresh_all()
@@ -1609,11 +1646,7 @@ func _on_save_pressed() -> void:
 	if not TSBGame.has_game():
 		_notify("Inicia una partida antes de guardar.", 2)
 		return
-	if TSBGame.save_game("autosave"):
-		_notify("Partida guardada en user://saves/autosave.json", 1)
-	else:
-		_notify("No se pudo guardar la partida.", 2)
-	_refresh_all()
+	_open_overlay(SaveLoadScene.resource_path, "save_load", null)
 
 
 func _on_options_pressed() -> void:
@@ -1660,6 +1693,10 @@ func _open_overlay(scene_path: String, kind: String, setup_arg: Variant = null) 
 		_overlay.connect("market_requested", _on_overlay_market_requested)
 	if _overlay.has_signal("army_management_requested"):
 		_overlay.connect("army_management_requested", _on_overlay_army_management_requested)
+	if _overlay.has_signal("attack_requested"):
+		_overlay.connect("attack_requested", _on_attack_requested)
+	if _overlay.has_signal("battle_report_requested"):
+		_overlay.connect("battle_report_requested", _on_attack_battle_report_requested)
 	if _overlay.has_signal("battle_report_ready"):
 		_overlay.connect("battle_report_ready", _on_overlay_battle_report_ready)
 	if _tooltip != null:
@@ -1689,6 +1726,18 @@ func _on_overlay_market_requested() -> void:
 
 func _on_overlay_army_management_requested() -> void:
 	call_deferred("_open_overlay", "res://scenes/military/army_management.tscn", "army", null)
+
+
+func _on_attack_requested() -> void:
+	if _overlay != null and is_instance_valid(_overlay) and _overlay.has_method("close_overlay"):
+		_overlay.call("close_overlay")
+	call_deferred("_open_overlay", AttackScene.resource_path, "attack", null)
+
+
+func _on_attack_battle_report_requested(report: Dictionary) -> void:
+	if _overlay != null and is_instance_valid(_overlay) and _overlay.has_method("close_overlay"):
+		_overlay.call("close_overlay")
+	call_deferred("_open_overlay", BattleReportScene.resource_path, "battle", report)
 
 
 func _on_overlay_battle_report_ready(report: Dictionary) -> void:

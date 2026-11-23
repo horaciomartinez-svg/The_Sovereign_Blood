@@ -15,6 +15,7 @@ const ThemeBuilder = preload("res://scripts/ui/theme/tsb_theme.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
 const UILegibility = preload("res://scripts/ui/ui_legibility.gd")
+const FontScaler = preload("res://scripts/ui/widgets/font_scaler.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const PortraitFrame = preload("res://scripts/ui/widgets/portrait_frame.gd")
 const GameConstants = preload("res://scripts/utils/game_constants.gd")
@@ -48,6 +49,7 @@ func _process(delta: float) -> void:
 
 func _ready() -> void:
 	UIKit.apply_theme(self)
+	FontScaler.attach(self)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 82

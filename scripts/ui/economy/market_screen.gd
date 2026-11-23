@@ -101,9 +101,13 @@ func _rebuild() -> void:
 			_build_good_card(grid, fid, good_id, inventory, trade_ok, str(_selected_region()))
 
 		UIKit.hsep(_body, Palette.with_alpha(Palette.GOLD_DIM, 0.5))
-		var expedition_title := UIKit.label(_body, "Expedición de mercaderes", "InkLabel")
+		var expedition_title := UIKit.label(_body, "EXPEDICIÓN DE MERCADERES", "InkLabel")
 		expedition_title.add_theme_font_size_override("font_size", 21)
 		expedition_title.add_theme_color_override("font_color", Palette.CRIMSON)
+		var expedition_help := UIKit.label(_body, "1) Asigna comerciantes. 2) Elige un bien y una cantidad. 3) Envía la expedición: cuesta 2 PG y vuelve a los 2 trimestres con beneficio determinista. Si faltan comerciantes, bienes o PG, el botón se desactiva con el motivo.", "InkLabel")
+		expedition_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		expedition_help.add_theme_font_size_override("font_size", 13)
+		expedition_help.add_theme_color_override("font_color", Palette.MUTED)
 		var expedition_row := UIKit.hbox(_body, 8)
 		var expedition_good := OptionButton.new()
 		expedition_good.custom_minimum_size = Vector2(260, 38)
@@ -118,15 +122,28 @@ func _rebuild() -> void:
 		expedition_qty.custom_minimum_size = Vector2(100, 36)
 		expedition_row.add_child(expedition_qty)
 		var expedition_button := UIKit.button(expedition_row, "Enviar expedición (2 PG)", "SmallButton", "TradeSystem.send_expedition(): retorno a los 2 trimestres")
+		expedition_button.name = "expedition_button"
 		expedition_button.disabled = not trade_ok
 		expedition_button.tooltip_text = "Sin comerciantes asignados" if not trade_ok else "Vende en el extranjero; retorno a 2 trimestres."
 		expedition_button.pressed.connect(func() -> void: _on_expedition(fid, expedition_good, expedition_qty))
 		expedition_good.item_selected.connect(func(_index: int) -> void: _update_expedition_button(expedition_button, expedition_good, trade_ok))
 		_update_expedition_button(expedition_button, expedition_good, trade_ok)
-		var expedition_hint := UIKit.label(_body, "Vende mercancía en el extranjero: 2 PG, retorno a los 2 trimestres con beneficio determinista.", "InkLabel")
+		var active_expeditions := TSBGame.trade_expeditions()
+		var active_text := "Expediciones activas: %d." % active_expeditions.size()
+		if not active_expeditions.is_empty():
+			var details: Array[String] = []
+			for expedition: Variant in active_expeditions:
+				if expedition is Dictionary:
+					details.append("%s ×%d → turno %d" % [
+						str((expedition as Dictionary).get("good_id", "—")),
+						int((expedition as Dictionary).get("amount", 0)),
+						int((expedition as Dictionary).get("return_turn", 0))])
+			if not details.is_empty():
+				active_text += " " + " · ".join(details)
+		var expedition_hint := UIKit.label(_body, active_text, "InkLabel")
 		expedition_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		expedition_hint.add_theme_font_size_override("font_size", 13)
-		expedition_hint.add_theme_color_override("font_color", Palette.MUTED)
+		expedition_hint.add_theme_color_override("font_color", Palette.GOLD_DIM)
 
 	if _status != null and _status.text.is_empty():
 		_set_status("Compra/venta y expediciones requieren comerciantes asignados y una región propia." if not trade_ok else "Selecciona una mercancía y una cantidad para operar.")
@@ -178,8 +195,20 @@ func _update_expedition_button(button: Button, picker: OptionButton, trade_ok: b
 	var good_id := str(picker.get_item_metadata(picker.selected))
 	var key := "expedition:%s" % good_id
 	var used := TSBGame.action_used(key) or not TSBGame.can_use_action(key)
-	button.disabled = not trade_ok or used
-	button.tooltip_text = "Sin comerciantes asignados" if not trade_ok else ("Usado este turno" if used else "Vende en el extranjero; retorno a 2 trimestres.")
+	var insufficient_pg := TSBGame.pg_remaining() < 2
+	var inventory := TSBGame.trade_inventory(TSBGame.player_faction())
+	var no_stock := float(inventory.get(good_id, 0.0)) <= 0.0
+	button.disabled = not trade_ok or used or insufficient_pg or no_stock
+	if not trade_ok:
+		button.tooltip_text = "Sin comerciantes asignados"
+	elif no_stock:
+		button.tooltip_text = "Sin inventario de %s" % TSBGame.trade_good(good_id).get("name", good_id)
+	elif used:
+		button.tooltip_text = "Usado este turno"
+	elif insufficient_pg:
+		button.tooltip_text = "PG insuficientes: la expedición cuesta 2 PG"
+	else:
+		button.tooltip_text = "Vende en el extranjero; retorno a 2 trimestres."
 
 
 func _build_advisor_advice(fid: String) -> void:
@@ -241,6 +270,7 @@ func _on_expedition(faction_id: String, picker: OptionButton, qty: SpinBox) -> v
 	var good_id := str(picker.get_item_metadata(picker.selected))
 	if TSBGame.send_expedition(faction_id, good_id, int(qty.value)):
 		_set_status("Expedición enviada: %d de %s; retorno a los 2 trimestres." % [int(qty.value), TSBGame.trade_good(good_id).get("name", good_id)])
+		TSBGame.tutorial_advance("expedition_sent")
 	else:
 		_set_status("No se pudo enviar la expedición (%s)." % _trade_reason())
 	_rebuild()

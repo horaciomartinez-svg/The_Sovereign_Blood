@@ -13,6 +13,7 @@ const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const ShieldScript = preload("res://scripts/ui/widgets/heraldry_shield.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const FontScaler = preload("res://scripts/ui/widgets/font_scaler.gd")
 
 const WORKER_ORDER: Array[String] = ["farmers", "artisans", "merchants", "recruits"]
 const WORKER_LABELS := {
@@ -50,9 +51,12 @@ var _footer: Label = null
 
 func _ready() -> void:
 	UIKit.apply_theme(self)
+	FontScaler.attach(self)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 20
-	UIHelp.add_button(self, "region_panel")
+	var help_button := UIHelp.add_button(self, "region_panel")
+	help_button.offset_top = 64
+	help_button.offset_bottom = 106
 	clip_contents = true
 	_build()
 	visible = false
@@ -159,6 +163,13 @@ func _build_overview(data: Dictionary, owner: String) -> void:
 
 func _build_workers(data: Dictionary) -> void:
 	var section := _section("Mano de obra")
+	var owner_id := str(data.get("owner", ""))
+	var is_owner := TSBGame.has_game() and owner_id == TSBGame.player_faction()
+	if TSBGame.has_game() and not is_owner:
+		var owner_warning := UIKit.label(section, "Solo el reino propietario puede asignar trabajadores.", "InkLabel")
+		owner_warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		owner_warning.add_theme_font_size_override("font_size", 13)
+		owner_warning.add_theme_color_override("font_color", Palette.CRIMSON)
 	var workers: Variant = data.get("workers", {})
 	var worker_dict: Dictionary = workers if workers is Dictionary else {}
 	var total_assigned := 0
@@ -180,11 +191,19 @@ func _build_workers(data: Dictionary) -> void:
 		value_label.add_theme_color_override("font_color", Palette.INK_TEXT)
 		var minus := UIKit.button(row, "-", "SmallButton", "Reasignar %d trabajadores (1 PG)" % STEP)
 		minus.custom_minimum_size = Vector2(42, 34)
-		minus.disabled = not TSBGame.has_game()
+		minus.disabled = not is_owner
+		if not is_owner:
+			minus.modulate = Color(1.0, 1.0, 1.0, 0.45)
+			if TSBGame.has_game():
+				minus.tooltip_text = "Solo el reino propietario puede asignar trabajadores"
 		minus.pressed.connect(func() -> void: _allocate(worker_class, -STEP))
 		var plus := UIKit.button(row, "+", "SmallButton", "Reasignar %d trabajadores (1 PG)" % STEP)
 		plus.custom_minimum_size = Vector2(42, 34)
-		plus.disabled = not TSBGame.has_game()
+		plus.disabled = not is_owner
+		if not is_owner:
+			plus.modulate = Color(1.0, 1.0, 1.0, 0.45)
+			if TSBGame.has_game():
+				plus.tooltip_text = "Solo el reino propietario puede asignar trabajadores"
 		plus.pressed.connect(func() -> void: _allocate(worker_class, STEP))
 
 	var total_label := UIKit.label(
@@ -370,13 +389,16 @@ func _terrain_name(terrain: String) -> String:
 # --------------------------------------------------------------------------
 func _allocate(worker_class: String, delta: int) -> void:
 	var data := TSBGame.region(region_id)
+	if TSBGame.has_game() and str(data.get("owner", "")) != TSBGame.player_faction():
+		action_result.emit("Solo el reino propietario puede asignar trabajadores.", false)
+		return
 	var workers: Variant = data.get("workers", {})
 	var current := int((workers as Dictionary).get(worker_class, 0)) if workers is Dictionary else 0
 	var target := maxi(current + delta, 0)
 	if target == current:
 		action_result.emit("La asignación no cambia.", false)
 		return
-	var ok := TSBGame.allocate(region_id, worker_class, target)
+	var ok := TSBGame.allocate_for(TSBGame.player_faction(), region_id, worker_class, target)
 	if ok:
 		action_result.emit("%s: %s asignados a %d." % [str(data.get("name", region_id)), WORKER_LABELS[worker_class], target], true)
 		TSBGame.tutorial_advance("assign_workers")

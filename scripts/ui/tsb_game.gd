@@ -1301,6 +1301,69 @@ static func has_save(slot: String = "autosave") -> bool:
 	return bool(result) if result != null else false
 
 
+static func list_saves() -> Array:
+	var result: Variant = _call("GameState", "list_saves", [])
+	if result is Array:
+		return (result as Array).duplicate(true)
+	# Fallback de presentación mientras AG-2 publica list_saves(): inspecciona
+	# las 4 ranuras canónicas; la UI nunca modifica los archivos.
+	var out: Array = []
+	for slot: String in ["autosave", "slot_1", "slot_2", "slot_3"]:
+		var entry := {"slot": slot, "exists": has_save(slot), "year": 0, "quarter": 0, "faction": "", "saved_at": ""}
+		if bool(entry["exists"]):
+			var path := "user://saves/%s.json" % slot
+			if FileAccess.file_exists(path):
+				var file := FileAccess.open(path, FileAccess.READ)
+				if file != null:
+					var parsed: Variant = JSON.parse_string(file.get_as_text())
+					file.close()
+					if parsed is Dictionary:
+						var payload: Dictionary = parsed
+						entry["year"] = int(payload.get("year", 0))
+						entry["quarter"] = int(payload.get("quarter", 0))
+						entry["faction"] = str(payload.get("player_faction", payload.get("faction", "")))
+					entry["saved_at"] = str(FileAccess.get_modified_time(path))
+		out.append(entry)
+	return out
+
+
+static func autosave() -> bool:
+	var result: Variant = _call("GameState", "autosave", [])
+	if result != null:
+		return bool(result)
+	# Compatibilidad: el autoguardado es siempre la ranura "autosave".
+	return save_game("autosave")
+
+
+static func allocate_for(faction_id: String, region_id: String, worker_class: String, amount: int) -> bool:
+	var result: Variant = _call("EconomySystem", "allocate", [region_id, worker_class, amount, faction_id])
+	if result != null:
+		return bool(result)
+	result = _call("EconomySystem", "allocate", [region_id, worker_class, amount])
+	return bool(result) if result != null else false
+
+
+static func attack_preview(faction_id: String, target_region: String, army_ids: Array) -> Dictionary:
+	var result: Variant = _call("MilitarySystem", "preview_attack", [faction_id, target_region, army_ids])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {}
+
+
+static func attack_region(faction_id: String, target_region: String, army_ids: Array) -> Dictionary:
+	var result: Variant = _call("MilitarySystem", "attack_region", [faction_id, target_region, army_ids])
+	return (result as Dictionary).duplicate(true) if result is Dictionary else {"ok": false, "reason": "API de ataque no disponible"}
+
+
+static func war_prestige_cost(faction_id: String, target_owner: String) -> int:
+	if target_owner.is_empty() or faction_id.is_empty() or target_owner == faction_id:
+		return 0
+	if are_at_war(faction_id, target_owner):
+		return 0
+	var has_casus: Variant = _call("DiplomacySystem", "has_casus_belli", [faction_id, target_owner])
+	if has_casus != null and bool(has_casus):
+		return 0
+	return GameConstants.WAR_WITHOUT_CASUS_BELLI_PRESTIGE_LOSS
+
+
 static func event_log() -> Array:
 	var s := _state_raw()
 	var log_entries: Variant = s.get("event_log", [])

@@ -9,6 +9,7 @@ signal closed
 const Palette = preload("res://scripts/ui/theme/tsb_palette.gd")
 const UIKit = preload("res://scripts/ui/ui_kit.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const FontScaler = preload("res://scripts/ui/widgets/font_scaler.gd")
 
 const CONTEXT_KEYS := {
 	"family_tree": "family",
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_build_shell()
 	_build_content()
 	_build_help_button()
+	FontScaler.attach(self)
 
 
 func _context_help_key() -> String:

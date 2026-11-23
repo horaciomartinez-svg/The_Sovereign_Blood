@@ -11,6 +11,7 @@ const TSBGame = preload("res://scripts/ui/tsb_game.gd")
 const UIAudio = preload("res://scripts/ui/ui_audio.gd")
 const UIPreferences = preload("res://scripts/ui/ui_preferences.gd")
 const UIHelp = preload("res://scripts/ui/ui_help.gd")
+const FontScaler = preload("res://scripts/ui/widgets/font_scaler.gd")
 
 const MAIN_MENU_SCENE := "res://scenes/main/main_menu.tscn"
 
@@ -23,6 +24,7 @@ var _fullscreen_check: CheckButton = null
 
 func _ready() -> void:
 	UIKit.apply_theme(self)
+	FontScaler.attach(self)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	z_index = 90
