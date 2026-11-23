@@ -420,3 +420,33 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** el estado de batalla ya calcula hombres/armas/apoyo/moral/experiencia y comandante, pero la UI no lo enseña.
 **Decisión:** en N2/N3, al seleccionar una unidad se muestra **hombres, armamento (armas), apoyo/suministro, moral y entrenamiento (experiencia)** con etiquetas/iconos generados por código; el comandante muestra estado sano/herido y su stat de Mando en la tarjeta y en el panel de batalla. Solo lectura del estado existente; **sin cambios de simulación, balance ni animación**.
 **Consecuencia:** C7; AG-3 pinta, AG-4 valida.
+
+## D-084 · Ataque desde Militar con selección de ejércitos y guerra automática (Fase 5B) (2026-11-23)
+**Contexto:** no hay forma visible de atacar a un reino vecino; el motor solo mueve ejército a ejército y declara hostilidades internamente. El usuario pide un flujo tipo GK2: elegir objetivo, seleccionar uno o varios ejércitos, revisar y confirmar; si no hay guerra, que se declare automáticamente.
+**Decisión:** nuevo flujo **Militar → Atacar**: selección de región objetivo adyacente no propia (aliada bloqueada con aviso) y **multi-selección de ejércitos elegibles** (adyacentes, con movimiento); resumen de PG y aviso de guerra; al confirmar, `MilitarySystem.attack_region` valida y mueve los ejércitos en orden, declarando la guerra automáticamente si no existe (`DiplomacySystem.begin_hostilities`, con casus belli/pérdida de prestigio vigente) y resolviendo batallas delegadas con las fórmulas actuales. Si ya hay guerra, solo ataca. Se reutiliza el informe de batalla. Sin cambios de balance/combate; las acciones militares siguen siendo repetibles (D-074). Inspirado en las lecciones de menús/órdenes del REA local (D-077/D-078), sin copiar contenido.
+**Consecuencia:** C1 del QA; AG-2 API, AG-3 UI, AG-1 tutorial/Manual.
+
+## D-085 · Guardado manual multislot y autoguardado por turno (2026-11-23)
+**Contexto:** solo existe un botón de guardado a `autosave` y el jugador no encuentra cómo guardar; el usuario pide botón visible, autoguardado tras cada turno y más de una partida.
+**Decisión:** se mantiene el formato `save_version 1`; `GameState` expone `list_saves()` y slots `autosave` + `slot_1..slot_3` con metadatos (año/trimestre/facción/fecha). **Autoguardado después de cada turno resuelto** (nunca antes de confirmar y sin sobrescribir las ranuras manuales). Pantalla Guardar/Cargar desde HUD/mapa y menú principal con las 4 ranuras, fecha/año/facción, sobrescritura confirmada y feedback; `autosave` sigue cargable desde el menú.
+**Consecuencia:** C2; AG-2 slots/autosave, AG-3 pantalla, AG-1 tutorial/Manual.
+
+## D-086 · Solo el propietario decide en una región (2026-11-23)
+**Contexto:** al abrir una región de otro reino, el panel permite reasignar población, lo que rompe la propiedad y la IA.
+**Decisión:** `EconomySystem.allocate` acepta un `actor_faction` opcional y rechaza (`not_owner`) si no coincide con el propietario; el panel regional deshabilita los controles de trabajadores para regiones ajenas con aviso «Solo el reino propietario puede asignar trabajadores» (los datos siguen visibles). Los llamadores existentes sin actor conservan compatibilidad; la IA opera solo sobre sus regiones.
+**Consecuencia:** C3; AG-2 guard motor, AG-3 UI.
+
+## D-087 · Expedición de mercaderes explicada (2026-11-23)
+**Contexto:** el usuario no entiende cómo enviar mercaderes a una misión comercial, aunque la función existe.
+**Decisión:** el Mercado muestra una sección **«Expedición de mercaderes»** con instrucciones, selección de bien/cantidad, coste 2 PG, retorno a 2 trimestres y expediciones activas; el botón se deshabilita con motivo si faltan comerciantes/bienes/PG. Se añade paso de tutorial con condición `expedition_sent`, ayuda contextual y sección del Manual. Sin cambios de simulación.
+**Consecuencia:** C4; AG-3 UI, AG-1 textos/tutorial/Manual, AG-2 avance de condición.
+
+## D-088 · Tutorial Principiante con ataque, guardado y expedición (2026-11-23)
+**Contexto:** el tutorial no explica cómo atacar, cómo guardar ni cómo enviar mercaderes; el usuario pide incluirlo en Principiante.
+**Decisión:** `data/tutorial_script.json` añade/pule pasos para **atacar** (Militar→Atacar, selección múltiple, objetivo, confirmación y guerra automática), **expedición de mercaderes**, **guardado multislot/autoguardado** y **solo decidir en reinos propios**; condiciones nuevas `attack_launched`/`expedition_sent` (el resto se conserva). `TutorialSystem` avanza condiciones desde las acciones; la UI resalta `attack_button`, `save_button`, `expedition_button` y el conmutador del Consejero sigue disponible. Sin cambiar save_version.
+**Consecuencia:** C5; AG-1 guion, AG-2 condiciones, AG-3 resaltados/capturas.
+
+## D-089 · Manual actualizado para guerra, guardado, expedición y propiedad (2026-11-23)
+**Contexto:** el Manual debe seguir siendo la referencia del jugador y no quedar desactualizado.
+**Decisión:** `docs/MANUAL_DEL_JUGADOR.md` documenta el flujo de ataque/declaración automática, la selección de ejércitos, el guardado multislot/autoguardado, la expedición de mercaderes y la regla de que solo el propietario decide en su reino. Coherente con `context_help.json` y las capturas; sin texto de Koei.
+**Consecuencia:** C6; AG-1.

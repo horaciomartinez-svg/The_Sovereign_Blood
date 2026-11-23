@@ -10,8 +10,8 @@
 | **Fines** | Proyecto personal, sin fines comerciales. Contenido 100% original (datos, nombres, arte). |
 | **Modelo IA** | DeepSeek-V4.1-Flash (deepseek-flash) vÃ­a DeepSeek Harness (DSH) |
 | **Workspace DSH** | `C:\Proyectos\TSB` (Creator Mode, Full Access) |
-| **Versión del documento** | 1.9.2 |
-| **Estado** | Aprobado — v1.9.2: Fase 5A «El juego te explica» (estaciones en HUD, boletín/crónica persistida, confirmación de órdenes, consejero comercial/ayuda contextual, panel de unidad N2/N3); hereda v1.9.1 (acciones 1/turno, costes por tipo), v1.9 (Fase 4), v1.8.1 (animación), v1.8/v1.7 (sprites/tiles), v1.6 (17 unidades) |
+| **Versión del documento** | 1.9.3 |
+| **Estado** | Aprobado — v1.9.3: Fase 5B (ataque desde Militar con selección de ejércitos y guerra automática, guardado multislot/autoguardado, solo el propietario decide en su región, expedición de mercaderes clara y tutorial Principiante ampliado); hereda v1.9.2 (legibilidad), v1.9.1/v1.9 (Fase 4), v1.8.x (arte/animación) |
 
 ---
 
@@ -278,6 +278,13 @@ Perfiles: Agresor / Comerciante / DinÃ¡stico / Superviviente / Equilibrado
 
 DecisiÃ³n trimestral en 3 pasos: (1) evaluar amenazas (facciones mÃ¡s fuertes adyacentes), (2) priorizar PG (economÃ­a si pobre, ejÃ©rcito si amenazado, familia si heredero ausente), (3) ejecutar 2-4 Ã³rdenes por turno. Toda la IA se ejecuta tras el jugador, en <2 s para 14 facciones (presupuesto de rendimiento).
 
+### 5.8 Guerra, guardado y control del jugador (v1.9.3 — Fase 5B)
+- **Atacar (D-084):** Militar → Atacar abre objetivo adyacente y **selección múltiple de ejércitos**; resumen de PG; si no hay guerra se **declara automáticamente** al confirmar (con casus belli/pérdida de prestigio vigente), si ya hay guerra solo ataca; batalla delegada con informe. Aliados bloqueados con aviso.
+- **Guardado (D-085):** botón Guardar/Cargar visible, **3 ranuras manuales + autoguardado** con metadatos; autoguardado después de cada turno resuelto, sin sobrescribir las manuales; save_version 1.
+- **Propiedad (D-086):** solo el propietario puede reasignar trabajadores de una región; en regiones ajenas los controles están deshabilitados con aviso (`not_owner` en motor).
+- **Expedición (D-087):** sección clara en Mercado (bien, cantidad, 2 PG, retorno a 2 trimestres, activas) y paso de tutorial.
+- **Tutorial (D-088):** Principiante incluye atacar, expedición, guardado y límites de propiedad; condiciones `attack_launched`/`expedition_sent`; Manual actualizado (D-089).
+
 ---
 
 ## 6. Batallas â€” resoluciÃ³n en tres niveles
@@ -530,6 +537,12 @@ Regla de oro para los agentes programadores: **las escenas de UI nunca mutan est
 17. **Confirmación de órdenes (v1.9.2 — D-081):** resumen «Tus órdenes este trimestre» con Corregir/Confirmar y lista de exenciones libres.
 18. **Consejero y ayuda contextual (v1.9.2 — D-082):** consejero comercial determinista en Mercado, conmutador del Consejero en partida y botón «?» en cada pantalla §9 con texto desde datos.
 19. **Panel de unidad completo N2/N3 (v1.9.2 — D-083):** hombres, armas, apoyo, moral, entrenamiento y comandante (estado + Mando) por selección.
+
+20. **Atacar desde Militar (v1.9.3 — D-084):** objetivo adyacente, selección múltiple de ejércitos, confirmación con guerra automática si no había y batalla delegada.
+21. **Guardado multislot + autoguardado (v1.9.3 — D-085):** 3 ranuras manuales + autosave por turno, con metadatos y carga.
+22. **Propiedad de región (v1.9.3 — D-086):** solo el propietario reasigna trabajadores; regiones ajenas en solo lectura.
+23. **Expedición de mercaderes (v1.9.3 — D-087):** sección guiada en Mercado y paso de tutorial.
+24. **Tutorial Principiante ampliado (v1.9.3 — D-088):** ataque, guardado, expedición y propiedad; Manual D-089.
 
 ---
 
