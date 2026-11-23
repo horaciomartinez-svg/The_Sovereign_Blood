@@ -1672,3 +1672,30 @@ El prompt actualizado añade **C11 Manual del Jugador actualizado** (task-81) y 
 **task-85 COMPLETADA** (plan/baseline; verificación final = task-86, bloqueada por task-82/83/84). Sin producción ni git por AG-4.
 
 *Fin de la sección Fase 5B — plan y baseline QA (task-85).*
+
+---
+
+### 24.4 Verificación final Fase 5B (task-86, 2026-11-23) — **APROBADO 10/10**
+
+**HEAD `161730b2`.** Harness `tests/qa_acceptance_fase5b.gd` **×2 → 10 PASS / 0 FAIL / 0 SKIP**, exit **0/0**; 0 `ERROR:`. Informe: **`docs/qa/fase5b_report.md`**.
+
+| # | Estado | Evidencia |
+|---|---|---|
+| C1 | **PASS** | `attack_region`/`preview_attack` + UI Atacar; objetivo/huestes/PG y capturas `attack_screen`, `war_confirm`, `attack_result`; multi-selección/guerra en suite |
+| C2 | **PASS** | `list_saves` 4 slots; save/load `slot_1` exacto; autosave/3 ranuras/captura `save_load_screen` |
+| C3 | **PASS** | `not_owner` en motor para región ajena; propia OK; panel/captura `region_not_owner` |
+| C4 | **PASS** | mercado con «Expedición de mercaderes», instrucciones/coste/retorno; `expedition_sent`; captura `market_expedition` |
+| C5 | **PASS** | tutorial con ataque/guardado/expedición/propiedad + condiciones/highlights; 3 capturas |
+| C6 | **PASS** | Manual con ataque/guerra, guardado, expedición, propiedad y **nota D-090** (+2 pt/menú principal intacto) |
+| C7 | **PASS** | `run_all` **2.068/0/2**; validate **16/12, 12.221, 0 WARN**; editor/headless 0; F1/F2/F3/tiles/final/anim/MVP/Fase 4/Fase 5A verdes; `ui_smoke` 69/27 |
+| C8 | **PASS** | `git diff fase-5a..HEAD` 1402/1453 = **0**; arte congelado; GDD v1.9.3 + D-084…D-090 + STATUS; REA fuera del repo |
+| C9 | **PASS** | 17 capturas 1920×1080; ui_smoke 69/27 |
+| C10 | **PASS** | `font_scaler.gd` `BOOST := 2`; `main_menu` sin FontScaler; hash menú baseline `C7A22EA3D5185ECE` intacto; 7 capturas `font_*` |
+
+**Batería:** F1 6/6, F2 6/6, F3 6/6, tiles 7/7, final 7/7, anim 6/6, MVP 11/11, Fase 4 14/14, Fase 5A 11/11; `ui_smoke` 69/27; `run_all` 2.068/0/2; validate 16/12/12.221/0 WARN; editor/headless 0; REA local ausente del repo; congelados 0.
+
+**Veredicto: QA Fase 5B: APROBADO (10/10).** Observaciones no bloqueantes: C1/C2/C3/C4 se apoyan en suite/capturas para lógica fina; revisión visual de 17 capturas sin click-through completo; GPU no medible. Tags `fase-5a`; **`fase-5b` pendiente** de STATUS/tag/push.
+
+**task-86 COMPLETADA.** Sin cambios de producción ni git por AG-4.
+
+*Fin de la verificación final Fase 5B (task-86).*

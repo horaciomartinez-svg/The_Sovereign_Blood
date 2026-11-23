@@ -1,6 +1,6 @@
 # Manual del Jugador — The Sovereign's Blood
 
-**Versión:** MVP-1337, Fases 4-5B (D-069…D-073, D-079…D-089) · **Escenario:** «Dos Coronas», 1337-1399
+**Versión:** MVP-1337, Fases 4-5B (D-069…D-073, D-079…D-090) · **Escenario:** «Dos Coronas», 1337-1399
 **Cómo abrir este manual en el juego:** botón **Manual** del menú principal (abre este archivo con
 `OS.shell_open`) y entrada **Ayuda** del menú del Consejo, que muestra un resumen rápido. Además,
 cada pantalla tiene un botón **?** con ayuda contextual breve (Fase 5A).
@@ -12,7 +12,8 @@ cada pantalla tiene un botón **?** con ayuda contextual breve (Fase 5A).
 **Novedades de la Fase 5B «Guerra, guardado y control»:** (1) **Militar → Atacar** con objetivo,
 selección múltiple de ejércitos y **guerra automática** si no había; (2) **guardado multislot**
 (3 ranuras + autoguardado por turno); (3) **expedición de mercaderes** explicada; (4) **solo el
-propietario decide en su reino**; (5) tutorial y ayuda actualizados con estos flujos.
+propietario decide en su reino**; (5) tutorial y ayuda actualizados con estos flujos; (6) **tipografía
++2 pt** en las pantallas de juego, con el **menú principal intacto** (D-090).
 
 **Novedades de la Fase 5A «El juego te explica»:** (1) HUD con estación y año; (2) boletín
 trimestral, Crónica anual y pestaña de histórico; (3) repaso «¿Confirmas tus órdenes?» con
@@ -432,6 +433,12 @@ elemento de UI del paso actual, avanza cuando cumples la condición y puedes **s
 cualquier momento. El estado (`active`, `step_index`, `completed`, `skipped`) se guarda con la
 partida.
 
+En **Principiante**, el tutorial ampliado (D-088) cubre: mapa y **regla de propiedad** (solo
+decides en tus reinos), trabajadores, familia/consorte, diplomacia, **Mercado y expedición de
+mercaderes**, **Militar → Atacar** (multi-selección, objetivo y **guerra automática**), batalla N1,
+**fin de turno/repaso de órdenes** y **guardado multislot** con autoguardado. En Normal no se
+muestra, pero puedes activar el Consejero desde el menú del Consejo.
+
 ### 8.2 Personalidades de la IA
 
 Cada facción tiene un perfil (agresivo, diplomático, expansionista, comerciante…). La IA prioriza
@@ -544,7 +551,6 @@ guerra anglo-francesa activa para que la cadena histórica pueda dispararse en u
 ## 11. Ayuda en el juego
 
 La Fase 5A añade varias formas de consultar las reglas sin salir de la partida:
-
 - **Manual:** botón **Manual** del menú principal; abre este documento con `OS.shell_open`. Si el
   sistema no puede abrirlo, muestra un aviso y puedes consultarlo desde `docs/`.
 - **Ayuda del Consejo:** entrada **Ayuda** en el menú del Consejero, con un resumen rápido y acceso
@@ -566,10 +572,23 @@ La ayuda contextual usa las mismas claves de pantalla que la UI y el manual:
 `year_end`, `chronicle`, `options` y `victory`. Si una pantalla nueva no tiene ayuda, se muestra un
 texto genérico y se puede ampliar el JSON sin tocar código.
 
+### 11.1 Tipografía y legibilidad (Fase 5B, D-090)
+
+El juego ha aumentado **al menos +2 pt** el tamaño de las fuentes en las **pantallas de juego**
+respecto a versiones anteriores: mapa, región, consejo, familia, diplomacia, economía/mercado,
+militar/ejército, batallas N1/N2/N3, boletín, crónica, guardado/carga, ayuda, tutorial, opciones de
+partida y victoria/derrota. El cambio se aplica desde el tema/constantes compartidas de UI,
+respetando el mínimo de cada rol tipográfico y revisando el layout y el scroll para que no se rompa.
+
+**Excepción explícita:** el **menú principal** y su **selector de escenario conservan su tamaño
+actual**; el usuario considera correcta esa pantalla y no se ha tocado. Si notas que un texto de una
+pantalla de juego sigue pequeño, es un caso a reportar (no un ajuste de balance): el objetivo de
+D-090 es que todo el texto dentro de la partida sea legible sin alterar la navegación del menú.
+
 ---
 
 *Manual del MVP-1337 (D-072, actualizado en Fase 5A por C11/D-079…D-083 y en Fase 5B por
-D-084…D-089). Para el detalle técnico de sistemas, consulta `docs/architecture_contracts_fase4.md`,
+D-084…D-090). Para el detalle técnico de sistemas, consulta `docs/architecture_contracts_fase4.md`,
 `docs/architecture_contracts_fase5a.md` y `docs/architecture_contracts_fase5b.md`; para el tutorial,
 `data/tutorial_script.json` (D-073/D-088); para la ayuda contextual, `data/context_help.json` y
 `data/legibility_texts.json`. Si una cifra de balance cambia en un parche, se actualizará este

@@ -16,11 +16,12 @@ const FROZEN_FILES: Dictionary = {
 }
 const ART_REQUEST_HASH := "07CBFA47768B153D"
 const ATTACK_CAPTURES: Array[String] = [
-	"attack_target.png", "attack_armies.png", "attack_result.png",
+	"attack_screen.png", "war_confirm.png", "attack_result.png",
 ]
-const SAVE_CAPTURES: Array[String] = ["save_slots.png", "load_slots.png", "autosave_feedback.png"]
+const SAVE_CAPTURES: Array[String] = ["save_load_screen.png"]
 const OTHER_CAPTURES: Array[String] = [
-	"expedition_section.png", "tutorial_attack.png", "ownership_blocked.png", "ownership_own.png",
+	"market_expedition.png", "tutorial_attack.png", "tutorial_expedition.png",
+	"tutorial_save.png", "region_not_owner.png",
 ]
 
 var _results: Array[Dictionary] = []
@@ -103,7 +104,21 @@ func _criterion_2_saves() -> void:
 	if not missing.is_empty():
 		_skip(id, name, "API/slots OK; pendiente AG-3: " + ", ".join(missing), started)
 		return
-	_pass(id, name, "list_saves con 4 slots; autosave/load/hash y capturas presentes", started)
+	var before := JSON.stringify(gs.call("to_dict"))
+	if not bool(gs.call("save_game", "slot_1")):
+		_fail(id, name, "save_game(slot_1) falló", started)
+		return
+	var tm := _autoload("TurnManager")
+	if tm != null:
+		tm.call("advance_quarter")
+	if not bool(gs.call("load_game", "slot_1")):
+		_fail(id, name, "load_game(slot_1) falló", started)
+		return
+	var after := JSON.stringify(gs.call("to_dict"))
+	if before != after:
+		_fail(id, name, "hash/estado no exacto tras guardar/cargar slot_1", started)
+		return
+	_pass(id, name, "list_saves 4 slots; save/load slot_1 con estado exacto; autosave/captura presentes", started)
 
 
 # ---------------------------------------------------------------------------
@@ -127,14 +142,43 @@ func _criterion_3_ownership() -> void:
 	if not has_guard:
 		_skip(id, name, "pendiente AG-2/AG-3: motor/panel sin guard not_owner", started)
 		return
-	var captures := 0
-	for capture in ["ownership_blocked.png", "ownership_own.png"]:
-		if FileAccess.file_exists("res://docs/screenshots/%s" % capture):
-			captures += 1
-	if captures < 2:
-		_skip(id, name, "guard presente; pendiente capturas ownership (%d/2)" % captures, started)
+	if not FileAccess.file_exists("res://docs/screenshots/region_not_owner.png"):
+		_skip(id, name, "pendiente AG-3: captura region_not_owner.png", started)
 		return
-	_pass(id, name, "panel/allocate con guard not_owner; capturas ajena/propia", started)
+	var gs := _autoload("GameState")
+	_new_game("scenario_1337", "england")
+	var state: Variant = gs.get("state") if gs != null else null
+	var foreign_id := ""
+	var own_id := ""
+	if state is Dictionary:
+		var regions: Variant = (state as Dictionary).get("regions", null)
+		if regions is Dictionary:
+			for region_id in (regions as Dictionary).keys():
+				var region: Variant = (regions as Dictionary)[region_id]
+				if not (region is Dictionary):
+					continue
+				var owner := str((region as Dictionary).get("owner", ""))
+				if owner == "england" and own_id == "":
+					own_id = str(region_id)
+				elif owner != "england" and foreign_id == "":
+					foreign_id = str(region_id)
+	var errors: Array[String] = []
+	var foreign_ok: Variant = eco.call("allocate", foreign_id, "farmers", 1, "england") if foreign_id != "" else null
+	var reason := str(eco.get("last_allocate_reason"))
+	if foreign_ok is bool and bool(foreign_ok):
+		errors.append("allocate permitió región ajena")
+	if reason != "not_owner":
+		errors.append("motivo last_allocate_reason=%s (esperado not_owner)" % reason)
+	if own_id == "":
+		errors.append("sin región propia para probar")
+	else:
+		var own_ok: Variant = eco.call("allocate", own_id, "farmers", 1, "england")
+		if not (own_ok is bool) or not bool(own_ok):
+			errors.append("allocate región propia falló: %s" % str(eco.get("last_allocate_reason")))
+	if not errors.is_empty():
+		_fail(id, name, ", ".join(errors), started)
+		return
+	_pass(id, name, "motor allocate: región ajena rechazada (not_owner), propia OK; panel/captura region_not_owner", started)
 
 
 # ---------------------------------------------------------------------------
@@ -157,8 +201,9 @@ func _criterion_4_expedition() -> void:
 		errors.append("mercado sin sección Expedición")
 	if not (tutorial_text.contains("expedition_sent") or tutorial_text.to_lower().contains("expedici")):
 		errors.append("tutorial sin paso expedición")
-	if not FileAccess.file_exists("res://docs/screenshots/expedition_section.png"):
-		_skip(id, name, "UI/textos parciales; pendiente captura expedition_section.png: %s" % ", ".join(errors), started)
+	if not FileAccess.file_exists("res://docs/screenshots/expedition_section.png") \
+			and not FileAccess.file_exists("res://docs/screenshots/market_expedition.png"):
+		_skip(id, name, "UI/textos parciales; pendiente captura market_expedition.png: %s" % ", ".join(errors), started)
 		return
 	if not errors.is_empty():
 		_fail(id, name, ", ".join(errors), started)
@@ -184,7 +229,7 @@ func _criterion_5_tutorial() -> void:
 		return
 	var text := JSON.stringify(data)
 	var missing: Array[String] = []
-	for token in ["attack_launched", "expedition_sent", "save_button", "attack_button", "expedition_button", "owner"]:
+	for token in ["attack_launched", "expedition_sent", "save_button", "attack_button", "expedition_button", "propiet"]:
 		if not text.contains(token):
 			missing.append(token)
 	if not missing.is_empty():
@@ -204,7 +249,7 @@ func _criterion_5_tutorial() -> void:
 func _criterion_6_manual() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C6"
-	var name := "Manual actualizado: ataque/guerra, guardado, expedición y propiedad"
+	var name := "Manual actualizado: ataque/guerra, guardado, expedición, propiedad y nota D-090"
 	var path := "res://docs/MANUAL_DEL_JUGADOR.md"
 	if not FileAccess.file_exists(path):
 		_fail(id, name, "falta Manual", started)
@@ -219,10 +264,16 @@ func _criterion_6_manual() -> void:
 		missing.append("expedición")
 	if not (text.contains("propietario") or text.contains("solo el reino")):
 		missing.append("propiedad")
+	if not (text.contains("tipograf") or text.contains("legibilidad")):
+		missing.append("nota D-090 tipografía")
+	if not (text.contains("+2") or text.contains("2 pt") or text.contains("2 puntos") or text.contains("dos puntos")):
+		missing.append("nota D-090 +2 pt")
+	if not (text.contains("menú principal") and (text.contains("conserva") or text.contains("intacto") or text.contains("mismo tamaño"))):
+		missing.append("nota D-090 menú principal intacto")
 	if not missing.is_empty():
 		_skip(id, name, "Manual Fase 5B pendiente: faltan " + ", ".join(missing), started)
 		return
-	_pass(id, name, "Manual con ataque/guerra, guardado, expedición y propiedad", started)
+	_pass(id, name, "Manual con ataque/guerra, guardado, expedición, propiedad y nota D-090 (+2 pt/menú intacto)", started)
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +283,7 @@ func _criterion_6_manual() -> void:
 func _criterion_7_regression() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C7"
-	var name := "No regresión: run_all 2019/0, validate 0 WARN, editor 0, F1/F2/F3/MVP/anim/tiles"
+	var name := "No regresión: run_all 2068/0/2, validate 16/12 0 WARN, editor 0, F1/F2/F3/MVP/anim/tiles, ui_smoke 69/27"
 	var issues: Array[String] = []
 	var military := _autoload("MilitarySystem")
 	var gs := _autoload("GameState")
@@ -270,7 +321,7 @@ func _criterion_7_regression() -> void:
 func _criterion_8_governance() -> void:
 	var started := Time.get_ticks_msec()
 	var id := "C8"
-	var name := "diff 0 1402/1453, sin arte, GDD v1.9.3 + D-084…D-089 + STATUS"
+	var name := "diff 0 1402/1453, sin arte, GDD v1.9.3 + D-084…D-090 + STATUS"
 	var errors: Array[String] = []
 	for path in FROZEN_FILES.keys():
 		if not FileAccess.file_exists(path):
@@ -287,7 +338,7 @@ func _criterion_8_governance() -> void:
 		if not gdd.contains("1.9.3"):
 			errors.append("GDD no v1.9.3")
 	var decisions := FileAccess.get_file_as_string("res://docs/decisions.md") if FileAccess.file_exists("res://docs/decisions.md") else ""
-	for d in ["D-084", "D-085", "D-086", "D-087", "D-088", "D-089"]:
+	for d in ["D-084", "D-085", "D-086", "D-087", "D-088", "D-089", "D-090"]:
 		if not decisions.contains(d):
 			errors.append("falta %s" % d)
 	var status := FileAccess.get_file_as_string("res://docs/STATUS.md") if FileAccess.file_exists("res://docs/STATUS.md") else ""
@@ -313,6 +364,10 @@ func _criterion_9_ux() -> void:
 	all_captures.append_array(ATTACK_CAPTURES)
 	all_captures.append_array(SAVE_CAPTURES)
 	all_captures.append_array(OTHER_CAPTURES)
+	all_captures.append_array([
+		"font_map.png", "font_market.png", "font_military.png", "font_battle.png",
+		"font_bulletin.png", "font_help.png", "font_save.png", "main_menu_unchanged.png",
+	])
 	for capture in all_captures:
 		var path := "res://docs/screenshots/%s" % capture
 		if not FileAccess.file_exists(path):
@@ -325,7 +380,7 @@ func _criterion_9_ux() -> void:
 	if not FileAccess.file_exists("res://scripts/ui/dev/ui_smoke.gd"):
 		_skip(id, name, "capturas OK; ui_smoke ausente", started)
 		return
-	_pass(id, name, "10 capturas 1920×1080 y ui_smoke presente; 0 botones muertos se confirma en task-86", started)
+	_pass(id, name, "%d capturas 1920×1080 y ui_smoke presente; 0 botones muertos se confirma en task-86" % all_captures.size(), started)
 
 
 # ---------------------------------------------------------------------------
@@ -338,9 +393,17 @@ func _criterion_10_fonts() -> void:
 	var name := "Fuentes +2 pt en pantallas de juego; main_menu conserva su tamaño (D-090)"
 	var theme_text := ""
 	for path in ["res://assets/art/theme/tsb_global_theme.tres", "res://scripts/ui/ui_kit.gd",
-			"res://scripts/ui/theme/tsb_theme.gd", "res://scripts/ui/theme/font_scale.gd"]:
+			"res://scripts/ui/theme/tsb_theme.gd", "res://scripts/ui/theme/font_scale.gd",
+			"res://scripts/ui/widgets/font_scaler.gd"]:
 		if FileAccess.file_exists(path):
 			theme_text += FileAccess.get_file_as_string(path) + "\n"
+	var font_text := FileAccess.get_file_as_string("res://scripts/ui/widgets/font_scaler.gd") if FileAccess.file_exists("res://scripts/ui/widgets/font_scaler.gd") else ""
+	var menu_text := FileAccess.get_file_as_string("res://scripts/ui/main/main_menu.gd") if FileAccess.file_exists("res://scripts/ui/main/main_menu.gd") else ""
+	var errors: Array[String] = []
+	if not font_text.contains("BOOST := 2") and not font_text.contains("BOOST = 2"):
+		errors.append("font_scaler sin BOOST +2")
+	if menu_text.contains("FontScaler") or menu_text.contains("font_scaler"):
+		errors.append("main_menu con font scaler (debe quedar intacto)")
 	var markers := ["font_scale", "FONT_SIZE", "font_size_boost", "FONT_BOOST", "+ 2", "+2"]
 	var found := 0
 	for marker in markers:
@@ -359,8 +422,8 @@ func _criterion_10_fonts() -> void:
 	var menu_hash := ""
 	if FileAccess.file_exists("res://docs/screenshots/mvp_01_main_menu.png"):
 		menu_hash = _file_sha256("res://docs/screenshots/mvp_01_main_menu.png").substr(0, 16).to_upper()
-	if found == 0 or captures.size() < 2 or menu_hash != "C7A22EA3D5185ECE":
-		_skip(id, name, "D-090 pendiente: marcadores tema=%d, capturas_font=%d, menú=%s (esperado C7A22EA3D5185ECE)" % [found, captures.size(), menu_hash], started)
+	if found == 0 or captures.size() < 2 or menu_hash != "C7A22EA3D5185ECE" or not errors.is_empty():
+		_skip(id, name, "D-090 incompleto: marcadores=%d, capturas_font=%d, menú=%s, errores=%s" % [found, captures.size(), menu_hash, ", ".join(errors)], started)
 		return
 	var wrong: Array[String] = []
 	for capture in captures:

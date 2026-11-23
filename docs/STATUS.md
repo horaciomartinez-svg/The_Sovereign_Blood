@@ -2,11 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| **Fase actual** | **Fase 5A — «El juego te explica» (CERRADA)**; QA **11/11 APROBADO**; GDD v1.9.2; HUD de estaciones, boletín/crónica con histórico, confirmación de órdenes, consejero/ayuda contextual y paneles N2/N3; 1402/1453 congelados (D-066); sin arte externo |
-| **Fase anterior** | **Fase 4 — Profundidad GK2 (CERRADA)**; QA 14/14 APROBADO |
-| **Siguiente fase** | Fase 5B/6 — no definida (Bloque B, reanudar 1402/1453, Paquete A y ampliación de contenido: decisión del usuario) |
-| **GDD** | **v1.9.2** — `GDD_The_Sovereign's_Blood.md` (§5.6 Legibilidad y ayuda; §9 pantallas 14-19; Fase 4 §5.2/§5.3/§5.5; Fase 5A D-079…D-083) |
-| **Contrato Fase 5A** | `docs/architecture_contracts_fase5a.md` (estado/API de legibilidad, datos, UI y QA C1-C11) |
+| **Fase actual** | **Fase 5B — guerra, guardado y control del jugador (CERRADA)**; QA **10/10 APROBADO**; GDD v1.9.3; ataque con selección de ejércitos y guerra automática, guardado multislot/autoguardado, solo el propietario decide, expedición de mercaderes clara, tutorial ampliado y tipografía +2 pt; 1402/1453 congelados; sin arte externo |
+| **Fase anterior** | **Fase 5A — El juego te explica (CERRADA)**; QA 11/11 APROBADO |
+| **Siguiente fase** | Fase 6 — no definida (Bloque B, reanudar 1402/1453, Paquete A y ampliación: decisión del usuario) |
+| **GDD** | **v1.9.3** — `GDD_The_Sovereign's_Blood.md` (§5.6 Legibilidad 5A, §5.8 Guerra/guardado/control 5B, §9 pantallas 14-24; Fase 5B D-084…D-090) |
+| **Contrato Fase 5B** | `docs/architecture_contracts_fase5b.md` (ataque/guerra, guardado multislot, propiedad, expedición, tutorial y tipografía) |
+| **Contrato Fase 5A** |
 | **Contrato Fase 4** |
 | **Contrato Fase 3** | `docs/architecture_contracts_fase3.md` (sprites + animación base + delta 13/15), `docs/architecture_contracts_fase3_tiles.md` (tiles), `docs/architecture_contracts_fase3_scenarios.md` (escenarios/tech/victoria) |
 | **Contrato Fase 2** | `docs/architecture_contracts_fase2.md` (map_borders, batallas N2/N3, retratos, espionaje, extinción) |
@@ -19,6 +20,8 @@
 | **Fecha de cierre Fase 3.3** | 2026-11-23 |
 | **Fecha de cierre Fase 4** | 2026-11-23 |
 | **Fecha de cierre Fase 5A** | 2026-11-23 |
+| **Fecha de cierre Fase 5B** | 2026-11-23 |
+| **QA Fase 5B** | **APROBADO 10/10** — `docs/qa/fase5b_report.md` |
 | **QA Fase 5A** | **APROBADO 11/11** — `docs/qa/fase5a_report.md` |
 | **QA Fase 0** | **APROBADO** — 0 bloqueantes, 0 mayores, 5 observaciones menores (ver `docs/issues.md`) |
 | **QA Fase 1** | **APROBADO** — 6/6 criterios §12, 0 bloqueantes, 3 menores (ver `docs/qa/fase1_report.md`) |
@@ -667,4 +670,32 @@ y sin material con copyright.
 - **QA/estabilidad:** harness Fase 5A **11/11 ×2**, `run_all` **2019/0/2**, `validate_data` **16/12, 12.221 comprobaciones, 0 WARN**, editor/headless 0, `ui_smoke` **65 scripts/25 escenas**; `git diff fase-4..HEAD` en 1402/1453 = **0 archivos**; sin arte externo; informe REA completo sigue **fuera del repo** (D-078).
 - **Observaciones no bloqueantes:** C4/C8 se apoyan en la suite para determinismo/defaults; C5 manipula precios/inventario para los casos alto/bajo; C7 captura N2 sin badge de comandante (UI cubierta); revisión visual de capturas sin click-through completo; GPU no medible.
 - **Cierre:** commits por agente + `[AG-0]`, push a `origin/main` y tag anotado **`fase-5a`**. Se avisa al usuario para la verificación de Kimi contra GDD v1.9.2 + directiva.
+
+---
+
+## 22. Fase 5B — Guerra, guardado y control del jugador (CERRADA)
+
+**Directiva:** correcciones del usuario tras probar la Fase 5A: ataque visible con selección de ejércitos y guerra automática, guardado multislot/autoguardado, bloqueo de decisiones en reinos ajenos, expedición de mercaderes comprensible, tutorial Principiante ampliado y tipografía +2 pt (menú principal intacto). **GDD v1.9.3**, decisiones **D-084…D-090**.
+
+| Línea | Owner | Entregable | Estado |
+|---|---|---|---|
+| Atacar/guerra (D-084) | AG-2/AG-3 | Militar→Atacar: objetivo adyacente no propio, multi-selección de ejércitos, PG, aviso; guerra automática si no había (casus/prestigio) o ataque directo si ya; resultado/batalla | ✅ |
+| Guardado (D-085) | AG-2/AG-3 | 3 ranuras manuales + autoguardado tras cada turno resuelto; metadatos y carga; sin pisar manuales | ✅ |
+| Propiedad (D-086) | AG-2/AG-3 | Solo el propietario reasigna trabajadores; región ajena en solo lectura (`not_owner` en motor) | ✅ |
+| Expedición (D-087) | AG-1/AG-2/AG-3 | Sección clara en Mercado (bien/cantidad, 2 PG, retorno 2 trimestres, activas), condición de tutorial y ayuda | ✅ |
+| Tutorial (D-088) | AG-1/AG-2/AG-3 | Principiante con atacar, guardado, expedición y propiedad; condiciones/highlights | ✅ |
+| Manual (D-089/D-090) | AG-1 | Ataque/guerra, guardado, expedición, propiedad y tipografía (§11.1) | ✅ |
+| Tipografía (D-090) | AG-3 | +2 pt en pantallas de juego (FontScaler), menú principal intacto, layout/scroll revisados | ✅ |
+| QA C1-C10 | AG-4 | harness, capturas y `docs/qa/fase5b_report.md` | ✅ **APROBADO 10/10** |
+
+**Cierre — Fase 5B CERRADA (QA 10/10 APROBADO):**
+- **Ataque (D-084):** botón Atacar en Militar, objetivo adyacente no propio, ejércitos con checkboxes múltiples, PG total y aviso de guerra; `attack_region/preview_attack`; guerra automática una sola vez con `begin_hostilities` (casus belli/prestigio) si no había, ataque directo si ya; batalla delegada e informe. Aliados bloqueados.
+- **Guardado (D-085):** Guardar/Cargar en HUD/mapa y menú principal; `autosave` + `slot_1..slot_3` con metadatos; autoguardado tras cada turno resuelto, sin sobrescribir manuales; save_version 1 y carga exacta.
+- **Propiedad (D-086):** panel regional con controles deshabilitados y aviso en reinos ajenos; `EconomySystem.allocate(...,actor_faction)` rechaza `not_owner` sin gastar PG; propio funciona.
+- **Expedición (D-087):** sección guiada en Mercado con instrucciones, coste 2 PG, retorno 2 trimestres y expediciones activas; tutorial/Manual/ayuda.
+- **Tutorial (D-088) y Manual (D-089):** 9 pasos con ataque, expedición, guardado y propiedad; Manual 11 secciones con §3.6, §4.6, §7.3, §11.1 y cabecera 5B.
+- **Tipografía (D-090):** `FontScaler` `BOOST := 2` en pantallas de juego, incluidos nodos dinámicos; **menú principal y selector de escenario intactos**; 7 capturas comparativas.
+- **QA/estabilidad:** harness **10/10 ×2**; `run_all` **2068/0/2**; `validate_data` **16/12, 12.221 comprobaciones, 0 WARN**; editor/headless 0; `ui_smoke` **69 scripts/27 escenas**; 17 capturas 1920×1080; `git diff fase-5a..HEAD` en 1402/1453 = **0 archivos**; REA completo sigue fuera del repo (D-078).
+- **Observaciones no bloqueantes:** C1-C4 se apoyan en suite/capturas para la lógica fina (no batalla interactiva completa); revisión visual de 17 capturas sin click-through completo; GPU no medible.
+- **Cierre:** commits por agente + `[AG-0]`, push a `origin/main`, tag anotado **`fase-5b`**. Aviso al usuario para verificación de Kimi contra GDD v1.9.3 + directiva.
 
