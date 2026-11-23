@@ -450,3 +450,8 @@ Formato ADR abreviado: contexto → decisión → consecuencias.
 **Contexto:** el Manual debe seguir siendo la referencia del jugador y no quedar desactualizado.
 **Decisión:** `docs/MANUAL_DEL_JUGADOR.md` documenta el flujo de ataque/declaración automática, la selección de ejércitos, el guardado multislot/autoguardado, la expedición de mercaderes y la regla de que solo el propietario decide en su reino. Coherente con `context_help.json` y las capturas; sin texto de Koei.
 **Consecuencia:** C6; AG-1.
+
+## D-090 · Aumento de legibilidad tipográfica en el juego (+2 puntos; menú principal intacto) (2026-11-23)
+**Contexto:** el usuario detecta que los textos dentro del juego son demasiado pequeños; pide aumentar al menos 2 puntos todos los textos del juego y **no** tocar el menú principal, cuyo tamaño considera correcto.
+**Decisión:** se aplica un incremento mínimo de **+2 pt** a las fuentes de las pantallas de juego (mapa, región, consejo, familia, diplomacia, economía/mercado, militar/ejército, batallas N1/N2/N3, boletín, crónica, guardado/carga, ayuda, tutorial, opciones de partida y pantallas de victoria/derrota) mediante el tema/constantes de UI compartidas, respetando el mínimo de cada rol tipográfico y sin romper el layout (se revisan capturas y scroll). El **menú principal** (`main_menu`) y su selector de escenario conservan su tamaño actual (excepción explícita). Sin cambios de simulación. QA añade criterio C10 con capturas comparativas y verificación de que el menú principal no cambió.
+**Consecuencia:** mejora de legibilidad solicitada; AG-3 lo implementa y captura, AG-4 lo verifica; GDD/Manual/ayuda se mantienen coherentes.

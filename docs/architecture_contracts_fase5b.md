@@ -48,3 +48,6 @@ C1 ataque desde Militar con multi-selección y objetivo; guerra automática si n
 | AG-3 | `scenes/**`, `scripts/ui/**`, capturas |
 | AG-4 | `docs/qa/**`, `docs/issues.md`, `tests/qa_*.gd` |
 | AG-0 | GDD, decisiones, STATUS, contrato, git |
+
+## 9. Addendum 5B.1 — Tipografía (D-090)
+Todas las pantallas de juego suben su tipografía **≥2 pt** respecto de Fase 5A (mínimos por rol: Tiny 12→14, Ink 14→16, títulos +2 o más), mediante tema/constantes compartidas y revisión de layout/scroll. **Excepción explícita:** el menú principal (`main_menu`) conserva exactamente sus tamaños actuales. QA C10: capturas de mapa/región/mercado/militar/batalla/boletín/crónica/guardado/ayuda y comparación de que `main_menu` no cambió.

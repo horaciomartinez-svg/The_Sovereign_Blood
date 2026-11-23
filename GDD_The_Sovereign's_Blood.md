@@ -285,6 +285,8 @@ DecisiÃ³n trimestral en 3 pasos: (1) evaluar amenazas (facciones mÃ¡s fuerte
 - **Expedición (D-087):** sección clara en Mercado (bien, cantidad, 2 PG, retorno a 2 trimestres, activas) y paso de tutorial.
 - **Tutorial (D-088):** Principiante incluye atacar, expedición, guardado y límites de propiedad; condiciones `attack_launched`/`expedition_sent`; Manual actualizado (D-089).
 
+- **Tipografía (D-090):** todas las pantallas de juego aumentan al menos **+2 pt** su tipografía; el **menú principal conserva su tamaño** actual (excepción explícita). El ajuste usa el tema/constantes compartidas y se revisan layout/scroll.
+
 ---
 
 ## 6. Batallas â€” resoluciÃ³n en tres niveles
