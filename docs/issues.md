@@ -1629,3 +1629,46 @@ El prompt actualizado añade **C11 Manual del Jugador actualizado** (task-81) y 
 **task-80 COMPLETADA.** Sin cambios de producción ni git por AG-4.
 
 *Fin de la verificación final Fase 5A (task-80).*
+
+---
+
+## 24. Fase 5B — guerra, guardado y control del jugador: plan y baseline QA (task-85, 2026-11-23)
+
+**Directiva:** GDD v1.9.3, contrato `docs/architecture_contracts_fase5b.md`, D-084…D-090. HEAD **`22152ed5`**. Plan: **`docs/qa/fase5b_plan.md`** (matriz C1-C10 + riesgos R-F5B-01..11). Harness: **`tests/qa_acceptance_fase5b.gd`** (C1-C10; compila siempre; exit 0 solo con 10/10).
+
+### 24.1 Baseline C1-C10 — **2 PASS / 0 FAIL / 8 SKIP** (exit 1 «PENDIENTE», no rechazo)
+
+| # | Estado | Evidencia / motivo |
+|---|---|---|
+| C1 | **SKIP** | `MilitarySystem.attack_region` ya existe; faltan UI/capturas `attack_*` (AG-3) |
+| C2 | **SKIP** | `list_saves` solo devuelve `autosave`; faltan `slot_1..3` y capturas (AG-2/AG-3) |
+| C3 | **SKIP** | guard de propiedad/panel parcial; faltan capturas ajenas/propias |
+| C4 | **SKIP** | UI Expedición parcial; falta captura `expedition_section.png` |
+| C5 | **SKIP** | tutorial sin condición `owner` (y condiciones 5B) |
+| C6 | **PASS** | Manual ya documenta ataque/guerra, guardado, expedición y propiedad |
+| C7 | **SKIP** | `run_all` **2.008/11 transitorio** por compilación/módulos Fase 5B; no se certifica regresión |
+| C8 | **PASS** | 1402/1453 hashes intactos; `git diff fase-5a..HEAD` = 0; GDD v1.9.3 + D-084…D-089 + STATUS; arte congelado |
+| C9 | **SKIP** | faltan las 10 capturas de ataque/guardado/expedición/tutorial/propiedad |
+| C10 | **SKIP** | D-090: tema aún sin boost verificado, 0 capturas `font*`; menú principal hash intacto (`C7A22EA3D5185ECE`) |
+
+### 24.2 Batería de baseline
+
+| Comando | Resultado |
+|---|---|
+| `--script tests/qa_acceptance_fase5b.gd` | 2 PASS / 0 FAIL / 8 SKIP (exit 1 «PENDIENTE») |
+| `--script tests/run_all.gd` | **2.008/11** — transitorio por módulos Fase 5B en curso |
+| `--script tools/validate_data.gd` | **16 datasets / 12 schemas, 12.221 comprobaciones, 0 errores/WARN** |
+| `--editor --quit` | 0 ERROR/WARNING |
+| `git diff fase-5a..HEAD` 1402/1453 | **0 archivos** |
+
+### 24.3 Observaciones y riesgos
+
+- **C6/C8 adelantados:** Manual actualizado por AG-1 y gobernanza/congelación correctas.
+- **Módulos 5B en curso:** C1 API existe pero UI/capturas pendientes; C2 slots incompletos; tutorial/expedición/propiedad parciales; C7 no certificable hasta que `run_all` esté verde.
+- **C10 (D-090):** pendiente de implementación de +2 pt y capturas comparativas; el hash del menú principal ya está registrado como referencia.
+- **Pendientes:** AG-2 (C1/C2/C3/C5/C7), AG-3 (C1-C5/C9/C10), AG-1 (C4/C5); task-86 final.
+- **Riesgos:** R-F5B-01..11 en el plan; sin producción ni git por AG-4.
+
+**task-85 COMPLETADA** (plan/baseline; verificación final = task-86, bloqueada por task-82/83/84). Sin producción ni git por AG-4.
+
+*Fin de la sección Fase 5B — plan y baseline QA (task-85).*
