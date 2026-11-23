@@ -3,9 +3,9 @@
   "steps": [
     {
       "id": "mapa_y_region",
-      "title": "Mira tu reino",
-      "text": "Tu dinastía gobierna varias regiones. Abre una región en el mapa para ver su población, riqueza, terreno y edificios.\nCada región produce alimentos, bienes y oro: es la base de tu poder.",
-      "objective": "Abre una región del mapa y revisa su ficha.",
+      "title": "Mira tu reino (y solo tu reino)",
+      "text": "Abre una región en el mapa para ver población, riqueza, terreno y edificios. Las regiones ajenas se pueden consultar, pero sus controles están desactivados: solo el reino propietario decide en su territorio.\nTú solo puedes asignar trabajadores, construir y dar órdenes en las regiones que posees.",
+      "objective": "Abre una región propia y revisa su ficha; comprueba que en una ajena los controles están bloqueados.",
       "highlight": "map_region",
       "condition": "open_region",
       "order": 1
@@ -13,8 +13,8 @@
     {
       "id": "trabajadores",
       "title": "Organiza a tu pueblo",
-      "text": "Reparte la mano de obra entre granjeros, artesanos, comerciantes y reclutas.\nMás granjeros alimentan a la población; artesanos y comerciantes generan oro; los reclutas forman tu pool militar.",
-      "objective": "Ajusta los trabajadores de una región.",
+      "text": "Reparte la mano de obra entre granjeros, artesanos, comerciantes y reclutas.\nMás granjeros alimentan; artesanos y comerciantes generan oro; los reclutas forman el pool militar. Solo puedes hacerlo en tus regiones.",
+      "objective": "Ajusta los trabajadores de una región propia.",
       "highlight": "workers_panel",
       "condition": "assign_workers",
       "order": 2
@@ -22,7 +22,7 @@
     {
       "id": "familia_y_consorte",
       "title": "La dinastía eres tú",
-      "text": "En el árbol familiar revisa a tu gobernante, su consorte y sus hijos; educa a los herederos para mejorar sus stats.\nSi tienes consorte válida, puedes pasar tiempo con ella una vez por trimestre para aumentar la fertilidad y asegurar la sucesión.",
+      "text": "Revisa en el árbol familiar a tu gobernante, su consorte y sus hijos; educa a los herederos para mejorar sus stats.\nSi tienes consorte válida, puedes pasar tiempo con ella una vez por trimestre para aumentar la fertilidad y asegurar la sucesión.",
       "objective": "Abre el árbol familiar y revisa la educación o la acción con la consorte.",
       "highlight": "family_button",
       "condition": "open_family",
@@ -31,7 +31,7 @@
     {
       "id": "diplomacia",
       "title": "Los vecinos importan",
-      "text": "La diplomacia evita guerras o prepara alianzas. Revisa relaciones, casus belli y pactos.\nRecuerda: sin casus belli, declarar la guerra cuesta prestigio.",
+      "text": "La diplomacia evita guerras o prepara alianzas. Revisa relaciones, casus belli y pactos.\nRecuerda: sin casus belli, declarar la guerra cuesta prestigio; si atacas sin guerra, el juego la declarará por ti y aplicará ese coste.",
       "objective": "Abre la pantalla de diplomacia y revisa tus relaciones.",
       "highlight": "diplomacy_button",
       "condition": "open_diplomacy",
@@ -39,45 +39,45 @@
     },
     {
       "id": "mercado_y_mercancia",
-      "title": "Compra, vende y abastece",
-      "text": "El mercado muestra tus mercancías (grano, sal, lana, vino, armas, caballos…), su precio y tus comerciantes.\nSin comerciantes asignados no puedes comprar ni vender; las expediciones comerciales tardan dos trimestres en volver.",
-      "objective": "Abre el mercado y revisa el inventario o asigna comerciantes.",
-      "highlight": "market_button",
-      "condition": "open_market",
+      "title": "Mercado y expedición de mercaderes",
+      "text": "En el Mercado asigna comerciantes, elige un bien y una cantidad, y envía una expedición de mercaderes: cuesta 2 PG y vuelve a los 2 trimestres con beneficio o pérdida.\nSin comerciantes, sin bien o sin PG el botón se deshabilita con el motivo; revisa tus expediciones activas antes de enviar otra.",
+      "objective": "Abre el Mercado y envía una expedición de mercaderes.",
+      "highlight": "expedition_button",
+      "condition": "expedition_sent",
       "order": 5
     },
     {
       "id": "ejercito",
-      "title": "Forma y entrena tu ejército",
-      "text": "Reclutar consume oro, población reclutable y mercancías (caballos para caballería, armas para infantería pesada).\nEntrenar gasta oro y 1 PG para subir la experiencia del ejército.",
-      "objective": "Abre la gestión militar y prepara un reclutamiento o entrenamiento.",
-      "highlight": "military_button",
-      "condition": "open_military",
+      "title": "Ataca y declara la guerra",
+      "text": "En Militar → Atacar elige una región objetivo adyacente que no sea tuya, selecciona uno o varios ejércitos elegibles y revisa el coste en PG.\nAl confirmar, si no estabas en guerra con el propietario, el juego declara la guerra automáticamente (con casus belli o pérdida de prestigio) y resuelve las batallas delegadas; si ya había guerra, solo ataca. Las acciones militares se pueden repetir en el turno.",
+      "objective": "Ataca una región enemiga adyacente y confirma la orden.",
+      "highlight": "attack_button",
+      "condition": "attack_launched",
       "order": 6
-    },
-    {
-      "id": "terminar_turno",
-      "title": "Pasa el turno",
-      "text": "Cada año tiene cuatro trimestres. Cuando termines tus órdenes, pulsa Terminar turno.\nLa economía, la IA y los eventos se resolverán en orden; al acabar el año habrá cosecha, dinastía y eventos históricos.",
-      "objective": "Termina un turno.",
-      "highlight": "end_turn_button",
-      "condition": "end_turn",
-      "order": 7
     },
     {
       "id": "primera_batalla",
       "title": "La batalla",
-      "text": "Si declaras una guerra y ordenas atacar, puedes resolver la batalla en Nivel 1 (delegada) y leer el informe.\nEn niveles superiores podrás desplegar ejércitos y luchar unidad a unidad con más control.",
+      "text": "Si tu ataque encuentra defensores, verás el informe de batalla con el resultado y las bajas.\nEn niveles superiores podrás desplegar ejércitos y luchar unidad a unidad con más control; en N1 la batalla se resuelve delegada.",
       "objective": "Juega una batalla en Nivel 1 y abre su informe.",
       "highlight": "battle_report",
       "condition": "battle_played",
+      "order": 7
+    },
+    {
+      "id": "terminar_turno",
+      "title": "Pasa el turno",
+      "text": "Cada año tiene cuatro trimestres. Cuando termines tus órdenes, pulsa Terminar turno y revisa el resumen «¿Confirmas tus órdenes?»: Corregir vuelve al mapa; Confirmar resuelve el trimestre.\nAl cerrar el trimestre verás el boletín, y al cerrar el año la Crónica; la economía, la IA y los eventos se resuelven en orden.",
+      "objective": "Termina un turno y confirma tus órdenes.",
+      "highlight": "end_turn_button",
+      "condition": "end_turn",
       "order": 8
     },
     {
       "id": "guardar_partida",
-      "title": "No pierdas el trono",
-      "text": "Guarda la partida para conservar tesoro, regiones, ejército, familia, mercancías y el estado del tutorial.\nPuedes cargarla más tarde desde el menú principal.",
-      "objective": "Guarda la partida.",
+      "title": "Guarda tu partida (multislot y autoguardado)",
+      "text": "Guarda tu partida en una de las 3 ranuras manuales o usa el autoguardado, que se actualiza después de cada turno resuelto y nunca sobrescribe tus ranuras.\nLa pantalla de guardado muestra año, trimestre, facción y fecha; puedes cargar desde el mapa o el menú principal.",
+      "objective": "Guarda la partida en una ranura manual y comprueba el autoguardado.",
       "highlight": "save_button",
       "condition": "saved",
       "order": 9

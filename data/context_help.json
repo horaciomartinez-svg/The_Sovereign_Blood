@@ -23,17 +23,17 @@
       "El mapa muestra tus regiones, las de otras facciones y los ejércitos visibles; los colores indican el dueño de cada región.",
       "Haz clic en una región para abrir su panel: población, riqueza, terreno, edificios y apoyo popular.",
       "La barra superior indica la estación y el año, tu tesoro y tus Puntos de Gobierno (PG) disponibles.",
-      "Mueve ejércitos a regiones adyacentes (1 PG), revisa las fronteras y decide dónde concentrar tus fuerzas.",
-      "El tinte del mapa cambia suavemente con la estación; si te molesta, puedes desactivarlo en Opciones si está disponible."
+      "Mueve ejércitos a regiones adyacentes (1 PG); para atacar, usa Militar → Atacar y elige objetivo y ejércitos.",
+      "**Guardar/Cargar** está en el mapa y en el menú: 3 ranuras manuales + autoguardado tras cada turno resuelto."
     ]
   },
   "region_panel": {
     "title": "Panel de región",
     "lines": [
       "Aquí ves la población, la riqueza base, el terreno y los edificios de la región seleccionada.",
-      "Los trabajadores se reparten entre granjeros, artesanos, comerciantes y reclutas: más granjeros dan comida y apoyo; más artesanos y comerciantes dan oro.",
+      "Solo el reino propietario puede asignar trabajadores o construir: en una región ajena los datos se ven, pero los controles están desactivados.",
+      "Los trabajadores se reparten entre granjeros, artesanos, comerciantes y reclutas; más granjeros dan comida y apoyo, y más artesanos/comerciantes dan oro.",
       "El apoyo popular (0-100) mide la lealtad; si baja mucho, la región puede rebelarse y perder oro o prestigio.",
-      "Desde este panel puedes construir edificios, ajustar trabajadores y consultar el pool de reclutas disponible.",
       "El terreno importa: las llanuras alimentan, los bosques y montañas producen otros bienes y las costas favorecen el comercio."
     ]
   },
@@ -72,8 +72,8 @@
       "El panel militar muestra tus ejércitos, sus hombres, su moral, su experiencia y el mantenimiento que consumen cada trimestre.",
       "Reclutar consume oro, pool de reclutas regional y mercancías: caballos para caballería; armas para infantería pesada a pie; hierro/madera para artillería.",
       "Entrenar sube la experiencia del ejército a cambio de oro y PG; disolver devuelve el 50 % del oro y libera el pool.",
-      "El mantenimiento es de 20 de oro por cada 200 hombres y trimestre: un ejército enorme puede arruinar tu economía.",
-      "Mueve ejércitos a regiones adyacentes (1 PG) y decide cuándo aceptar batalla: el terreno y la composición importan."
+      "**Militar → Atacar** permite elegir una región adyacente no propia, seleccionar varios ejércitos, revisar PG y confirmar; si no hay guerra, se declara automáticamente con casus belli o pérdida de prestigio.",
+      "El mantenimiento es de 20 de oro por cada 200 hombres y trimestre; las acciones militares se pueden repetir en el turno y el terreno/composición deciden la batalla."
     ]
   },
   "economy": {
@@ -92,7 +92,7 @@
       "El mercado muestra tus mercancías, su inventario, el precio actual y el precio base de cada bien.",
       "Sin comerciantes asignados no puedes comprar ni vender; el volumen depende de cuántos comerciantes tengas.",
       "Los precios suben cuando el bien escasea y bajan cuando sobra: vender caro y comprar barato es la base del beneficio.",
-      "Puedes firmar pactos comerciales o enviar expediciones de mercaderes (2 PG); las expediciones vuelven a los 2 trimestres.",
+      "**Expedición de mercaderes**: asigna comerciantes, elige bien y cantidad, paga 2 PG y espera 2 trimestres al retorno; el botón se deshabilita con el motivo si faltan comerciantes, bienes o PG.",
       "Grano y sal sostienen el apoyo; armas y caballos se consumen al reclutar: no vendas lo que tu ejército necesita."
     ]
   },

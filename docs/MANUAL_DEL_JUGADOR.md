@@ -1,13 +1,18 @@
 # Manual del Jugador — The Sovereign's Blood
 
-**Versión:** MVP-1337, Fases 4-5A (D-069…D-073, D-079…D-083) · **Escenario:** «Dos Coronas», 1337-1399
+**Versión:** MVP-1337, Fases 4-5B (D-069…D-073, D-079…D-089) · **Escenario:** «Dos Coronas», 1337-1399
 **Cómo abrir este manual en el juego:** botón **Manual** del menú principal (abre este archivo con
 `OS.shell_open`) y entrada **Ayuda** del menú del Consejo, que muestra un resumen rápido. Además,
 cada pantalla tiene un botón **?** con ayuda contextual breve (Fase 5A).
 
 > Este manual explica las reglas que afectan al jugador. Si algo cambia en una versión posterior,
-> manda el GDD v1.9.2 y las notas de la versión. Las cifras son las del MVP-1337 y pueden ajustarse
+> manda el GDD v1.9.3 y las notas de la versión. Las cifras son las del MVP-1337 y pueden ajustarse
 > por balance sin cambiar la filosofía del juego.
+
+**Novedades de la Fase 5B «Guerra, guardado y control»:** (1) **Militar → Atacar** con objetivo,
+selección múltiple de ejércitos y **guerra automática** si no había; (2) **guardado multislot**
+(3 ranuras + autoguardado por turno); (3) **expedición de mercaderes** explicada; (4) **solo el
+propietario decide en su reino**; (5) tutorial y ayuda actualizados con estos flujos.
 
 **Novedades de la Fase 5A «El juego te explica»:** (1) HUD con estación y año; (2) boletín
 trimestral, Crónica anual y pestaña de histórico; (3) repaso «¿Confirmas tus órdenes?» con
@@ -171,6 +176,16 @@ trimestre»**, con la lista de acciones realizadas y su coste en PG. Si no has d
   sin Crónica arrancan con una lista vacía, sin romper la carga. La Crónica es memoria, no una
   mecánica: no cambia el estado ni consume RNG.
 
+### 3.6 Guardar y cargar (multislot + autoguardado, Fase 5B)
+
+- **Guardar:** desde el mapa/HUD o el menú principal, con **3 ranuras manuales** (`slot_1` a
+  `slot_3`) y el **autoguardado**. Cada ranura muestra año, trimestre, facción y fecha; si
+  sobrescribes, el juego pide confirmación y da feedback.
+- **Autoguardado:** se actualiza **después de cada turno resuelto** (nunca antes de confirmar) y
+  **nunca sobrescribe tus ranuras manuales**. Sigue siendo cargable desde el menú principal.
+- **Cargar:** elige una ranura o el autoguardado; el formato `save_version` no cambia y las partidas
+  antiguas siguen cargando con defaults. Guarda antes de una guerra o una decisión irreversible.
+
 ## 4. Economía, mercancías y comercio
 
 ### 4.1 Regiones, población y riqueza
@@ -191,6 +206,12 @@ más bienes; más comerciantes = más oro de comercio; más reclutas = más reem
 - **Mantenimiento:** 20 de oro por cada 200 hombres de ejército y trimestre, más un recargo si
   tu tesoro supera los 8.000 (35 % del exceso por trimestre). No acumules oro sin usarlo: invierte
   en edificios, reclutamiento o mercancías.
+
+**Propiedad de la región:** solo el **reino propietario** puede asignar trabajadores, construir y
+tomar decisiones internas en su territorio. En una región ajena el panel sigue mostrando población,
+riqueza y edificios, pero los controles están desactivados con el aviso «Solo el reino propietario
+puede asignar trabajadores»; la IA también opera solo sobre sus propias regiones. Esto evita
+cambiar el rumbo de un reino que no gobiernas.
 
 ### 4.2 Apoyo, cosecha y revueltas
 
@@ -253,6 +274,19 @@ beneficio (o pérdida) según el resultado. Las expediciones son una apuesta: no
 Los impuestos llegan cada trimestre. Si subes impuestos, ganas oro pero baja el apoyo; si los
 bajas, ganas estabilidad pero pierdes ingresos. El tesoro por encima de 8.000 paga un recargo:
 invertir el exceso en edificios, ejército o mercancías suele ser mejor que acumularlo.
+
+### 4.6 Expedición de mercaderes (Fase 5B)
+
+La **expedición de mercaderes** es una operación de comercio exterior de varios trimestres:
+
+1. **Asigna comerciantes** en el Mercado (sin comerciantes no hay expedición).
+2. Elige un **bien** de tu inventario y una **cantidad**; revisa el coste y el retorno estimado.
+3. Paga **2 PG** y confirma. La expedición **vuelve a los 2 trimestres** con beneficio o pérdida
+   según el resultado; puedes ver las expediciones activas y su trimestre de retorno en el Mercado.
+
+El botón se deshabilita con un motivo claro si faltan comerciantes, el bien o PG. No envía todo tu
+grano ni tus armas: una expedición es una apuesta comercial, no un ingreso garantizado. El envío no
+consume RNG de la partida; el resultado se calcula con las reglas de comercio.
 
 ## 5. Familia, sucesión y Peste Negra
 
@@ -364,6 +398,25 @@ el sistema. Puedes cambiar de nivel en distintas batallas; no estás obligado a 
 **Contras básicas:** caballería pesada rompe infantería ligera; piqueros/schiltron frenan
 caballería; arqueros castigan formaciones lentas; artillería es lenta pero devastadora contra
 muros. El terreno importa: bosque/colina penalizan caballería, montaña favorece defensa.
+
+### 7.3 Atacar y declarar la guerra (Fase 5B)
+
+El flujo **Militar → Atacar** sustituye al viejo «mover y esperar»:
+
+1. Elige una **región objetivo adyacente que no sea tuya**; si es de un aliado, el juego lo avisa y
+   no permite atacar sin romper la alianza.
+2. Selecciona **uno o varios ejércitos elegibles** (en una región adyacente y con movimiento). El
+   resumen muestra el coste total en PG y el aviso de guerra.
+3. Al confirmar, si **no estabas en guerra** con el propietario, el juego **declara la guerra
+   automáticamente** (`begin_hostilities`), aplicando el **casus belli** o la **pérdida de
+   prestigio** vigente. Si ya había guerra, simplemente ataca.
+4. Los ejércitos se mueven en orden y las batallas se resuelven con las fórmulas actuales; verás el
+   resultado por ejército y el enlace al **informe de batalla** si hay defensores.
+
+Las acciones militares siguen siendo **repetibles** en el turno (D-074): puedes atacar varias
+regiones o con varios grupos si tienes PG y ejércitos elegibles. Atacar sin casus belli no es
+gratis: revisa la diplomacia antes de lanzar la primera ofensiva. Este flujo no cambia el balance,
+las fórmulas de combate ni la IA; solo hace visible y confirmable lo que el motor ya resolvía.
 
 ## 8. IA, dificultades y eventos históricos
 
@@ -515,8 +568,9 @@ texto genérico y se puede ampliar el JSON sin tocar código.
 
 ---
 
-*Manual del MVP-1337 (D-072, actualizado en Fase 5A por C11/D-079…D-083). Para el detalle técnico
-de sistemas, consulta `docs/architecture_contracts_fase4.md` y `docs/architecture_contracts_fase5a.md`;
-para el tutorial, `data/tutorial_script.json` (D-073); para la ayuda contextual,
-`data/context_help.json` y `data/legibility_texts.json`. Si una cifra de balance cambia en un
-parche, se actualizará este manual en la misma entrega.*
+*Manual del MVP-1337 (D-072, actualizado en Fase 5A por C11/D-079…D-083 y en Fase 5B por
+D-084…D-089). Para el detalle técnico de sistemas, consulta `docs/architecture_contracts_fase4.md`,
+`docs/architecture_contracts_fase5a.md` y `docs/architecture_contracts_fase5b.md`; para el tutorial,
+`data/tutorial_script.json` (D-073/D-088); para la ayuda contextual, `data/context_help.json` y
+`data/legibility_texts.json`. Si una cifra de balance cambia en un parche, se actualizará este
+manual en la misma entrega.*

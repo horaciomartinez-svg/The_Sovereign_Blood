@@ -51,6 +51,8 @@
               "diplomacy_button",
               "market_button",
               "military_button",
+              "attack_button",
+              "expedition_button",
               "end_turn_button",
               "battle_report",
               "save_button"
@@ -65,6 +67,8 @@
               "open_diplomacy",
               "open_market",
               "open_military",
+              "attack_launched",
+              "expedition_sent",
               "end_turn",
               "battle_played",
               "saved"
